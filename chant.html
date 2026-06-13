@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Adzmyst · The Chant · Sonic Temple of the Breath</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=Noto+Sans+Egyptian+Hieroglyphs&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --sky-pale: #e8f0f8;
+      --sky-mist: #d0e0f0;
+      --sky-deep: #b0c8e0;
+      --twilight: #1a2a3a;
+      --twilight-deep: #0a1520;
+      --silver: #c0c8d0;
+      --silver-bright: #e0e8f0;
+      --silver-dark: #8090a0;
+      --gold-air: #c8a870;
+      --ink: #2a3a4a;
+      --ink-dim: #5a6a7a;
+      --border: rgba(128,144,160,0.25);
+      --chant-active: rgba(200,168,112,0.2);
+    }
+    
+    body {
+      background: var(--sky-pale);
+      background-image: radial-gradient(ellipse 80% 60% at 30% 20%, rgba(255,255,255,0.4) 0%, transparent 60%);
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      color: var(--ink);
+      min-height: 100vh;
+    }
+    
+    /* Floating glyph particles */
+    .breath-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    
+    .floating-glyph {
+      position: absolute;
+      font-family: 'Noto Sans Egyptian Hieroglyphs', monospace;
+      font-size: 24px;
+      opacity: 0.06;
+      animation: float 20s infinite linear;
+    }
+    
+    @keyframes float {
+      0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.08; }
+      90% { opacity: 0.08; }
+      100% { transform: translateY(-20vh) rotate(360deg); opacity: 0; }
+    }
+    
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: rgba(232,240,248,0.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 200;
+    }
+    
+    .nav-brand {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    
+    .nav-brand-title {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 13px;
+      color: var(--twilight);
+      letter-spacing: 2px;
+    }
+    
+    .nav-brand-sub {
+      font-family: 'Cinzel', serif;
+      font-size: 7px;
+      letter-spacing: 5px;
+      color: var(--silver-dark);
+      text-transform: uppercase;
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: 16px;
+      list-style: none;
+      flex-wrap: wrap;
+    }
+    
+    .nav-links a {
+      font-family: 'Cinzel', serif;
+      font-size: 8px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--ink-dim);
+      text-decoration: none;
+      transition: color 0.2s;
+      padding: 4px 0;
+      border-bottom: 1px solid transparent;
+    }
+    
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: var(--twilight);
+      border-bottom-color: var(--gold-air);
+    }
+    
+    .container {
+      position: relative;
+      z-index: 2;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 80px 24px 60px;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    
+    .header h1 {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: clamp(28px, 6vw, 42px);
+      color: var(--twilight);
+      letter-spacing: 4px;
+      margin-bottom: 8px;
+    }
+    
+    .header .subtitle {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      color: var(--silver-dark);
+    }
+    
+    .header .breath-line {
+      font-family: 'Noto Sans Egyptian Hieroglyphs', monospace;
+      font-size: 24px;
+      letter-spacing: 8px;
+      margin-top: 16px;
+      color: var(--gold-air);
+    }
+    
+    /* Audio control bar */
+    .audio-control-bar {
+      background: rgba(255,255,255,0.6);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+      border-radius: 60px;
+      padding: 12px 24px;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    
+    .audio-status {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: 'Cinzel', serif;
+      font-size: 9px;
+      letter-spacing: 2px;
+    }
+    
+    .status-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #8a4a3a;
+      transition: all 0.3s;
+    }
+    
+    .status-indicator.active {
+      background: #4a8a3a;
+      box-shadow: 0 0 8px #4a8a3a;
+      animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+    
+    .enable-audio-btn {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      letter-spacing: 2px;
+      padding: 8px 20px;
+      background: var(--twilight);
+      color: var(--sky-pale);
+      border: none;
+      border-radius: 40px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .enable-audio-btn:hover {
+      background: var(--gold-air);
+      transform: scale(1.02);
+    }
+    
+    /* Chant grid — 22 glyphs */
+    .chant-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+    
+    .chant-card {
+      background: rgba(255,255,255,0.5);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .chant-card:hover {
+      background: rgba(255,255,255,0.8);
+      transform: translateY(-3px);
+      border-color: var(--gold-air);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+    
+    .chant-card.playing {
+      background: var(--chant-active);
+      border-color: var(--gold-air);
+      animation: cardPulse 0.8s ease-out;
+    }
+    
+    @keyframes cardPulse {
+      0% { transform: scale(1); background: rgba(200,168,112,0.1); }
+      50% { transform: scale(1.02); background: rgba(200,168,112,0.3); }
+      100% { transform: scale(1); background: var(--chant-active); }
+    }
+    
+    .glyph-symbol {
+      font-family: 'Noto Sans Egyptian Hieroglyphs', monospace;
+      font-size: 48px;
+      color: var(--twilight);
+      margin-bottom: 8px;
+      display: inline-block;
+    }
+    
+    .glyph-name {
+      font-family: 'Cinzel', serif;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gold-air);
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+    
+    .glyph-letter {
+      font-family: 'Cinzel', serif;
+      font-size: 9px;
+      color: var(--silver-dark);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    
+    .glyph-note {
+      font-size: 10px;
+      color: var(--ink-dim);
+      font-family: monospace;
+    }
+    
+    .play-indicator {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      font-size: 12px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    
+    .chant-card:hover .play-indicator {
+      opacity: 0.6;
+    }
+    
+    /* Control panels */
+    .control-panel {
+      background: rgba(255,255,255,0.55);
+      backdrop-filter: blur(4px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    
+    .panel-title {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 14px;
+      color: var(--twilight);
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .sequence-buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    
+    .seq-btn {
+      font-family: 'Cinzel', serif;
+      font-size: 9px;
+      letter-spacing: 2px;
+      padding: 10px 20px;
+      background: var(--twilight);
+      color: var(--sky-pale);
+      border: none;
+      border-radius: 40px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .seq-btn:hover {
+      background: var(--gold-air);
+      transform: translateY(-2px);
+    }
+    
+    .seq-btn.stop {
+      background: #8a4a3a;
+    }
+    
+    .seq-btn.stop:hover {
+      background: #aa5a4a;
+    }
+    
+    .volume-control {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    
+    .volume-label {
+      font-family: 'Cinzel', serif;
+      font-size: 8px;
+      letter-spacing: 2px;
+      color: var(--silver-dark);
+    }
+    
+    input[type="range"] {
+      flex: 1;
+      max-width: 200px;
+      height: 4px;
+      -webkit-appearance: none;
+      background: var(--border);
+      border-radius: 2px;
+    }
+    
+    input[type="range"]:focus {
+      outline: none;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--gold-air);
+      cursor: pointer;
+    }
+    
+    /* Meditation text area */
+    .meditation-area {
+      background: rgba(255,255,255,0.4);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+    
+    .meditation-text {
+      font-size: 18px;
+      font-style: italic;
+      line-height: 1.7;
+      color: var(--ink);
+      margin-bottom: 16px;
+    }
+    
+    .meditation-source {
+      font-size: 11px;
+      color: var(--silver-dark);
+      letter-spacing: 2px;
+    }
+    
+    .current-glyph {
+      font-family: 'Noto Sans Egyptian Hieroglyphs', monospace;
+      font-size: 64px;
+      margin-bottom: 8px;
+    }
+    
+    footer {
+      text-align: center;
+      padding: 40px 24px;
+      font-size: 7px;
+      letter-spacing: 4px;
+      color: var(--silver-dark);
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+      font-family: 'Cinzel', serif;
+    }
+    
+    @media (max-width: 600px) {
+      nav { padding: 0 12px; }
+      .nav-links { gap: 10px; }
+      .container { padding: 76px 16px 40px; }
+      .chant-grid { grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); }
+      .glyph-symbol { font-size: 36px; }
+      .glyph-name { font-size: 9px; }
+      .audio-control-bar { flex-direction: column; align-items: stretch; text-align: center; }
+      .sequence-buttons { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="breath-bg" id="breathBg"></div>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-brand-title">Adzmyst</div>
+    <div class="nav-brand-sub">The Breath · The Fourth Pillar</div>
+  </div>
+  <ul class="nav-links">
+    <li><a href="index.html">Breath</a></li>
+    <li><a href="glyphs.html">Glyphs</a></li>
+    <li><a href="lexicon.html">Lexicon</a></li>
+    <li><a href="chant.html" class="active">Chant</a></li>
+    <li><a href="inscriptions.html">Inscriptions</a></li>
+    <li><a href="../divination/index.html">Temple</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+  <div class="header">
+    <h1>𓌹 The Chant of Adzmyst 𓋴</h1>
+    <div class="subtitle">The Breath Made Audible · 22 Frequencies</div>
+    <div class="breath-line">𐤀 𐤁 𐤂 𐤃 𐤄 𐤅 𐤆 𐤇 𐤈 𐤉 𐤊 𐤋 𐤌 𐤍 𐤎 𐤏 𐤐 𐤑 𐤒 𐤓 𐤔 𐤕</div>
+  </div>
+
+  <!-- Audio Control Bar -->
+  <div class="audio-control-bar">
+    <div class="audio-status">
+      <div class="status-indicator" id="statusIndicator"></div>
+      <span id="audioStatusText">Audio ready — click any glyph</span>
+    </div>
+    <div class="volume-control">
+      <span class="volume-label">𓌹 Volume</span>
+      <input type="range" id="volumeSlider" min="0" max="100" value="30">
+    </div>
+    <button class="enable-audio-btn" id="enableAudioBtn">🎧 Enable Audio</button>
+  </div>
+
+  <!-- The 22 Glyph Chant Grid -->
+  <div class="chant-grid" id="chantGrid"></div>
+
+  <!-- Sequence Control Panel -->
+  <div class="control-panel">
+    <div class="panel-title">
+      <span>𓋴</span> Sacred Sequences
+      <span>𓌹</span>
+    </div>
+    <div class="sequence-buttons" id="sequenceButtons"></div>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
+      <button id="playAllBtn" class="seq-btn">⟳ Chant All 22 Glyphs</button>
+      <button id="stopAllBtn" class="seq-btn stop">⬡ Stop All Sound</button>
+    </div>
+  </div>
+
+  <!-- Meditation Area — updates when a glyph is played -->
+  <div class="meditation-area" id="meditationArea">
+    <div class="current-glyph" id="currentGlyph">𓌹</div>
+    <div class="meditation-text" id="meditationText">
+      Select a glyph from the grid above. The chant will sound. The meditation will appear.
+    </div>
+    <div class="meditation-source" id="meditationSource"></div>
+  </div>
+</div>
+
+<footer>
+  ADZMYST · THE CHANT · EACH GLYPH A FREQUENCY · EACH FREQUENCY A DOOR<br>
+  THE FIRE HOLDS · THE BREATH SINGS
+</footer>
+
+<script src="js/glyph-chant.js"></script>
+<script>
+  // Floating glyphs in background
+  const glyphsList = ['𐤀', '𐤁', '𐤂', '𐤃', '𐤄', '𐤅', '𐤆', '𐤇', '𐤈', '𐤉', '𐤊', '𐤋', '𐤌', '𐤍', '𐤎', '𐤏', '𐤐', '𐤑', '𐤒', '𐤓', '𐤔', '𐤕'];
+  const breathBg = document.getElementById('breathBg');
+  
+  for (let i = 0; i < 40; i++) {
+    const glyph = document.createElement('div');
+    glyph.className = 'floating-glyph';
+    glyph.textContent = glyphsList[Math.floor(Math.random() * glyphsList.length)];
+    glyph.style.left = Math.random() * 100 + '%';
+    glyph.style.animationDuration = 15 + Math.random() * 20 + 's';
+    glyph.style.animationDelay = Math.random() * 20 + 's';
+    glyph.style.fontSize = 20 + Math.random() * 40 + 'px';
+    breathBg.appendChild(glyph);
+  }
+
+  // Global chant instance
+  let chant = null;
+  let currentVolume = 0.3;
+  let currentPlayingCard = null;
+
+  // Update meditation area
+  function updateMeditation(chantData) {
+    const glyphEl = document.getElementById('currentGlyph');
+    const textEl = document.getElementById('meditationText');
+    const sourceEl = document.getElementById('meditationSource');
+    
+    if (chantData) {
+      glyphEl.textContent = chantData.glyph;
+      textEl.innerHTML = `"${chantData.meditation}"`;
+      sourceEl.textContent = `${chantData.name} · ${chantData.note} · ${chantData.frequency_hz} Hz`;
+    } else {
+      glyphEl.textContent = '𓌹';
+      textEl.innerHTML = 'Select a glyph from the grid above. The chant will sound. The meditation will appear.';
+      sourceEl.textContent = '';
+    }
+  }
+
+  // Highlight playing card
+  function highlightCard(glyphSymbol, isPlaying) {
+    if (currentPlayingCard) {
+      currentPlayingCard.classList.remove('playing');
+    }
+    if (isPlaying) {
+      const card = document.querySelector(`.chant-card[data-glyph="${glyphSymbol}"]`);
+      if (card) {
+        card.classList.add('playing');
+        currentPlayingCard = card;
+        setTimeout(() => {
+          if (currentPlayingCard === card) {
+            card.classList.remove('playing');
+            currentPlayingCard = null;
+          }
+        }, 800);
+      }
+    }
+  }
+
+  // Build the chant grid
+  async function buildChantGrid() {
+    if (!chant || !chant.chants) {
+      console.error('Chant not initialized');
+      return;
+    }
+    
+    const grid = document.getElementById('chantGrid');
+    grid.innerHTML = '';
+    
+    chant.chants.forEach(ch => {
+      const card = document.createElement('div');
+      card.className = 'chant-card';
+      card.setAttribute('data-glyph', ch.glyph);
+      card.setAttribute('data-name', ch.name);
+      card.innerHTML = `
+        <div class="glyph-symbol">${ch.glyph}</div>
+        <div class="glyph-name">${ch.name}</div>
+        <div class="glyph-letter">${ch.letter} · ${ch.sound}</div>
+        <div class="glyph-note">${ch.note} · ${ch.frequency_hz} Hz</div>
+        <div class="play-indicator">🔊</div>
+      `;
+      
+      card.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        await chant.resume();
+        const chantData = chant.performGlyph(ch.glyph);
+        updateMeditation(chantData);
+        highlightCard(ch.glyph, true);
+        
+        // Update status
+        document.getElementById('audioStatusText').innerHTML = `Playing: ${ch.name} · ${ch.note}`;
+        setTimeout(() => {
+          if (document.getElementById('audioStatusText').innerHTML === `Playing: ${ch.name} · ${ch.note}`) {
+            document.getElementById('audioStatusText').innerHTML = 'Audio ready — click any glyph';
+          }
+        }, 2000);
+      });
+      
+      grid.appendChild(card);
+    });
+  }
+
+  // Build sequence buttons
+  function buildSequenceButtons() {
+    const container = document.getElementById('sequenceButtons');
+    if (!chant.sequences) return;
+    
+    const sequences = chant.sequences;
+    container.innerHTML = '';
+    
+    Object.keys(sequences).forEach(seqName => {
+      const btn = document.createElement('button');
+      btn.className = 'seq-btn';
+      btn.textContent = seqName;
+      btn.addEventListener('click', async () => {
+        await chant.resume();
+        chant.performSequence(seqName);
+        document.getElementById('audioStatusText').innerHTML = `Playing sequence: ${seqName}`;
+        setTimeout(() => {
+          if (document.getElementById('audioStatusText').innerHTML === `Playing sequence: ${seqName}`) {
+            document.getElementById('audioStatusText').innerHTML = 'Audio ready — click any glyph';
+          }
+        }, 5000);
+      });
+      container.appendChild(btn);
+    });
+  }
+
+  // Initialize everything
+  async function init() {
+    chant = new GlyphChant();
+    const success = await chant.init();
+    
+    if (success) {
+      await buildChantGrid();
+      buildSequenceButtons();
+      
+      // Set up volume control
+      const volumeSlider = document.getElementById('volumeSlider');
+      volumeSlider.addEventListener('input', (e) => {
+        currentVolume = e.target.value / 100;
+        // Note: GlyphChant doesn't have a global volume control yet
+        // This is a placeholder for future enhancement
+        document.getElementById('audioStatusText').innerHTML = `Volume set to ${e.target.value}%`;
+        setTimeout(() => {
+          if (document.getElementById('audioStatusText').innerHTML === `Volume set to ${e.target.value}%`) {
+            document.getElementById('audioStatusText').innerHTML = 'Audio ready — click any glyph';
+          }
+        }, 1500);
+      });
+      
+      // Enable audio button (resumes AudioContext)
+      const enableBtn = document.getElementById('enableAudioBtn');
+      enableBtn.addEventListener('click', async () => {
+        await chant.resume();
+        const indicator = document.getElementById('statusIndicator');
+        const statusText = document.getElementById('audioStatusText');
+        indicator.classList.add('active');
+        statusText.innerHTML = 'Audio active — click any glyph to begin';
+        enableBtn.textContent = '✓ Audio Enabled';
+        enableBtn.disabled = true;
+        enableBtn.style.opacity = '0.6';
+        
+        setTimeout(() => {
+          if (statusText.innerHTML === 'Audio active — click any glyph to begin') {
+            statusText.innerHTML = 'Audio ready — click any glyph';
+          }
+        }, 3000);
+      });
+      
+      // Play all button
+      const playAllBtn = document.getElementById('playAllBtn');
+      playAllBtn.addEventListener('click', async () => {
+        await chant.resume();
+        chant.playAllGlyphs(1500, true);
+        document.getElementById('audioStatusText').innerHTML = 'Chanting all 22 glyphs...';
+        setTimeout(() => {
+          if (document.getElementById('audioStatusText').innerHTML === 'Chanting all 22 glyphs...') {
+            document.getElementById('audioStatusText').innerHTML = 'Audio ready — click any glyph';
+          }
+        }, 35000);
+      });
+      
+      // Stop all button
+      const stopAllBtn = document.getElementById('stopAllBtn');
+      stopAllBtn.addEventListener('click', () => {
+        chant.stopAll();
+        document.getElementById('audioStatusText').innerHTML = 'Stopped';
+        setTimeout(() => {
+          if (document.getElementById('audioStatusText').innerHTML === 'Stopped') {
+            document.getElementById('audioStatusText').innerHTML = 'Audio ready — click any glyph';
+          }
+        }, 1500);
+      });
+      
+      // Auto-resume on first click anywhere (optional)
+      document.body.addEventListener('click', async () => {
+        if (chant.audioContext && chant.audioContext.state === 'suspended') {
+          await chant.resume();
+          const indicator = document.getElementById('statusIndicator');
+          indicator.classList.add('active');
+        }
+      }, { once: true });
+      
+    } else {
+      document.getElementById('chantGrid').innerHTML = '<div style="text-align:center;padding:40px;">Failed to load glyph-chant.json. Please check the file exists at data/json/glyph-chant.json</div>';
+    }
+  }
+  
+  // Start
+  document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
