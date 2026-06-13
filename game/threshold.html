@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Threshold · Aleph · Adzmyst Game</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=Noto+Sans+Egyptian+Hieroglyphs&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/game.css">
+</head>
+<body>
+
+<div class="room-container">
+  <div class="room-background" style="background-image: linear-gradient(180deg, #0a1520, #1a2a3a), radial-gradient(circle at 30% 40%, rgba(74,138,170,0.15), transparent);"></div>
+  
+  <div class="room-content">
+    <div class="room-glyph" id="glyphAleph">𐤀</div>
+    <h1 class="room-title">The Threshold · Aleph</h1>
+    <div class="room-description">
+      You stand at the entrance of a floating temple. Before you, a stone carved with the first glyph — <strong>Aleph (𐤀)</strong>, the beginning, the ox, the strength that pulls the plow through unbroken ground.
+      <br><br>
+      The glyph glows faintly. A voice whispers: *"Speak the sound of the beginning. Only then will the door open."*
+    </div>
+    
+    <div class="room-puzzle">
+      <div class="puzzle-question">𓌹 To unlock the door, chant Aleph's sound: <strong>"Ahhhhh"</strong></div>
+      <div class="chant-area">
+        <button id="playChantBtn" class="chant-btn">🔊 Hear the Chant</button>
+        <button id="speakChantBtn" class="chant-btn">🎤 Speak the Chant</button>
+      </div>
+      <div id="chantResult" class="chanted-word"></div>
+    </div>
+    
+    <div class="room-nav">
+      <a href="../map.html" class="nav-btn">𓋴 View Map</a>
+      <button id="completeBtn" class="nav-btn" disabled>→ Proceed to Door Chamber</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/game-state.js"></script>
+<script src="../js/chant-detector.js"></script>
+<script>
+  // Check if already completed
+  if (AdzmystGame.state.puzzles.aleph) {
+    document.getElementById('completeBtn').disabled = false;
+    document.getElementById('completeBtn').textContent = '→ Proceed to Door Chamber';
+    document.getElementById('chantResult').innerHTML = '✓ The threshold recognizes your voice. The door is open.';
+  }
+  
+  // Play Aleph chant
+  document.getElementById('playChantBtn').addEventListener('click', async () => {
+    // Use glyph-chant.js if available, otherwise fallback
+    if (window.GlyphChant) {
+      const chant = new GlyphChant();
+      await chant.init();
+      await chant.resume();
+      chant.performGlyph('𐤀');
+    } else {
+      // Fallback: Web Audio
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      oscillator.connect(gain);
+      gain.connect(audioCtx.destination);
+      oscillator.frequency.value = 261.63; // C4
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 1.5);
+      oscillator.start();
+      oscillator.stop(audioCtx.currentTime + 1.5);
+      await audioCtx.resume();
+    }
+    document.getElementById('chantResult').innerHTML = '𓌹 Aleph sounds. The stone vibrates.';
+  });
+  
+  // Speak Aleph chant (microphone)
+  document.getElementById('speakChantBtn').addEventListener('click', async () => {
+    const result = await AdzmystChant.listenForGlyph('𐤀');
+    if (result.matched) {
+      document.getElementById('chantResult').innerHTML = '✓ The threshold recognizes your voice. The door opens.';
+      AdzmystGame.collectGlyph('𐤀');
+      AdzmystGame.completePuzzle('aleph');
+      AdzmystGame.completeRoom('threshold');
+      document.getElementById('completeBtn').disabled = false;
+    } else {
+      document.getElementById('chantResult').innerHTML = `✗ The threshold does not recognize "${result.heard}". Try again.`;
+    }
+  });
+  
+  document.getElementById('completeBtn').addEventListener('click', () => {
+    window.location.href = 'door-chamber.html';
+  });
+  
+  // Render inventory
+  AdzmystGame.renderInventory();
+</script>
+</body>
+</html>
