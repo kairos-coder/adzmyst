@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Adzmyst · The Breath Game · Air Temple Mystery</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=Noto+Sans+Egyptian+Hieroglyphs&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/game.css">
+</head>
+<body>
+
+<div class="game-launcher">
+  <div class="launcher-background">
+    <div class="floating-glyphs" id="floatingGlyphs"></div>
+  </div>
+  
+  <div class="launcher-panel">
+    <div class="title-glyph">𓌹</div>
+    <h1 class="game-title">ADZMYST</h1>
+    <div class="game-subtitle">The Breath Game</div>
+    <div class="game-tagline">A floating temple. 22 glyphs. One forgotten language.</div>
+    
+    <div class="launcher-buttons">
+      <button id="newGameBtn" class="game-btn primary">𓋴 Begin the Descent</button>
+      <button id="loadGameBtn" class="game-btn secondary">𓌹 Load Saved Breath</button>
+    </div>
+    
+    <div class="game-instructions">
+      <p>✦ You wake in a floating temple. The sky is pale blue. Glyphs drift past like leaves.</p>
+      <p>✦ The tower at the center holds the memory of the language — but the door is sealed.</p>
+      <p>✦ Learn each glyph's meaning, sound, and frequency. Only when the breath is whole will the door open.</p>
+      <p>✦ Speak the glyphs. Solve the triads. Choose your schism: <strong>Adzmist</strong> (Ishtar, the goddess) or <strong>Adzmyst</strong> (Yod, the hand).</p>
+      <p>✦ The fire holds. Begin.</p>
+    </div>
+    
+    <div class="launcher-footer">
+      <span>Part of the Ealdforn universe · The Air Pillar</span>
+    </div>
+  </div>
+</div>
+
+<script src="js/game-state.js"></script>
+<script>
+  // Floating glyphs animation
+  const glyphs = ['𐤀', '𐤃', '𐤆', '𐤌', '𐤉', '𐤎', '𐤕', '𐤁', '𐤂', '𐤄', '𐤅', '𐤇', '𐤈', '𐤊', '𐤋', '𐤍', '𐤏', '𐤐', '𐤑', '𐤒', '𐤓', '𐤔'];
+  const container = document.getElementById('floatingGlyphs');
+  
+  for (let i = 0; i < 60; i++) {
+    const glyph = document.createElement('span');
+    glyph.className = 'float-glyph';
+    glyph.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
+    glyph.style.left = Math.random() * 100 + '%';
+    glyph.style.animationDuration = 10 + Math.random() * 20 + 's';
+    glyph.style.animationDelay = Math.random() * 15 + 's';
+    glyph.style.fontSize = 20 + Math.random() * 50 + 'px';
+    glyph.style.opacity = 0.05 + Math.random() * 0.1;
+    container.appendChild(glyph);
+  }
+  
+  // New game
+  document.getElementById('newGameBtn').addEventListener('click', () => {
+    if (AdzmystGame) {
+      AdzmystGame.newGame();
+      window.location.href = 'rooms/threshold.html';
+    }
+  });
+  
+  // Load game
+  document.getElementById('loadGameBtn').addEventListener('click', () => {
+    if (AdzmystGame) {
+      if (AdzmystGame.loadGame()) {
+        const savedRoom = localStorage.getItem('adzmyst_current_room') || 'rooms/threshold.html';
+        window.location.href = savedRoom;
+      } else {
+        alert('No saved breath found. Begin a new descent.');
+      }
+    }
+  });
+</script>
+</body>
+</html>
