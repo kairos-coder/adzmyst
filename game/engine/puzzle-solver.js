@@ -2,18 +2,7 @@
  * puzzle-solver.js — Adzmyst Game Puzzle Engine
  * Version: 1.0.0
  * 
- * Handles all puzzle types:
- * - chant (speech recognition)
- * - choice (binary/multi-choice)
- * - triad_select (pick correct from options)
- * - recall (memory/dream recall)
- * - sequence (order glyphs correctly)
- * - balance (structural choice)
- * - sequence_recall (chant or select sequence)
- * - final_chant (speak your name)
- * - final_offering (speak a hidden word)
- * - practice (ungraded learning)
- * 
+ * Handles all puzzle types for the Adzmyst breath game.
  * Integrates with audio-engine.js and game-state.js
  */
 
@@ -25,7 +14,6 @@ class PuzzleSolver {
     this.currentSceneId = null;
     this.puzzleCallbacks = {};
     this.speechRecognition = null;
-    this.isListening = false;
   }
 
   /**
@@ -33,42 +21,34 @@ class PuzzleSolver {
    */
   initSpeechRecognition() {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      console.warn('Speech recognition not supported in this browser');
+      console.warn('Speech recognition not supported');
       return false;
     }
-    
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     this.speechRecognition = new SpeechRecognition();
     this.speechRecognition.lang = 'en-US';
     this.speechRecognition.interimResults = false;
     this.speechRecognition.maxAlternatives = 3;
-    
     return true;
   }
 
   /**
    * Load a puzzle for a scene
-   * @param {string} sceneId - Scene ID
-   * @param {object} puzzleData - Puzzle configuration from scene JSON
    */
   loadPuzzle(sceneId, puzzleData) {
     this.currentSceneId = sceneId;
     this.currentPuzzle = puzzleData;
-    
     if (this.puzzleCallbacks.onLoad) {
       this.puzzleCallbacks.onLoad(puzzleData);
     }
-    
     return this.renderPuzzleInterface(puzzleData);
   }
 
   /**
-   * Render the puzzle interface based on puzzle type
-   * @param {object} puzzle - Puzzle configuration
-   * @returns {string} HTML string
+   * Render puzzle interface based on type
    */
   renderPuzzleInterface(puzzle) {
-    if (!puzzle) return '<div class="puzzle-error">No puzzle defined for this chamber.</div>';
+    if (!puzzle) return '<div class="puzzle-error">No puzzle defined.</div>';
     
     switch (puzzle.type) {
       case 'chant':
@@ -92,13 +72,10 @@ class PuzzleSolver {
       case 'practice':
         return this.renderPracticePuzzle(puzzle);
       default:
-        return `<div class="puzzle-error">Unknown puzzle type: ${puzzle.type}</div>`;
+        return `<div class="puzzle-error">Unknown type: ${puzzle.type}</div>`;
     }
   }
 
-  /**
-   * Chant puzzle — speak the glyph's sound
-   */
   renderChantPuzzle(puzzle) {
     const targetGlyph = puzzle.target_glyph || '𐤀';
     const targetSound = puzzle.target_sound || 'ah';
@@ -111,796 +88,499 @@ class PuzzleSolver {
           <span class="chant-sound">"${targetSound}"</span>
         </div>
         <div class="chant-controls">
-          <button class="puzzle-btn hear-btn" data-frequency="${frequency}">
-            🔊 Hear the Chant
-          </button>
-          <button class="puzzle-btn speak-btn" data-target="${targetGlyph}">
-            🎤 Speak Now
-          </button>
+          <button class="puzzle-btn hear-btn" data-frequency="${frequency}">🔊 Hear</button>
+          <button class="puzzle-btn speak-btn" data-target="${targetGlyph}">🎤 Speak</button>
         </div>
         <div class="chant-feedback"></div>
-        <div class="chant-instruction">
-          ${puzzle.prompt || `Speak the sound of ${targetGlyph} to unlock the door.`}
-        </div>
       </div>
     `;
   }
 
-  /**
-   * Choice puzzle — select between options
-   */
   renderChoicePuzzle(puzzle) {
     const options = puzzle.options || [];
-    
     return `
-      <div class="puzzle-choice" data-puzzle-type="choice">
-        <div class="choice-prompt">${puzzle.prompt || 'Choose your path:'}</div>
+      <div class="puzzle-choice">
+        <div class="choice-prompt">${puzzle.prompt || 'Choose:'}</div>
         <div class="choice-options">
-          ${options.map((opt, idx) => `
-            <button class="choice-btn" data-choice-id="${opt.id}" data-choice-index="${idx}">
-              ${opt.label || opt.id}
-            </button>
-          `).join('')}
+          ${options.map(opt => `<button class="choice-btn" data-choice-id="${opt.id}">${opt.label}</button>`).join('')}
         </div>
         <div class="choice-feedback"></div>
       </div>
     `;
   }
 
-  /**
-   * Triad select puzzle — pick correct option from three
-   */
   renderTriadSelectPuzzle(puzzle) {
     const options = puzzle.options || [];
-    
     return `
-      <div class="puzzle-triad" data-puzzle-type="triad_select">
-        <div class="triad-prompt">${puzzle.prompt || 'Which thread is the weapon meant to cut?'}</div>
+      <div class="puzzle-triad">
+        <div class="triad-prompt">${puzzle.prompt || 'Choose wisely:'}</div>
         <div class="triad-options">
-          ${options.map((opt, idx) => `
-            <button class="triad-btn" data-option-id="${opt.id}" data-correct="${opt.is_correct}">
-              ${opt.label}
-            </button>
-          `).join('')}
+          ${options.map(opt => `<button class="triad-btn" data-correct="${opt.is_correct}" data-msg="${opt.success_message || opt.failure_message || ''}">${opt.label}</button>`).join('')}
         </div>
         <div class="triad-feedback"></div>
       </div>
     `;
   }
 
-  /**
-   * Recall puzzle — remember a dream or memory
-   */
   renderRecallPuzzle(puzzle) {
     const options = puzzle.dream_options || puzzle.options || [];
-    
     return `
-      <div class="puzzle-recall" data-puzzle-type="recall">
-        <div class="recall-prompt">${puzzle.prompt || 'The water asks: what did you dream last night?'}</div>
+      <div class="puzzle-recall">
+        <div class="recall-prompt">${puzzle.prompt || 'What did you dream?'}</div>
         <div class="recall-options">
-          ${options.map((opt, idx) => `
-            <button class="recall-btn" data-option-id="${opt.id}" data-correct="${opt.is_correct}">
-              ${opt.label}
-            </button>
-          `).join('')}
+          ${options.map(opt => `<button class="recall-btn" data-correct="${opt.is_correct}">${opt.label}</button>`).join('')}
         </div>
-        <div class="recall-feedback"></div>
         <div class="recall-custom">
-          <input type="text" id="recallCustomInput" placeholder="Or describe your own dream..." class="recall-input">
+          <input type="text" id="recallCustomInput" placeholder="Or describe your own dream...">
           <button id="recallCustomSubmit" class="puzzle-btn">Submit</button>
         </div>
+        <div class="recall-feedback"></div>
       </div>
     `;
   }
 
-  /**
-   * Sequence puzzle — arrange glyphs in correct order
-   */
   renderSequencePuzzle(puzzle) {
     const options = puzzle.options || ['𐤀', '𐤃', '𐤆', '𐤌', '𐤕'];
     const correctSequence = puzzle.correct_sequence || ['𐤀', '𐤃', '𐤆', '𐤌', '𐤕'];
     
     return `
-      <div class="puzzle-sequence" data-puzzle-type="sequence">
-        <div class="sequence-prompt">${puzzle.prompt || 'Arrange the glyphs in the correct order:'}</div>
+      <div class="puzzle-sequence">
+        <div class="sequence-prompt">${puzzle.prompt || 'Arrange the glyphs:'}</div>
         <div class="sequence-pool" id="sequencePool">
-          ${options.map(opt => `
-            <div class="sequence-item" data-glyph="${opt}" draggable="true">${opt}</div>
-          `).join('')}
+          ${options.map(opt => `<div class="sequence-item" data-glyph="${opt}" draggable="true">${opt}</div>`).join('')}
         </div>
         <div class="sequence-slots" id="sequenceSlots">
-          ${correctSequence.map((_, idx) => `
-            <div class="sequence-slot" data-slot-index="${idx}"></div>
-          `).join('')}
+          ${correctSequence.map((_, i) => `<div class="sequence-slot" data-slot-index="${i}"></div>`).join('')}
         </div>
-        <div class="sequence-controls">
-          <button id="sequenceCheckBtn" class="puzzle-btn">Check Order</button>
-          <button id="sequenceResetBtn" class="puzzle-btn">Reset</button>
-        </div>
+        <button id="sequenceCheckBtn" class="puzzle-btn">Check</button>
         <div class="sequence-feedback"></div>
       </div>
     `;
   }
 
-  /**
-   * Balance puzzle — choose which pillar needs attention
-   */
   renderBalancePuzzle(puzzle) {
     const options = puzzle.options || [];
-    
     return `
-      <div class="puzzle-balance" data-puzzle-type="balance">
-        <div class="balance-prompt">${puzzle.prompt || 'Which pillar needs your attention?'}</div>
-        <div class="balance-options">
-          ${options.map((opt, idx) => `
-            <button class="balance-btn" data-option-id="${opt.id}" data-correct="${opt.is_correct}">
-              ${opt.label}
-            </button>
-          `).join('')}
-        </div>
+      <div class="puzzle-balance">
+        <div class="balance-prompt">${puzzle.prompt || 'Which pillar needs you?'}</div>
+        ${options.map(opt => `<button class="balance-btn" data-correct="${opt.is_correct}">${opt.label}</button>`).join('')}
         <div class="balance-feedback"></div>
       </div>
     `;
   }
 
-  /**
-   * Sequence recall puzzle — chant or select sequence
-   */
   renderSequenceRecallPuzzle(puzzle) {
-    const expectedSequence = puzzle.expected_sequence || ['𐤀', '𐤃', '𐤆', '𐤌', '𐤉', '𐤎', '𐤕'];
-    
+    const expected = puzzle.expected_sequence || ['𐤀', '𐤃', '𐤆', '𐤌', '𐤉', '𐤎', '𐤕'];
     return `
-      <div class="puzzle-seq-recall" data-puzzle-type="sequence_recall">
-        <div class="seq-recall-prompt">${puzzle.prompt || 'Chant the seven foundational glyphs in order:'}</div>
-        <div class="seq-recall-glyphs">
-          ${expectedSequence.map(glyph => `
-            <button class="recall-glyph-btn" data-glyph="${glyph}">${glyph}</button>
-          `).join('')}
-        </div>
-        <div class="seq-recall-current" id="recallCurrentSequence">
-          Current: <span id="recallSequenceDisplay">[]</span>
-        </div>
-        <div class="seq-recall-controls">
-          <button id="recallSubmitBtn" class="puzzle-btn">Submit Sequence</button>
-          <button id="recallClearBtn" class="puzzle-btn">Clear</button>
-          <button id="recallChantBtn" class="puzzle-btn">🎤 Chant Instead</button>
-        </div>
-        <div class="seq-recall-feedback"></div>
+      <div class="puzzle-seq-recall">
+        <div class="seq-prompt">${puzzle.prompt || 'Chant the sequence:'}</div>
+        <div class="seq-glyphs">${expected.map(g => `<button class="seq-glyph-btn" data-glyph="${g}">${g}</button>`).join('')}</div>
+        <div class="seq-current">Current: <span id="recallSequenceDisplay">[]</span></div>
+        <button id="recallSubmitBtn" class="puzzle-btn">Submit</button>
+        <button id="recallChantBtn" class="puzzle-btn">🎤 Chant</button>
+        <div class="seq-feedback"></div>
       </div>
     `;
   }
 
-  /**
-   * Final chant puzzle — speak your name
-   */
   renderFinalChantPuzzle(puzzle) {
     return `
-      <div class="puzzle-final-chant" data-puzzle-type="final_chant">
-        <div class="final-prompt">${puzzle.prompt || 'The door asks for one final sound — the sound of your own name, spoken as breath.'}</div>
-        <div class="final-controls">
-          <button id="finalChantBtn" class="puzzle-btn primary">🎤 Speak Your Name</button>
-        </div>
+      <div class="puzzle-final-chant">
+        <div class="final-prompt">${puzzle.prompt || 'Speak your name as breath.'}</div>
+        <button id="finalChantBtn" class="puzzle-btn primary">🎤 Speak</button>
         <div class="final-feedback"></div>
-        <div class="final-instruction">
-          <em>No one is listening except the door. Speak freely.</em>
-        </div>
       </div>
     `;
   }
 
-  /**
-   * Final offering puzzle — speak a hidden word
-   */
   renderFinalOfferingPuzzle(puzzle) {
     return `
-      <div class="puzzle-final-offering" data-puzzle-type="final_offering">
-        <div class="final-prompt">${puzzle.prompt || 'The door asks for an offering — not gold, not blood. A word. The word you have been afraid to speak.'}</div>
-        <div class="final-controls">
-          <input type="text" id="offeringWord" placeholder="The word you fear..." class="offering-input">
-          <button id="offeringSubmitBtn" class="puzzle-btn primary">Offer the Word</button>
-          <button id="offeringSpeakBtn" class="puzzle-btn">🎤 Speak Instead</button>
-        </div>
+      <div class="puzzle-final-offering">
+        <div class="final-prompt">${puzzle.prompt || 'Speak the word you fear.'}</div>
+        <input type="text" id="offeringWord" placeholder="The word...">
+        <button id="offeringSubmitBtn" class="puzzle-btn">Offer</button>
+        <button id="offeringSpeakBtn" class="puzzle-btn">🎤 Speak</button>
         <div class="final-feedback"></div>
       </div>
     `;
   }
 
-  /**
-   * Practice puzzle — ungraded learning
-   */
   renderPracticePuzzle(puzzle) {
     const glyphs = puzzle.glyphs || ['𐤀', '𐤃', '𐤆', '𐤌', '𐤉', '𐤎', '𐤕'];
-    
     return `
-      <div class="puzzle-practice" data-puzzle-type="practice">
-        <div class="practice-prompt">${puzzle.prompt || 'Practice chamber. Click any glyph to hear its frequency. Speak it back.'}</div>
+      <div class="puzzle-practice">
+        <div class="practice-prompt">${puzzle.prompt || 'Click any glyph to hear it:'}</div>
         <div class="practice-glyphs">
-          ${glyphs.map(glyph => `
-            <button class="practice-glyph-btn" data-glyph="${glyph}">${glyph}</button>
-          `).join('')}
+          ${glyphs.map(g => `<button class="practice-glyph-btn" data-glyph="${g}">${g}</button>`).join('')}
         </div>
         <div class="practice-feedback"></div>
       </div>
     `;
   }
 
-  /**
-   * Attach event listeners to a rendered puzzle container
-   * @param {HTMLElement} container - DOM element containing the puzzle
-   */
   attachPuzzleEvents(container) {
     if (!container) return;
-    
-    // Chant puzzle events
+
+    // Hear button
     const hearBtn = container.querySelector('.hear-btn');
-    if (hearBtn) {
+    if (hearBtn && this.audio) {
       hearBtn.addEventListener('click', async () => {
         const freq = parseFloat(hearBtn.dataset.frequency);
-        if (this.audio && freq) {
-          await this.audio.playFrequency(freq, 1500);
-        }
+        if (freq) await this.audio.playFrequency(freq, 1500);
       });
     }
-    
+
+    // Speak button
     const speakBtn = container.querySelector('.speak-btn');
     if (speakBtn) {
       speakBtn.addEventListener('click', async () => {
-        const targetGlyph = speakBtn.dataset.target;
-        const feedbackDiv = container.querySelector('.chant-feedback');
-        const result = await this.solveChantPuzzle(targetGlyph);
-        if (feedbackDiv) {
-          feedbackDiv.innerHTML = `<div class="feedback ${result.success ? 'success' : 'failure'}">${result.message}</div>`;
-        }
-        if (result.success && this.puzzleCallbacks.onSolve) {
-          this.puzzleCallbacks.onSolve(this.currentSceneId, result);
-        }
+        const target = speakBtn.dataset.target;
+        const fb = container.querySelector('.chant-feedback');
+        const result = await this.solveChantPuzzle(target);
+        if (fb) fb.innerHTML = `<div class="feedback ${result.success ? 'success' : 'failure'}">${result.message}</div>`;
+        if (result.success && this.puzzleCallbacks.onSolve) this.puzzleCallbacks.onSolve(this.currentSceneId, result);
       });
     }
-    
-    // Choice puzzle events
-    const choiceBtns = container.querySelectorAll('.choice-btn');
-    choiceBtns.forEach(btn => {
+
+    // Choice buttons
+    container.querySelectorAll('.choice-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
         const choiceId = btn.dataset.choiceId;
-        const feedbackDiv = container.querySelector('.choice-feedback');
         const puzzle = this.currentPuzzle;
-        const option = puzzle.options?.find(o => o.id === choiceId);
+        const option = puzzle?.options?.find(o => o.id === choiceId);
         const result = this.solveChoicePuzzle(choiceId, option);
-        if (feedbackDiv) {
-          feedbackDiv.innerHTML = `<div class="feedback ${result.success ? 'success' : 'failure'}">${result.message}</div>`;
-        }
-        if (result.success && this.puzzleCallbacks.onSolve) {
-          this.puzzleCallbacks.onSolve(this.currentSceneId, result);
-        }
+        const fb = container.querySelector('.choice-feedback');
+        if (fb) fb.innerHTML = `<div class="feedback ${result.success ? 'success' : 'failure'}">${result.message}</div>`;
+        if (result.success && this.puzzleCallbacks.onSolve) this.puzzleCallbacks.onSolve(this.currentSceneId, result);
       });
     });
-    
-    // Triad select events
-    const triadBtns = container.querySelectorAll('.triad-btn');
-    triadBtns.forEach(btn => {
+
+    // Triad buttons
+    container.querySelectorAll('.triad-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
         const isCorrect = btn.dataset.correct === 'true';
-        const feedbackDiv = container.querySelector('.triad-feedback');
-        const puzzle = this.currentPuzzle;
-        const option = puzzle.options?.find(o => o.id === btn.dataset.optionId);
-        const result = this.solveTriadPuzzle(isCorrect, option);
-        if (feedbackDiv) {
-          feedbackDiv.innerHTML = `<div class="feedback ${result.success ? 'success' : 'failure'}">${result.message}</div>`;
-        }
-        if (result.success && this.puzzleCallbacks.onSolve) {
-          this.puzzleCallbacks.onSolve(this.currentSceneId, result);
-        }
+        const fb = container.querySelector('.triad-feedback');
+        const result = this.solveTriadPuzzle(isCorrect);
+        if (fb) fb.innerHTML = `<div class="feedback ${result.success ? 'success' : 'failure'}">${result.message || (isCorrect ? 'Correct!' : 'Wrong. Try again.')}</div>`;
+        if (result.success && this.puzzleCallbacks.onSolve) this.puzzleCallbacks.onSolve(this.currentSceneId, result);
       });
     });
-    
-    // Recall puzzle events
-    const recallBtns = container.querySelectorAll('.recall-btn');
-    recallBtns.forEach(btn => {
+
+    // Recall buttons
+    container.querySelectorAll('.recall-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
         const isCorrect = btn.dataset.correct === 'true';
-        const feedbackDiv = container.querySelector('.recall-feedback');
+        const fb = container.querySelector('.recall-feedback');
         const result = this.solveRecallPuzzle(isCorrect);
-        if (feedbackDiv) {
-          feedbackDiv.innerHTML = `<div class="feedback ${result.success ? 'success' : 'failure'}">${result.message}</div>`;
-        }
-        if (result.success && this.puzzleCallbacks.onSolve) {
-          this.puzzleCallbacks.onSolve(this.currentSceneId, result);
-        }
+        if (fb) fb.innerHTML = `<div class="feedback ${result.success ? 'success' : 'failure'}">${result.message}</div>`;
+        if (result.success && this.puzzleCallbacks.onSolve) this.puzzleCallbacks.onSolve(this.currentSceneId, result);
       });
     });
-    
-    const recallCustomSubmit = container.querySelector('#recallCustomSubmit');
-    if (recallCustomSubmit) {
-      recallCustomSubmit.addEventListener('click', async () => {
+
+    const recallCustom = container.querySelector('#recallCustomSubmit');
+    if (recallCustom) {
+      recallCustom.addEventListener('click', async () => {
         const input = container.querySelector('#recallCustomInput');
         const dream = input?.value || '';
-        const feedbackDiv = container.querySelector('.recall-feedback');
+        const fb = container.querySelector('.recall-feedback');
         const result = this.solveRecallPuzzle(true, dream);
-        if (feedbackDiv) {
-          feedbackDiv.innerHTML = `<div class="feedback success">${result.message}</div>`;
-        }
-        if (result.success && this.puzzleCallbacks.onSolve) {
-          this.puzzleCallbacks.onSolve(this.currentSceneId, result);
-        }
+        if (fb) fb.innerHTML = `<div class="feedback success">${result.message}</div>`;
+        if (result.success && this.puzzleCallbacks.onSolve) this.puzzleCallbacks.onSolve(this.currentSceneId, result);
       });
     }
-    
-    // Sequence puzzle events (drag and drop)
-    this.setupSequencePuzzle(container);
-    
-    // Balance puzzle events
-    const balanceBtns = container.querySelectorAll('.balance-btn');
-    balanceBtns.forEach(btn => {
+
+    // Balance buttons
+    container.querySelectorAll('.balance-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
         const isCorrect = btn.dataset.correct === 'true';
-        const feedbackDiv = container.querySelector('.balance-feedback');
+        const fb = container.querySelector('.balance-feedback');
         const result = this.solveBalancePuzzle(isCorrect);
-        if (feedbackDiv) {
-          feedbackDiv.innerHTML = `<div class="feedback ${result.success ? 'success' : 'failure'}">${result.message}</div>`;
-        }
-        if (result.success && this.puzzleCallbacks.onSolve) {
-          this.puzzleCallbacks.onSolve(this.currentSceneId, result);
-        }
+        if (fb) fb.innerHTML = `<div class="feedback ${result.success ? 'success' : 'failure'}">${result.message}</div>`;
+        if (result.success && this.puzzleCallbacks.onSolve) this.puzzleCallbacks.onSolve(this.currentSceneId, result);
       });
     });
-    
-    // Sequence recall events
+
+    // Sequence check
+    const seqCheck = container.querySelector('#sequenceCheckBtn');
+    if (seqCheck) this.setupSequencePuzzle(container);
+
+    // Sequence recall
     this.setupSequenceRecallPuzzle(container);
-    
-    // Final chant events
-    const finalChantBtn = container.querySelector('#finalChantBtn');
-    if (finalChantBtn) {
-      finalChantBtn.addEventListener('click', async () => {
-        const feedbackDiv = container.querySelector('.final-feedback');
+
+    // Final chant
+    const finalChant = container.querySelector('#finalChantBtn');
+    if (finalChant) {
+      finalChant.addEventListener('click', async () => {
+        const fb = container.querySelector('.final-feedback');
         const result = await this.solveFinalChantPuzzle();
-        if (feedbackDiv) {
-          feedbackDiv.innerHTML = `<div class="feedback ${result.success ? 'success' : 'failure'}">${result.message}</div>`;
-        }
-        if (result.success && this.puzzleCallbacks.onSolve) {
-          this.puzzleCallbacks.onSolve(this.currentSceneId, result);
-        }
+        if (fb) fb.innerHTML = `<div class="feedback success">${result.message}</div>`;
+        if (result.success && this.puzzleCallbacks.onSolve) this.puzzleCallbacks.onSolve(this.currentSceneId, result);
       });
     }
-    
-    // Final offering events
+
+    // Final offering
     const offeringSubmit = container.querySelector('#offeringSubmitBtn');
     if (offeringSubmit) {
       offeringSubmit.addEventListener('click', async () => {
         const input = container.querySelector('#offeringWord');
         const word = input?.value || '';
-        const feedbackDiv = container.querySelector('.final-feedback');
+        const fb = container.querySelector('.final-feedback');
         const result = this.solveFinalOfferingPuzzle(word);
-        if (feedbackDiv) {
-          feedbackDiv.innerHTML = `<div class="feedback ${result.success ? 'success' : 'failure'}">${result.message}</div>`;
-        }
-        if (result.success && this.puzzleCallbacks.onSolve) {
-          this.puzzleCallbacks.onSolve(this.currentSceneId, result);
-        }
+        if (fb) fb.innerHTML = `<div class="feedback success">${result.message}</div>`;
+        if (result.success && this.puzzleCallbacks.onSolve) this.puzzleCallbacks.onSolve(this.currentSceneId, result);
       });
     }
-    
+
     const offeringSpeak = container.querySelector('#offeringSpeakBtn');
     if (offeringSpeak) {
       offeringSpeak.addEventListener('click', async () => {
-        const feedbackDiv = container.querySelector('.final-feedback');
+        const fb = container.querySelector('.final-feedback');
         const result = await this.solveFinalOfferingPuzzle(null, true);
-        if (feedbackDiv) {
-          feedbackDiv.innerHTML = `<div class="feedback ${result.success ? 'success' : 'failure'}">${result.message}</div>`;
-        }
-        if (result.success && this.puzzleCallbacks.onSolve) {
-          this.puzzleCallbacks.onSolve(this.currentSceneId, result);
-        }
+        if (fb) fb.innerHTML = `<div class="feedback success">${result.message}</div>`;
+        if (result.success && this.puzzleCallbacks.onSolve) this.puzzleCallbacks.onSolve(this.currentSceneId, result);
       });
     }
-    
-    // Practice events
-    const practiceBtns = container.querySelectorAll('.practice-glyph-btn');
-    practiceBtns.forEach(btn => {
+
+    // Practice
+    container.querySelectorAll('.practice-glyph-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
         const glyph = btn.dataset.glyph;
-        const feedbackDiv = container.querySelector('.practice-feedback');
-        if (this.audio && glyph) {
-          const freq = this.getGlyphFrequency(glyph);
-          if (freq) {
-            await this.audio.playFrequency(freq, 1500);
-            if (feedbackDiv) {
-              feedbackDiv.innerHTML = `<div class="feedback">Playing: ${glyph}</div>`;
-              setTimeout(() => {
-                if (feedbackDiv) feedbackDiv.innerHTML = '';
-              }, 1500);
-            }
-          }
+        const freq = this.getGlyphFrequency(glyph);
+        if (freq && this.audio) {
+          await this.audio.playFrequency(freq, 1500);
+          const fb = container.querySelector('.practice-feedback');
+          if (fb) fb.innerHTML = `<div class="feedback">${glyph}</div>`;
+          setTimeout(() => { if (fb) fb.innerHTML = ''; }, 1500);
         }
       });
     });
   }
 
-  /**
-   * Setup drag-and-drop sequence puzzle
-   */
   setupSequencePuzzle(container) {
     const pool = container.querySelector('#sequencePool');
     const slots = container.querySelector('#sequenceSlots');
     const checkBtn = container.querySelector('#sequenceCheckBtn');
-    const resetBtn = container.querySelector('#sequenceResetBtn');
-    const feedbackDiv = container.querySelector('.sequence-feedback');
-    
+    const fb = container.querySelector('.sequence-feedback');
     if (!pool || !slots) return;
-    
-    let currentSequence = [];
-    const correctSequence = this.currentPuzzle?.correct_sequence || ['𐤀', '𐤃', '𐤆', '𐤌', '𐤕'];
-    
-    // Make pool items draggable
-    const poolItems = pool.querySelectorAll('.sequence-item');
-    poolItems.forEach(item => {
-      item.setAttribute('draggable', 'true');
-      item.addEventListener('dragstart', (e) => {
-        e.dataTransfer.setData('text/plain', item.dataset.glyph);
-        e.dataTransfer.effectAllowed = 'move';
+
+    let current = [];
+    const correct = this.currentPuzzle?.correct_sequence || ['𐤀', '𐤃', '𐤆', '𐤌', '𐤕'];
+
+    const makeDraggable = (el) => {
+      el.setAttribute('draggable', 'true');
+      el.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', el.dataset.glyph);
       });
-    });
-    
-    // Make slots droppable
+    };
+
+    pool.querySelectorAll('.sequence-item').forEach(makeDraggable);
+
     const slotDivs = slots.querySelectorAll('.sequence-slot');
-    slotDivs.forEach((slot, index) => {
-      slot.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-      });
-      
+    slotDivs.forEach((slot, i) => {
+      slot.addEventListener('dragover', (e) => e.preventDefault());
       slot.addEventListener('drop', (e) => {
         e.preventDefault();
         const glyph = e.dataTransfer.getData('text/plain');
-        if (glyph && !currentSequence[index]) {
-          currentSequence[index] = glyph;
+        if (glyph && !current[i]) {
+          current[i] = glyph;
           slot.textContent = glyph;
-          slot.classList.add('filled');
-          
-          // Remove from pool
-          const sourceItem = Array.from(poolItems).find(item => item.dataset.glyph === glyph);
-          if (sourceItem) sourceItem.remove();
+          const source = pool.querySelector(`.sequence-item[data-glyph="${glyph}"]`);
+          if (source) source.remove();
         }
       });
-      
-      // Click to remove
       slot.addEventListener('click', () => {
-        if (currentSequence[index]) {
-          const removedGlyph = currentSequence[index];
-          currentSequence[index] = null;
+        if (current[i]) {
+          const removed = current[i];
+          current[i] = null;
           slot.textContent = '';
-          slot.classList.remove('filled');
-          
-          // Add back to pool
           const newItem = document.createElement('div');
           newItem.className = 'sequence-item';
-          newItem.setAttribute('data-glyph', removedGlyph);
-          newItem.setAttribute('draggable', 'true');
-          newItem.textContent = removedGlyph;
-          newItem.addEventListener('dragstart', (e) => {
-            e.dataTransfer.setData('text/plain', removedGlyph);
-          });
+          newItem.setAttribute('data-glyph', removed);
+          newItem.textContent = removed;
+          makeDraggable(newItem);
           pool.appendChild(newItem);
         }
       });
     });
-    
-    // Check button
+
     if (checkBtn) {
       checkBtn.addEventListener('click', () => {
-        const isCorrect = currentSequence.every((val, idx) => val === correctSequence[idx]);
-        if (feedbackDiv) {
+        const isCorrect = current.every((v, i) => v === correct[i]);
+        if (fb) {
           if (isCorrect) {
-            feedbackDiv.innerHTML = `<div class="feedback success">${this.currentPuzzle?.success_message || 'Correct! The hand closes.'}</div>`;
-            if (this.puzzleCallbacks.onSolve) {
-              this.puzzleCallbacks.onSolve(this.currentSceneId, { success: true, message: 'Sequence correct' });
-            }
+            fb.innerHTML = '<div class="feedback success">Correct!</div>';
+            if (this.puzzleCallbacks.onSolve) this.puzzleCallbacks.onSolve(this.currentSceneId, { success: true });
           } else {
-            feedbackDiv.innerHTML = `<div class="feedback failure">${this.currentPuzzle?.failure_message || 'The order is wrong. Try again.'}</div>`;
+            fb.innerHTML = '<div class="feedback failure">Wrong order. Try again.</div>';
           }
         }
       });
     }
-    
-    // Reset button
-    if (resetBtn) {
-      resetBtn.addEventListener('click', () => {
-        currentSequence = [];
-        slotDivs.forEach(slot => {
-          slot.textContent = '';
-          slot.classList.remove('filled');
-        });
-        // Rebuild pool
-        pool.innerHTML = correctSequence.map(glyph => `
-          <div class="sequence-item" data-glyph="${glyph}" draggable="true">${glyph}</div>
-        `).join('');
-        // Reattach drag events
-        const newItems = pool.querySelectorAll('.sequence-item');
-        newItems.forEach(item => {
-          item.addEventListener('dragstart', (e) => {
-            e.dataTransfer.setData('text/plain', item.dataset.glyph);
-          });
-        });
-        if (feedbackDiv) feedbackDiv.innerHTML = '';
-      });
-    }
   }
 
-  /**
-   * Setup sequence recall puzzle (button-based)
-   */
   setupSequenceRecallPuzzle(container) {
-    const glyphBtns = container.querySelectorAll('.recall-glyph-btn');
-    const displaySpan = container.querySelector('#recallSequenceDisplay');
+    const glyphBtns = container.querySelectorAll('.seq-glyph-btn');
+    const display = container.querySelector('#recallSequenceDisplay');
     const submitBtn = container.querySelector('#recallSubmitBtn');
-    const clearBtn = container.querySelector('#recallClearBtn');
     const chantBtn = container.querySelector('#recallChantBtn');
-    const feedbackDiv = container.querySelector('.seq-recall-feedback');
-    
-    let currentSequence = [];
-    const expectedSequence = this.currentPuzzle?.expected_sequence || ['𐤀', '𐤃', '𐤆', '𐤌', '𐤉', '𐤎', '𐤕'];
-    
+    const fb = container.querySelector('.seq-feedback');
+
+    let current = [];
+    const expected = this.currentPuzzle?.expected_sequence || ['𐤀', '𐤃', '𐤆', '𐤌', '𐤉', '𐤎', '𐤕'];
+
     if (glyphBtns) {
       glyphBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-          const glyph = btn.dataset.glyph;
-          currentSequence.push(glyph);
-          if (displaySpan) {
-            displaySpan.textContent = `[${currentSequence.join(', ')}]`;
-          }
+          current.push(btn.dataset.glyph);
+          if (display) display.textContent = `[${current.join(', ')}]`;
         });
       });
     }
-    
-    if (clearBtn) {
-      clearBtn.addEventListener('click', () => {
-        currentSequence = [];
-        if (displaySpan) displaySpan.textContent = '[]';
-        if (feedbackDiv) feedbackDiv.innerHTML = '';
-      });
-    }
-    
+
     if (submitBtn) {
-      submitBtn.addEventListener('click', async () => {
-        const isCorrect = currentSequence.length === expectedSequence.length &&
-          currentSequence.every((val, idx) => val === expectedSequence[idx]);
-        
-        if (feedbackDiv) {
+      submitBtn.addEventListener('click', () => {
+        const isCorrect = current.length === expected.length && current.every((v, i) => v === expected[i]);
+        if (fb) {
           if (isCorrect) {
-            feedbackDiv.innerHTML = `<div class="feedback success">${this.currentPuzzle?.success_message || 'The seal recognizes the sequence. The door opens.'}</div>`;
-            if (this.puzzleCallbacks.onSolve) {
-              this.puzzleCallbacks.onSolve(this.currentSceneId, { success: true, message: 'Sequence correct' });
-            }
+            fb.innerHTML = '<div class="feedback success">Sequence accepted!</div>';
+            if (this.puzzleCallbacks.onSolve) this.puzzleCallbacks.onSolve(this.currentSceneId, { success: true });
           } else {
-            feedbackDiv.innerHTML = `<div class="feedback failure">${this.currentPuzzle?.failure_message || 'The seal does not recognize that sequence. Try again.'}</div>`;
+            fb.innerHTML = '<div class="feedback failure">Incorrect sequence.</div>';
           }
         }
       });
     }
-    
+
     if (chantBtn) {
       chantBtn.addEventListener('click', async () => {
-        const result = await this.solveSequenceRecallByChant(expectedSequence);
-        if (feedbackDiv) {
+        const result = await this.solveSequenceRecallByChant(expected);
+        if (fb) {
           if (result.success) {
-            feedbackDiv.innerHTML = `<div class="feedback success">${this.currentPuzzle?.success_message || 'The seal recognizes your voice. The door opens.'}</div>`;
-            if (this.puzzleCallbacks.onSolve) {
-              this.puzzleCallbacks.onSolve(this.currentSceneId, result);
-            }
+            fb.innerHTML = '<div class="feedback success">Chant recognized!</div>';
+            if (this.puzzleCallbacks.onSolve) this.puzzleCallbacks.onSolve(this.currentSceneId, result);
           } else {
-            feedbackDiv.innerHTML = `<div class="feedback failure">${result.message || 'The seal does not recognize that sequence.'}</div>`;
+            fb.innerHTML = `<div class="feedback failure">${result.message}</div>`;
           }
         }
       });
     }
   }
 
-  /**
-   * Solve chant puzzle via speech recognition
-   */
   async solveChantPuzzle(targetGlyph) {
+    if (!this.speechRecognition) this.initSpeechRecognition();
     if (!this.speechRecognition) {
-      this.initSpeechRecognition();
+      return { success: false, message: 'Speech recognition not supported.' };
     }
-    
-    if (!this.speechRecognition) {
-      return { success: false, message: 'Speech recognition not supported in this browser.' };
-    }
-    
     return new Promise((resolve) => {
-      let timeout = setTimeout(() => {
+      const timeout = setTimeout(() => {
         this.speechRecognition.abort();
-        resolve({ success: false, message: 'No speech detected. Try again.' });
+        resolve({ success: false, message: 'No speech detected.' });
       }, 5000);
-      
-      this.speechRecognition.onresult = (event) => {
+      const sounds = { '𐤀': ['ah', 'a'], '𐤃': ['d', 'duh'], '𐤆': ['z'], '𐤌': ['m'], '𐤉': ['y'], '𐤎': ['s'], '𐤕': ['t'] };
+      this.speechRecognition.onresult = (e) => {
         clearTimeout(timeout);
-        const heard = event.results[0][0].transcript.toLowerCase().trim();
-        
-        // Get expected sound for glyph
-        const glyphSounds = {
-          '𐤀': ['ah', 'aaah', 'ahhh', 'a', 'alpha'],
-          '𐤃': ['d', 'duh', 'dah', 'dalet'],
-          '𐤆': ['z', 'zzz', 'zuh', 'zayin'],
-          '𐤌': ['m', 'mmm', 'muh', 'mem'],
-          '𐤉': ['y', 'yuh', 'yah', 'yod'],
-          '𐤎': ['s', 'sss', 'suh', 'samekh'],
-          '𐤕': ['t', 'tuh', 'tah', 'taw']
-        };
-        
-        const expectedSounds = glyphSounds[targetGlyph] || ['ah'];
-        const matched = expectedSounds.some(sound => heard.includes(sound));
-        
-        if (matched) {
-          resolve({ success: true, message: this.currentPuzzle?.success_message || 'The door opens.' });
-        } else {
-          resolve({ success: false, message: this.currentPuzzle?.failure_message || `Heard "${heard}". Try again.` });
-        }
+        const heard = e.results[0][0].transcript.toLowerCase();
+        const expected = sounds[targetGlyph] || ['ah'];
+        const matched = expected.some(s => heard.includes(s));
+        resolve(matched ? { success: true, message: 'The door opens.' } : { success: false, message: `Heard "${heard}". Try again.` });
       };
-      
-      this.speechRecognition.onerror = () => {
-        clearTimeout(timeout);
-        resolve({ success: false, message: 'Speech recognition failed. Try the button again.' });
-      };
-      
       this.speechRecognition.start();
     });
   }
 
-  /**
-   * Solve choice puzzle
-   */
   solveChoicePuzzle(choiceId, option) {
     if (option) {
-      if (option.sets_schism && this.game) {
-        this.game.setSchism(option.sets_schism);
-      }
-      return { success: true, message: option.success_message || 'Your choice is made.' };
+      if (option.sets_schism && this.game) this.game.setSchism(option.sets_schism);
+      return { success: true, message: option.success_message || 'Choice made.' };
     }
     return { success: false, message: 'Invalid choice.' };
   }
 
-  /**
-   * Solve triad puzzle
-   */
-  solveTriadPuzzle(isCorrect, option) {
-    if (isCorrect) {
-      return { success: true, message: option?.success_message || this.currentPuzzle?.success_message || 'The blade cuts true.' };
-    }
-    return { success: false, message: option?.failure_message || this.currentPuzzle?.failure_message || 'The blade does not cut. Try again.' };
+  solveTriadPuzzle(isCorrect) {
+    return isCorrect ? { success: true, message: 'Correct!' } : { success: false, message: 'Try again.' };
   }
 
-  /**
-   * Solve recall puzzle
-   */
   solveRecallPuzzle(isCorrect, customDream = null) {
-    if (isCorrect || customDream) {
-      return { success: true, message: this.currentPuzzle?.success_message || 'The water accepts your dream.' };
-    }
-    return { success: false, message: this.currentPuzzle?.failure_message || 'The water does not recognize that dream.' };
+    return isCorrect || customDream ? { success: true, message: 'The water accepts.' } : { success: false, message: 'Not recognized.' };
   }
 
-  /**
-   * Solve balance puzzle
-   */
   solveBalancePuzzle(isCorrect) {
-    if (isCorrect) {
-      return { success: true, message: this.currentPuzzle?.success_message || 'The hall steadies.' };
-    }
-    return { success: false, message: this.currentPuzzle?.failure_message || 'The structure still falters.' };
+    return isCorrect ? { success: true, message: 'The hall steadies.' } : { success: false, message: 'Still unstable.' };
   }
 
-  /**
-   * Solve sequence recall by chant
-   */
-  async solveSequenceRecallByChant(expectedSequence) {
+  async solveSequenceRecallByChant(expected) {
+    if (!this.speechRecognition) this.initSpeechRecognition();
     if (!this.speechRecognition) {
-      this.initSpeechRecognition();
+      return { success: false, message: 'Speech not supported.' };
     }
-    
-    if (!this.speechRecognition) {
-      return { success: false, message: 'Speech recognition not supported.' };
-    }
-    
     return new Promise((resolve) => {
-      let timeout = setTimeout(() => {
+      const timeout = setTimeout(() => {
         this.speechRecognition.abort();
-        resolve({ success: false, message: 'No speech detected.' });
+        resolve({ success: false, message: 'No speech.' });
       }, 8000);
-      
-      this.speechRecognition.onresult = (event) => {
+      const soundMap = { '𐤀': 'ah', '𐤃': 'd', '𐤆': 'z', '𐤌': 'm', '𐤉': 'y', '𐤎': 's', '𐤕': 't' };
+      const expectedStr = expected.map(g => soundMap[g]).join(' ');
+      this.speechRecognition.onresult = (e) => {
         clearTimeout(timeout);
-        const heard = event.results[0][0].transcript.toLowerCase().trim();
-        
-        // Check if heard matches expected sequence sounds
-        const sequenceSounds = expectedSequence.map(glyph => {
-          const sounds = { '𐤀': 'ah', '𐤃': 'd', '𐤆': 'z', '𐤌': 'm', '𐤉': 'y', '𐤎': 's', '𐤕': 't' };
-          return sounds[glyph] || '';
-        }).join(' ');
-        
-        const matched = sequenceSounds.split(' ').every(sound => heard.includes(sound));
-        
-        if (matched) {
-          resolve({ success: true, message: 'Sequence recognized.' });
-        } else {
-          resolve({ success: false, message: `Heard "${heard}". Try chanting: ${sequenceSounds}` });
-        }
+        const heard = e.results[0][0].transcript.toLowerCase();
+        const matched = expectedStr.split(' ').every(s => heard.includes(s));
+        resolve(matched ? { success: true, message: 'Sequence recognized.' } : { success: false, message: `Heard "${heard}". Try: ${expectedStr}` });
       };
-      
       this.speechRecognition.start();
     });
   }
 
-  /**
-   * Solve final chant puzzle
-   */
   async solveFinalChantPuzzle() {
+    if (!this.speechRecognition) this.initSpeechRecognition();
     if (!this.speechRecognition) {
-      this.initSpeechRecognition();
+      return { success: false, message: 'Speech not supported.' };
     }
-    
-    if (!this.speechRecognition) {
-      return { success: false, message: 'Speech recognition not supported.' };
-    }
-    
     return new Promise((resolve) => {
-      let timeout = setTimeout(() => {
+      const timeout = setTimeout(() => {
         this.speechRecognition.abort();
         resolve({ success: false, message: 'No name spoken.' });
       }, 8000);
-      
-      this.speechRecognition.onresult = (event) => {
+      this.speechRecognition.onresult = (e) => {
         clearTimeout(timeout);
-        const heard = event.results[0][0].transcript;
-        resolve({ success: true, message: `The door hears you, ${heard}. Welcome home.` });
+        const heard = e.results[0][0].transcript;
+        resolve({ success: true, message: `The door hears you, ${heard}. Welcome.` });
       };
-      
       this.speechRecognition.start();
     });
   }
 
-  /**
-   * Solve final offering puzzle
-   */
-  solveFinalOfferingPuzzle(word = null, useSpeech = false) {
+  async solveFinalOfferingPuzzle(word = null, useSpeech = false) {
     if (useSpeech) {
-      return { success: true, message: 'The door accepts your spoken word. The goddess smiles.' };
+      if (!this.speechRecognition) this.initSpeechRecognition();
+      if (!this.speechRecognition) {
+        return { success: false, message: 'Speech not supported.' };
+      }
+      return new Promise((resolve) => {
+        const timeout = setTimeout(() => {
+          this.speechRecognition.abort();
+          resolve({ success: false, message: 'No word spoken.' });
+        }, 8000);
+        this.speechRecognition.onresult = (e) => {
+          clearTimeout(timeout);
+          const heard = e.results[0][0].transcript;
+          resolve({ success: true, message: `The goddess accepts "${heard}".` });
+        };
+        this.speechRecognition.start();
+      });
     }
     if (word && word.length > 0) {
-      return { success: true, message: `The door accepts "${word}". The goddess smiles.` };
+      return { success: true, message: `The goddess accepts "${word}".` };
     }
     return { success: false, message: 'The door waits for a word.' };
   }
 
-  /**
-   * Get frequency for a glyph
-   */
   getGlyphFrequency(glyph) {
-    const frequencies = {
-      '𐤀': 261.63, '𐤁': 293.66, '𐤂': 329.63, '𐤃': 349.23,
-      '𐤄': 392.00, '𐤅': 440.00, '𐤆': 493.88, '𐤇': 523.25,
-      '𐤈': 587.33, '𐤉': 659.25, '𐤊': 698.46, '𐤋': 783.99,
-      '𐤌': 880.00, '𐤍': 987.77, '𐤎': 1046.50, '𐤏': 1174.66,
-      '𐤐': 1318.51, '𐤑': 1396.91, '𐤒': 1567.98, '𐤓': 1760.00,
-      '𐤔': 1975.53, '𐤕': 2093.00
-    };
-    return frequencies[glyph] || 440.00;
+    const freq = { '𐤀': 261.63, '𐤃': 349.23, '𐤆': 493.88, '𐤌': 880, '𐤉': 659.25, '𐤎': 1046.5, '𐤕': 2093 };
+    return freq[glyph] || 440;
   }
 
-  /**
-   * Set callback for puzzle solve events
-   */
-  onSolve(callback) {
-    this.puzzleCallbacks.onSolve = callback;
-  }
-
-  /**
-   * Set callback for puzzle load events
-   */
-  onLoad(callback) {
-    this.puzzleCallbacks.onLoad = callback;
-  }
+  onSolve(callback) { this.puzzleCallbacks.onSolve = callback; }
+  onLoad(callback) { this.puzzleCallbacks.onLoad = callback; }
 }
 
-// Export for module usage
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = PuzzleSolver
+if (typeof module !== 'undefined') module.exports = PuzzleSolver;
