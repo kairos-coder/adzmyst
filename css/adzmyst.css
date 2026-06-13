@@ -1,0 +1,136 @@
+/* Sound glyph styling */
+.sound-glyph {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-block;
+}
+
+.sound-glyph:hover {
+  transform: scale(1.1);
+  text-shadow: 0 0 8px var(--gold-air);
+  color: var(--twilight);
+}
+
+/* Chant panel styling */
+.chant-panel {
+  margin-top: 32px;
+  padding: 24px;
+  background: rgba(255,255,255,0.5);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+}
+
+.glyph-chant-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.chant-glyph-card {
+  text-align: center;
+  padding: 12px;
+  background: rgba(255,255,255,0.4);
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.chant-glyph-card:hover {
+  background: rgba(255,255,255,0.7);
+  transform: translateY(-2px);
+}
+
+.chant-glyph {
+  font-size: 32px;
+  font-family: 'Noto Sans Egyptian Hieroglyphs', monospace;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.chant-name {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  margin-top: 6px;
+  color: var(--twilight);
+}
+
+.chant-note {
+  font-size: 8px;
+  color: var(--silver-dark);
+}
+
+.chant-sound {
+  font-family: monospace;
+  font-size: 9px;
+  margin-top: 4px;
+  color: var(--gold-air);
+}
+
+.chant-controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.chant-btn {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: 2px;
+  padding: 8px 16px;
+  background: var(--twilight);
+  color: var(--sky-pale);
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.chant-btn.stop {
+  background: #8a4a3a;
+}
+
+.chant-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+}
+
+.sequence-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.sequence-label {
+  font-size: 8px;
+  letter-spacing: 2px;
+  color: var(--silver-dark);
+}
+
+.sequence-btn {
+  font-family: 'Cinzel', serif;
+  font-size: 8px;
+  padding: 6px 12px;
+  background: rgba(26,42,58,0.2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sequence-btn:hover {
+  background: rgba(26,42,58,0.4);
+  border-color: var(--gold-air);
+}
+
+.chant-status {
+  margin-top: 12px;
+  font-size: 11px;
+  font-style: italic;
+  color: var(--gold-air);
+  text-align: center;
+}
