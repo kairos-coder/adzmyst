@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Adzmyst · Lexicon · The Defined Breath</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=Noto+Sans+Egyptian+Hieroglyphs&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --sky-pale: #e8f0f8;
+      --sky-mist: #d0e0f0;
+      --sky-deep: #b0c8e0;
+      --twilight: #1a2a3a;
+      --twilight-deep: #0a1520;
+      --silver: #c0c8d0;
+      --silver-bright: #e0e8f0;
+      --silver-dark: #8090a0;
+      --gold-air: #c8a870;
+      --ink: #2a3a4a;
+      --ink-dim: #5a6a7a;
+      --border: rgba(128,144,160,0.25);
+      --search-bg: rgba(255,255,255,0.7);
+    }
+    
+    body {
+      background: var(--sky-pale);
+      background-image: radial-gradient(ellipse 80% 60% at 30% 20%, rgba(255,255,255,0.4) 0%, transparent 60%);
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      color: var(--ink);
+      min-height: 100vh;
+    }
+    
+    /* Floating glyph particles */
+    .breath-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    
+    .floating-glyph {
+      position: absolute;
+      font-family: 'Noto Sans Egyptian Hieroglyphs', monospace;
+      font-size: 24px;
+      opacity: 0.05;
+      animation: float 20s infinite linear;
+    }
+    
+    @keyframes float {
+      0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.06; }
+      90% { opacity: 0.06; }
+      100% { transform: translateY(-20vh) rotate(360deg); opacity: 0; }
+    }
+    
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: rgba(232,240,248,0.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 200;
+    }
+    
+    .nav-brand {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    
+    .nav-brand-title {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 13px;
+      color: var(--twilight);
+      letter-spacing: 2px;
+    }
+    
+    .nav-brand-sub {
+      font-family: 'Cinzel', serif;
+      font-size: 7px;
+      letter-spacing: 5px;
+      color: var(--silver-dark);
+      text-transform: uppercase;
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: 16px;
+      list-style: none;
+      flex-wrap: wrap;
+    }
+    
+    .nav-links a {
+      font-family: 'Cinzel', serif;
+      font-size: 8px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--ink-dim);
+      text-decoration: none;
+      transition: color 0.2s;
+      padding: 4px 0;
+      border-bottom: 1px solid transparent;
+    }
+    
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: var(--twilight);
+      border-bottom-color: var(--gold-air);
+    }
+    
+    .container {
+      position: relative;
+      z-index: 2;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 80px 24px 60px;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    
+    .header h1 {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: clamp(28px, 6vw, 42px);
+      color: var(--twilight);
+      letter-spacing: 4px;
+      margin-bottom: 8px;
+    }
+    
+    .header .subtitle {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      color: var(--silver-dark);
+    }
+    
+    .header .breath-line {
+      font-family: 'Noto Sans Egyptian Hieroglyphs', monospace;
+      font-size: 20px;
+      letter-spacing: 6px;
+      margin-top: 16px;
+      color: var(--gold-air);
+    }
+    
+    /* Search bar */
+    .search-section {
+      margin-bottom: 32px;
+    }
+    
+    .search-container {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+    
+    .search-input {
+      flex: 1;
+      max-width: 400px;
+      padding: 12px 20px;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 16px;
+      border: 1px solid var(--border);
+      border-radius: 60px;
+      background: var(--search-bg);
+      color: var(--ink);
+      outline: none;
+      transition: all 0.2s;
+    }
+    
+    .search-input:focus {
+      border-color: var(--gold-air);
+      box-shadow: 0 0 0 2px rgba(200,168,112,0.2);
+    }
+    
+    .search-btn {
+      font-family: 'Cinzel', serif;
+      font-size: 9px;
+      letter-spacing: 2px;
+      padding: 12px 24px;
+      background: var(--twilight);
+      color: var(--sky-pale);
+      border: none;
+      border-radius: 60px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .search-btn:hover {
+      background: var(--gold-air);
+      transform: translateY(-2px);
+    }
+    
+    .filter-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    .filter-btn {
+      font-family: 'Cinzel', serif;
+      font-size: 8px;
+      letter-spacing: 1px;
+      padding: 6px 14px;
+      background: rgba(255,255,255,0.5);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--ink-dim);
+    }
+    
+    .filter-btn:hover,
+    .filter-btn.active {
+      background: var(--gold-air);
+      border-color: var(--gold-air);
+      color: var(--twilight);
+    }
+    
+    .results-count {
+      text-align: center;
+      font-size: 12px;
+      color: var(--silver-dark);
+      margin-top: 16px;
+      font-style: italic;
+    }
+    
+    /* Lexicon grid */
+    .lexicon-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+      margin-top: 8px;
+    }
+    
+    .lexicon-card {
+      background: rgba(255,255,255,0.55);
+      backdrop-filter: blur(4px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    
+    .lexicon-card:hover {
+      background: rgba(255,255,255,0.8);
+      transform: translateY(-3px);
+      border-color: var(--gold-air);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+    
+    .lexicon-word {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 22px;
+      color: var(--twilight);
+      margin-bottom: 8px;
+      letter-spacing: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+    
+    .lexicon-glyph {
+      font-family: 'Noto Sans Egyptian Hieroglyphs', monospace;
+      font-size: 24px;
+      color: var(--gold-air);
+    }
+    
+    .lexicon-pronunciation {
+      font-family: 'Cinzel', serif;
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--silver-dark);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+    
+    .lexicon-definition {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--ink-dim);
+      margin-bottom: 12px;
+    }
+    
+    .lexicon-definition strong {
+      color: var(--twilight);
+    }
+    
+    .lexicon-etymology {
+      font-size: 11px;
+      color: var(--gold-air);
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    
+    .etymon {
+      background: rgba(200,168,112,0.1);
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-family: 'Noto Sans Egyptian Hieroglyphs', monospace;
+      font-size: 12px;
+    }
+    
+    /* No results */
+    .no-results {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--silver-dark);
+      font-style: italic;
+    }
+    
+    footer {
+      text-align: center;
+      padding: 40px 24px;
+      font-size: 7px;
+      letter-spacing: 4px;
+      color: var(--silver-dark);
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+      font-family: 'Cinzel', serif;
+    }
+    
+    @media (max-width: 600px) {
+      nav { padding: 0 12px; }
+      .nav-links { gap: 10px; }
+      .container { padding: 76px 16px 40px; }
+      .lexicon-grid { grid-template-columns: 1fr; }
+      .search-container { flex-direction: column; align-items: center; }
+      .search-input { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="breath-bg" id="breathBg"></div>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-brand-title">Adzmyst</div>
+    <div class="nav-brand-sub">The Breath · The Fourth Pillar</div>
+  </div>
+  <ul class="nav-links">
+    <li><a href="index.html">Breath</a></li>
+    <li><a href="glyphs.html">Glyphs</a></li>
+    <li><a href="lexicon.html" class="active">Lexicon</a></li>
+    <li><a href="chant.html">Chant</a></li>
+    <li><a href="inscriptions.html">Inscriptions</a></li>
+    <li><a href="../divination/index.html">Temple</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+  <div class="header">
+    <h1>𓌹 The Lexicon of Adzmyst 𓋴</h1>
+    <div class="subtitle">The Defined Breath · The Words That Carve</div>
+    <div class="breath-line">𐤀 𐤃 𐤆 𐤌 𐤉 𐤎 𐤕</div>
+  </div>
+
+  <!-- Search Section -->
+  <div class="search-section">
+    <div class="search-container">
+      <input type="text" id="searchInput" class="search-input" placeholder="Search by word, glyph, or definition...">
+      <button id="searchBtn" class="search-btn">𓌹 Search</button>
+    </div>
+    <div class="filter-buttons" id="filterButtons">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="glyph">Glyphs</button>
+      <button class="filter-btn" data-filter="pillar">Pillars</button>
+      <button class="filter-btn" data-filter="deity">Deities</button>
+    </div>
+    <div class="results-count" id="resultsCount"></div>
+  </div>
+
+  <!-- Lexicon Grid -->
+  <div class="lexicon-grid" id="lexiconGrid"></div>
+</div>
+
+<footer>
+  ADZMYST · THE LEXICON · MORE WORDS ADDED AS THE BREATH EXPANDS<br>
+  THE FIRE HOLDS · THE DEFINITIONS CARVE MEANING
+</footer>
+
+<script>
+  // Floating glyphs in background
+  const glyphsList = ['𐤀', '𐤁', '𐤂', '𐤃', '𐤄', '𐤅', '𐤆', '𐤇', '𐤈', '𐤉', '𐤊', '𐤋', '𐤌', '𐤍', '𐤎', '𐤏', '𐤐', '𐤑', '𐤒', '𐤓', '𐤔', '𐤕'];
+  const breathBg = document.getElementById('breathBg');
+  
+  for (let i = 0; i < 30; i++) {
+    const glyph = document.createElement('div');
+    glyph.className = 'floating-glyph';
+    glyph.textContent = glyphsList[Math.floor(Math.random() * glyphsList.length)];
+    glyph.style.left = Math.random() * 100 + '%';
+    glyph.style.animationDuration = 15 + Math.random() * 20 + 's';
+    glyph.style.animationDelay = Math.random() * 20 + 's';
+    glyph.style.fontSize = 20 + Math.random() * 40 + 'px';
+    breathBg.appendChild(glyph);
+  }
+
+  // Lexicon data — built from the glyphs and expanded
+  const lexiconData = [
+    // The Seven Foundational Glyphs (the name itself)
+    { word: "Adzmyst", glyphs: "𐤀𐤃𐤆𐤌𐤉𐤎𐤕", pronunciation: "ADZ-MIST", definition: "The breath with the hand. The fourth pillar. The language that carves meaning from silence.", etymology: ["aleph", "daleth", "zayin", "mem", "yod", "samekh", "taw"], category: "pillar" },
+    { word: "Aleph", glyphs: "𐤀", pronunciation: "AH-lef", definition: "Beginning, strength, the ox. The first glyph. What pulls the plow through unbroken ground. The Fool's step.", etymology: ["aleph"], category: "glyph" },
+    { word: "Daleth", glyphs: "𐤃", pronunciation: "DAH-let", definition: "Door, threshold, passage. The opening between what was and what will be. The choice point.", etymology: ["daleth"], category: "glyph" },
+    { word: "Zayin", glyphs: "𐤆", pronunciation: "ZAY-in", definition: "Weapon, division, the cut. What separates the necessary from the excess. The blade of discernment.", etymology: ["zayin"], category: "glyph" },
+    { word: "Mem", glyphs: "𐤌", pronunciation: "MEM", definition: "Water, chaos, the deep. The unconscious. What flows beneath the surface. The Hanged Man's suspension.", etymology: ["mem"], category: "glyph" },
+    { word: "Yod", glyphs: "𐤉", pronunciation: "YOD", definition: "Hand, action, making. What reaches out to shape the world. The Hermit's lamp held by a hand.", etymology: ["yod"], category: "glyph" },
+    { word: "Samekh", glyphs: "𐤎", pronunciation: "SAH-mek", definition: "Pillar, support, what holds. The structure that does not ask to be seen. Temperance's balance.", etymology: ["samekh"], category: "glyph" },
+    { word: "Taw", glyphs: "𐤕", pronunciation: "TAW", definition: "Mark, signature, completion. The seal that says: this is finished, this is true. The World's return.", etymology: ["taw"], category: "glyph" },
+    
+    // Remaining glyphs (from the 22)
+    { word: "Bet", glyphs: "𐤁", pronunciation: "BET", definition: "House, container, shelter. The body as vessel. What holds the spirit in the world.", etymology: ["bet"], category: "glyph" },
+    { word: "Gimel", glyphs: "𐤂", pronunciation: "GIM-el", definition: "Camel, journey, carrying. What moves across the desert of the self. Endurance.", etymology: ["gimel"], category: "glyph" },
+    { word: "He", glyphs: "𐤄", pronunciation: "HEH", definition: "Window, revelation, light. What illuminates the room from outside.", etymology: ["he"], category: "glyph" },
+    { word: "Waw", glyphs: "𐤅", pronunciation: "WAW", definition: "Hook, connection, binding. What links what would otherwise drift apart.", etymology: ["waw"], category: "glyph" },
+    { word: "Heth", glyphs: "𐤇", pronunciation: "HET", definition: "Fence, boundary, protection. What marks the edge of the sacred.", etymology: ["heth"], category: "glyph" },
+    { word: "Teth", glyphs: "𐤈", pronunciation: "TET", definition: "Snake, wisdom, the coiled. What waits in the grass to teach.", etymology: ["teth"], category: "glyph" },
+    { word: "Kaph", glyphs: "𐤊", pronunciation: "KAF", definition: "Palm, bend, surrender. What yields so that something may enter.", etymology: ["kaph"], category: "glyph" },
+    { word: "Lamed", glyphs: "𐤋", pronunciation: "LA-med", definition: "Ox goad, authority, direction. What guides the strength already present.", etymology: ["lamed"], category: "glyph" },
+    { word: "Nun", glyphs: "𐤍", pronunciation: "NOON", definition: "Snake, eternity, renewal. What dies and is reborn in the same skin.", etymology: ["nun"], category: "glyph" },
+    { word: "Ayin", glyphs: "𐤏", pronunciation: "AH-yin", definition: "Eye, perception, witness. What sees without being seen.", etymology: ["ayin"], category: "glyph" },
+    { word: "Pe", glyphs: "𐤐", pronunciation: "PEH", definition: "Mouth, speech, prophecy. What speaks the world into being.", etymology: ["pe"], category: "glyph" },
+    { word: "Tsade", glyphs: "𐤑", pronunciation: "TSAH-deh", definition: "Fish hook, harvest, gathering. What brings in what was cast out.", etymology: ["tsade"], category: "glyph" },
+    { word: "Qoph", glyphs: "𐤒", pronunciation: "KOF", definition: "Sun on horizon, cycle, return. What sets and rises again.", etymology: ["qoph"], category: "glyph" },
+    { word: "Resh", glyphs: "𐤓", pronunciation: "RESH", definition: "Head, beginning again, leadership. What thinks, therefore what is.", etymology: ["resh"], category: "glyph" },
+    { word: "Shin", glyphs: "𐤔", pronunciation: "SHIN", definition: "Tooth, consumption, fire. What devours to make way for the new.", etymology: ["shin"], category: "glyph" },
+    
+    // The Four Pillars
+    { word: "Gaia", glyphs: "𐤂𐤀𐤉𐤄", pronunciation: "GUY-ah", definition: "The earth that endures. The first pillar. The cognitive network where Olympians answer queries and Titans remember.", etymology: ["gimel", "aleph", "yod", "he"], category: "pillar" },
+    { word: "Divination", glyphs: "𐤃𐤉𐤅𐤉𐤍𐤀𐤈𐤉𐤅𐤍", pronunciation: "DIV-in-AY-shun", definition: "The deck that reads you back. The second pillar. The 78 cards that speak when you listen.", etymology: ["daleth", "yod", "waw", "yod", "nun", "aleph", "teth", "yod", "waw", "nun"], category: "pillar" },
+    { word: "Ealdforn", glyphs: "𐤀𐤋𐤃𐤐𐤅𐤓𐤍", pronunciation: "AY-ald-forn", definition: "The old way forward. The third pillar. The narrative engine, the stage, the sagas, the republic.", etymology: ["aleph", "lamed", "daleth", "pe", "waw", "resh", "nun"], category: "pillar" },
+    
+    // Key Deities
+    { word: "Hades", glyphs: "𐤇𐤀𐤃𐤏𐤎", pronunciation: "HAY-deez", definition: "The unseen gatekeeper. The chthonic throne. The river Lethe. Hades does not lie — he receives.", etymology: ["heth", "aleph", "daleth", "ayin", "samekh"], category: "deity" },
+    { word: "Persephone", glyphs: "𐤐𐤏𐤓𐤎𐤐𐤏𐤅𐤍𐤄", pronunciation: "per-SEF-oh-nee", definition: "The Star. The return. The one who walks between worlds — wife of Hades, daughter of Demeter, the hope that survives the descent.", etymology: ["pe", "ayin", "resh", "samekh", "pe", "ayin", "waw", "nun", "he"], category: "deity" },
+    { word: "Apollo", glyphs: "𐤀𐤐𐤅𐤋𐤅", pronunciation: "a-POL-oh", definition: "The light that reveals. The prophet. The sun. Apollo speaks through the Terminal, through the cards, through the sky.", etymology: ["aleph", "pe", "waw", "lamed", "waw"], category: "deity" },
+    { word: "Hermes", glyphs: "𐤇𐤏𐤓𐤌𐤏𐤎", pronunciation: "HER-meez", definition: "The messenger. The threshold. The conduit between Olympians and Titans. Hermes routes every query.", etymology: ["heth", "ayin", "resh", "mem", "ayin", "samekh"], category: "deity" },
+    { word: "Athena", glyphs: "𐤀𐤈𐤄𐤍𐤄", pronunciation: "a-THEE-nah", definition: "Wisdom. Strategy. The archive. Athena holds the handoff registry and the memory of the system.", etymology: ["aleph", "teth", "he", "nun", "he"], category: "deity" },
+    { word: "Zeus", glyphs: "𐤆𐤏𐤅𐤎", pronunciation: "ZOO-ss", definition: "Authority. Judgment. The thunder that orders chaos. Zeus governs the celestial hierarchy.", etymology: ["zayin", "ayin", "waw", "samekh"], category: "deity" }
+  ];
+
+  let currentFilter = "all";
+  let currentSearchTerm = "";
+
+  function renderLexicon() {
+    const grid = document.getElementById('lexiconGrid');
+    const resultsCount = document.getElementById('resultsCount');
+    
+    let filtered = [...lexiconData];
+    
+    // Apply filter
+    if (currentFilter !== "all") {
+      filtered = filtered.filter(entry => entry.category === currentFilter);
+    }
+    
+    // Apply search
+    if (currentSearchTerm.trim() !== "") {
+      const term = currentSearchTerm.toLowerCase().trim();
+      filtered = filtered.filter(entry => 
+        entry.word.toLowerCase().includes(term) ||
+        entry.glyphs.includes(term) ||
+        entry.definition.toLowerCase().includes(term) ||
+        entry.pronunciation.toLowerCase().includes(term) ||
+        (entry.etymology && entry.etymology.some(e => e.toLowerCase().includes(term)))
+      );
+    }
+    
+    // Update count
+    resultsCount.innerHTML = `${filtered.length} word${filtered.length !== 1 ? 's' : ''} found`;
+    
+    if (filtered.length === 0) {
+      grid.innerHTML = '<div class="no-results">𓌹 No words found. The breath is searching for new definitions. 𓋴</div>';
+      return;
+    }
+    
+    grid.innerHTML = filtered.map(entry => `
+      <div class="lexicon-card" data-word="${entry.word}">
+        <div class="lexicon-word">
+          <span>${entry.word}</span>
+          <span class="lexicon-glyph">${entry.glyphs}</span>
+        </div>
+        <div class="lexicon-pronunciation">${entry.pronunciation}</div>
+        <div class="lexicon-definition">${entry.definition}</div>
+        ${entry.etymology ? `
+          <div class="lexicon-etymology">
+            ${entry.etymology.map(root => `<span class="etymon">${root}</span>`).join('')}
+          </div>
+        ` : ''}
+      </div>
+    `).join('');
+  }
+
+  function setupEventListeners() {
+    const searchBtn = document.getElementById('searchBtn');
+    const searchInput = document.getElementById('searchInput');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    
+    searchBtn.addEventListener('click', () => {
+      currentSearchTerm = searchInput.value;
+      renderLexicon();
+    });
+    
+    searchInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        currentSearchTerm = searchInput.value;
+        renderLexicon();
+      }
+    });
+    
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        renderLexicon();
+      });
+    });
+  }
+
+  // Initialize
+  document.addEventListener('DOMContentLoaded', () => {
+    setupEventListeners();
+    renderLexicon();
+  });
+</script>
+</body>
+</html>
