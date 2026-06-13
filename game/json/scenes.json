@@ -1,0 +1,520 @@
+{
+  "meta": {
+    "title": "Adzmyst — The Breath Game",
+    "version": "1.0.0",
+    "total_scenes": 22,
+    "description": "The Air Temple. 22 glyphs. One forgotten language. Each scene is a room, a puzzle, a threshold.",
+    "required_files": ["glyph-chant.js", "glyph-semantics.js"],
+    "last_updated": "2026-06-13"
+  },
+  
+  "schism": {
+    "description": "The path splits at the Door Chamber. Choose the hand (Yod) or the goddess (Ishtar).",
+    "adzmyst": {
+      "name": "Adzmyst",
+      "glyph": "𐤉",
+      "meaning": "The hand that carves",
+      "path_icon": "𓌹",
+      "ending_scene": "adzmyst-seal"
+    },
+    "adzmist": {
+      "name": "Adzmist",
+      "glyph": "𒀭𒈹",
+      "meaning": "The goddess who inspires",
+      "path_icon": "𓋴",
+      "ending_scene": "adzmist-seal"
+    }
+  },
+  
+  "scenes": [
+    {
+      "id": "threshold",
+      "name": "The Threshold",
+      "glyph": "𐤀",
+      "glyph_name": "Aleph",
+      "position": 0,
+      "required_for_schism": false,
+      "description": "You stand at the entrance of a floating temple. Before you, a stone carved with the first glyph — Aleph (𐤀), the beginning, the ox, the strength that pulls the plow through unbroken ground. The glyph glows faintly. A voice whispers: 'Speak the sound of the beginning. Only then will the door open.'",
+      "puzzle": {
+        "type": "chant",
+        "target_glyph": "𐤀",
+        "target_sound": "ah",
+        "frequency_hz": 261.63,
+        "note": "C4",
+        "prompt": "To unlock the door, chant Aleph's sound: 'Ahhhhh'",
+        "success_message": "The threshold recognizes your voice. The door opens. Aleph resonates in your memory.",
+        "failure_message": "The threshold does not recognize that sound."
+      },
+      "completion": {
+        "collects_glyph": "𐤀",
+        "unlocks_scene": "door-chamber",
+        "unlocks_optional": ["inventory", "map"]
+      },
+      "exits": {
+        "next": "door-chamber",
+        "previous": null
+      },
+      "inscription_hint": "The first breath is the hardest. It requires no skill — only willingness."
+    },
+    
+    {
+      "id": "door-chamber",
+      "name": "The Door Chamber",
+      "glyph": "𐤃",
+      "glyph_name": "Dalet",
+      "position": 1,
+      "required_for_schism": true,
+      "description": "Two doors stand before you. One is carved with a hand — Yod (𐤉), the hand that makes. The other is carved with an eight-pointed star — Ishtar (𒀭𒈹), the goddess of love and war. The voice speaks: 'The schism is the feature. Choose your path. The breath will follow.'",
+      "puzzle": {
+        "type": "choice",
+        "prompt": "Which path do you take?",
+        "options": [
+          {
+            "id": "adzmyst",
+            "label": "The Hand (Yod) · Adzmyst",
+            "glyph": "𐤉",
+            "sets_schism": "adzmyst",
+            "success_message": "You choose the hand. The door opens. You will carve your own path."
+          },
+          {
+            "id": "adzmist",
+            "label": "The Goddess (Ishtar) · Adzmist",
+            "glyph": "𒀭𒈹",
+            "sets_schism": "adzmist",
+            "success_message": "You choose the goddess. The door opens. She will inspire your steps."
+          }
+        ]
+      },
+      "completion": {
+        "collects_glyph": "𐤃",
+        "unlocks_scene": "blade-room",
+        "sets_schism": true
+      },
+      "exits": {
+        "next": "blade-room",
+        "previous": "threshold"
+      },
+      "inscription_hint": "The threshold is not the door. The door is not the path. The path is the choice."
+    },
+    
+    {
+      "id": "blade-room",
+      "name": "The Blade Room",
+      "glyph": "𐤆",
+      "glyph_name": "Zayin",
+      "position": 2,
+      "required_for_schism": false,
+      "description": "A blade hangs in the center of the room — Zayin (𐤆), the weapon, the division, the cut. Threads of light extend from the blade in all directions. One thread is frayed. One thread is taut. One thread is already cut. The voice says: 'Division is not destruction. It is discernment. Cut the right thread.'",
+      "puzzle": {
+        "type": "triad_select",
+        "prompt": "Which thread is the weapon meant to cut?",
+        "options": [
+          {
+            "id": "frayed",
+            "label": "The frayed thread — loose ends, unfinished business",
+            "is_correct": false,
+            "failure_message": "The blade cuts the frayed thread. It unravels further. Nothing is resolved."
+          },
+          {
+            "id": "taut",
+            "label": "The taut thread — what holds you back through tension",
+            "is_correct": true,
+            "success_message": "The blade cuts the taut thread. The tension releases. You are lighter."
+          },
+          {
+            "id": "already-cut",
+            "label": "The already-cut thread — what is already severed",
+            "is_correct": false,
+            "failure_message": "The blade cuts what is already cut. The wound opens again. Unnecessary pain."
+          }
+        ]
+      },
+      "completion": {
+        "collects_glyph": "𐤆",
+        "unlocks_scene": "deep-well"
+      },
+      "exits": {
+        "next": "deep-well",
+        "previous": "door-chamber"
+      },
+      "inscription_hint": "The weapon does not choose. The wielder chooses. Cut what holds. Leave what heals."
+    },
+    
+    {
+      "id": "deep-well",
+      "name": "The Deep Well",
+      "glyph": "𐤌",
+      "glyph_name": "Mem",
+      "position": 3,
+      "required_for_schism": false,
+      "description": "A circular well dominates the room — Mem (𐤌), water, chaos, the deep. The water is still, black, reflective. Your face stares back at you — but older, or younger, or not quite you. The voice whispers: 'Descend into the unconscious. Remember a dream. The water will recognize what you bring.'",
+      "puzzle": {
+        "type": "recall",
+        "prompt": "The water asks: what did you dream last night?",
+        "dream_options": [
+          {
+            "id": "falling",
+            "label": "Falling — endless, without ground",
+            "is_correct": false,
+            "failure_message": "The water ripples. Falling is not the dream it seeks. It wants something older."
+          },
+          {
+            "id": "flying",
+            "label": "Flying — effortless, above the world",
+            "is_correct": false,
+            "failure_message": "The water ripples. Flying is too light. It wants depth."
+          },
+          {
+            "id": "drowning",
+            "label": "Drowning — surrounded by water, unable to breathe",
+            "is_correct": true,
+            "success_message": "The water accepts the dream. It recognizes its own. Mem flows through you."
+          },
+          {
+            "id": "forgotten",
+            "label": "The dream you cannot remember — only the feeling remains",
+            "is_correct": true,
+            "success_message": "The water accepts the absence. Mem knows what is forgotten. That is also depth."
+          }
+        ]
+      },
+      "completion": {
+        "collects_glyph": "𐤌",
+        "unlocks_scene": "hand-chamber"
+      },
+      "exits": {
+        "next": "hand-chamber",
+        "previous": "blade-room"
+      },
+      "inscription_hint": "The deep does not ask for facts. It asks for feeling. Bring what you cannot explain."
+    },
+    
+    {
+      "id": "hand-chamber",
+      "name": "The Hand Chamber",
+      "glyph": "𐤉",
+      "glyph_name": "Yod",
+      "position": 4,
+      "required_for_schism": false,
+      "description": "A stone hand reaches from the wall — Yod (𐤉), the hand, action, making. Five fingers. Five glyphs are scattered on pedestals before you. The voice says: 'The hand does not think. It acts. Arrange the glyphs in the order of creation.'",
+      "puzzle": {
+        "type": "sequence",
+        "prompt": "Arrange the five foundational glyphs in the correct order: Aleph (beginning), Dalet (door), Zayin (cut), Mem (water), Taw (completion)",
+        "correct_sequence": ["𐤀", "𐤃", "𐤆", "𐤌", "𐤕"],
+        "options": ["𐤀", "𐤃", "𐤆", "𐤌", "𐤕"],
+        "failure_message": "The hand does not close. The order is wrong.",
+        "success_message": "The hand closes into a fist. The sequence is correct. Yod opens the next door."
+      },
+      "completion": {
+        "collects_glyph": "𐤉",
+        "unlocks_scene": "pillar-hall"
+      },
+      "exits": {
+        "next": "pillar-hall",
+        "previous": "deep-well"
+      },
+      "inscription_hint": "Action is not random. It follows the logic of making. First the beginning, then the door, then the cut, then the water, then the seal."
+    },
+    
+    {
+      "id": "pillar-hall",
+      "name": "The Pillar Hall",
+      "glyph": "𐤎",
+      "glyph_name": "Samekh",
+      "position": 5,
+      "required_for_schism": false,
+      "description": "A vast hall supported by pillars — Samekh (𐤎), pillar, support, what holds. One pillar is cracked. One pillar is missing. One pillar is new. The voice says: 'The structure holds because of what you cannot see. Balance what remains.'",
+      "puzzle": {
+        "type": "balance",
+        "prompt": "Which pillar needs your attention?",
+        "options": [
+          {
+            "id": "cracked",
+            "label": "The cracked pillar — damaged but still standing",
+            "is_correct": false,
+            "failure_message": "You reinforce the cracked pillar. It holds — but the crack remains. The structure is still weak."
+          },
+          {
+            "id": "missing",
+            "label": "The missing pillar — an empty space where support should be",
+            "is_correct": true,
+            "success_message": "You stand in the missing pillar's place. The hall steadies. Samekh recognizes your support."
+          },
+          {
+            "id": "new",
+            "label": "The new pillar — recently added, untested",
+            "is_correct": false,
+            "failure_message": "You trust the new pillar. It holds — for now. But the missing pillar is still absent."
+          }
+        ]
+      },
+      "completion": {
+        "collects_glyph": "𐤎",
+        "unlocks_scene": "seal"
+      },
+      "exits": {
+        "next": "seal",
+        "previous": "hand-chamber"
+      },
+      "inscription_hint": "Sometimes the support is not a pillar. Sometimes it is you."
+    },
+    
+    {
+      "id": "seal",
+      "name": "The Seal",
+      "glyph": "𐤕",
+      "glyph_name": "Taw",
+      "position": 6,
+      "required_for_schism": false,
+      "description": "A great door seals the end of the temple — Taw (𐤕), mark, signature, completion. Seven glyph slots glow on its surface. The voice says: 'You have learned the seven. Speak them in order. The seal will open.'",
+      "puzzle": {
+        "type": "sequence_recall",
+        "prompt": "Chant the seven foundational glyphs in order: Aleph, Dalet, Zayin, Mem, Yod, Samekh, Taw",
+        "expected_sequence": ["𐤀", "𐤃", "𐤆", "𐤌", "𐤉", "𐤎", "𐤕"],
+        "failure_message": "The seal does not recognize the sequence.",
+        "success_message": "The seal opens. The final glyph is yours. The breath is whole."
+      },
+      "completion": {
+        "collects_glyph": "𐤕",
+        "unlocks_scene": "branching-path"
+      },
+      "exits": {
+        "next": "branching-path",
+        "previous": "pillar-hall"
+      },
+      "inscription_hint": "Completion is not an end. It is a door to a new beginning."
+    },
+    
+    {
+      "id": "branching-path",
+      "name": "The Branching Path",
+      "glyph": "◈",
+      "glyph_name": "Schism",
+      "position": 7,
+      "required_for_schism": true,
+      "description": "The path divides. One road leads to the hand. One road leads to the goddess. The choice you made at the Door Chamber echoes here. The voice says: 'The schism is not a division. It is a lens. See the same truth through two eyes.'",
+      "puzzle": {
+        "type": "schism_continuation",
+        "prompt": "Continue on your chosen path.",
+        "options": [
+          {
+            "id": "adzmyst",
+            "label": "Continue the path of the hand (Yod)",
+            "leads_to_scene": "adzmyst-seal"
+          },
+          {
+            "id": "adzmist",
+            "label": "Continue the path of the goddess (Ishtar)",
+            "leads_to_scene": "adzmist-seal"
+          }
+        ]
+      },
+      "completion": {
+        "unlocks_scene": null,
+        "conditional": true
+      },
+      "exits": {
+        "next": null,
+        "previous": "seal"
+      },
+      "inscription_hint": "The two eyes see differently. Both see truly."
+    },
+    
+    {
+      "id": "adzmyst-seal",
+      "name": "The Hand's Seal — Adzmyst",
+      "glyph": "𐤉",
+      "glyph_name": "Yod",
+      "position": 8,
+      "required_for_schism": false,
+      "description": "A door carved with a hand. The hand is open, palm up, as if receiving. The voice says: 'You chose the hand. You carved your own path. Now receive what you have made.' The glyphs you collected float around you, singing in harmony.",
+      "puzzle": {
+        "type": "final_chant",
+        "prompt": "The door asks for one final sound — the sound of your own name, spoken as breath.",
+        "failure_message": "The door waits.",
+        "success_message": "The door opens. You step through. The hand closes around yours. Adzmyst is complete."
+      },
+      "completion": {
+        "is_ending": true,
+        "ending_text": "You emerge from the temple onto a balcony overlooking the pale blue sky. The breath is yours. The hand is yours. The fire holds."
+      },
+      "exits": {
+        "next": null,
+        "previous": "branching-path"
+      },
+      "inscription_hint": "The hand that carves is also the hand that receives. You have earned both."
+    },
+    
+    {
+      "id": "adzmist-seal",
+      "name": "The Goddess's Seal — Adzmist",
+      "glyph": "𒀭𒈹",
+      "glyph_name": "Ishtar",
+      "position": 9,
+      "required_for_schism": false,
+      "description": "A door carved with an eight-pointed star. The star pulses with soft light. The voice says: 'You chose the goddess. She inspired your steps. Now she waits for you to speak.' The glyphs you collected arrange themselves in a spiral around the star.",
+      "puzzle": {
+        "type": "final_offering",
+        "prompt": "The door asks for an offering — not gold, not blood. A word. The word you have been afraid to speak.",
+        "failure_message": "The door waits. The star pulses. She is patient.",
+        "success_message": "The door opens. You step through. The star settles into your chest. Adzmist is complete."
+      },
+      "completion": {
+        "is_ending": true,
+        "ending_text": "You emerge from the temple into a garden of night-blooming flowers. The breath is hers. The goddess is yours. The fire holds."
+      },
+      "exits": {
+        "next": null,
+        "previous": "branching-path"
+      },
+      "inscription_hint": "The goddess does not demand. She invites. What word have you been holding?"
+    }
+  ],
+  
+  "optional_scenes": [
+    {
+      "id": "inventory-chamber",
+      "name": "The Gallery of Collected Glyphs",
+      "glyph": "𓌹",
+      "glyph_name": "Collection",
+      "position": 10,
+      "description": "A quiet room where the glyphs you have collected float in glass cases. Each one glows with its own frequency. The voice says: 'You may rest here. Listen to what you have learned.'",
+      "puzzle": null,
+      "completion": null,
+      "exits": {
+        "next": null,
+        "previous": null
+      }
+    },
+    
+    {
+      "id": "map-chamber",
+      "name": "The Observatory",
+      "glyph": "🗺️",
+      "glyph_name": "Map",
+      "position": 11,
+      "description": "A circular room with a map of the entire temple etched into the floor. The voice says: 'You can see where you have been and where you have yet to go. The path is clear — but the walking is yours.'",
+      "puzzle": null,
+      "completion": null,
+      "exits": {
+        "next": null,
+        "previous": null
+      }
+    },
+    
+    {
+      "id": "chant-chamber",
+      "name": "The Resonance Room",
+      "glyph": "🔊",
+      "glyph_name": "Chant",
+      "position": 12,
+      "description": "A room designed for practice. Each glyph on the wall responds to your voice. The voice says: 'Here you may chant without judgment. The breath learns through repetition.'",
+      "puzzle": {
+        "type": "practice",
+        "prompt": "Click any glyph to hear its frequency. Speak it back. The room will remember."
+      },
+      "completion": null,
+      "exits": {
+        "next": null,
+        "previous": null
+      }
+    }
+  ],
+  
+  "puzzle_templates": {
+    "chant": {
+      "description": "The player speaks the glyph's sound. Speech recognition matches it.",
+      "required_files": ["audio-engine.js"]
+    },
+    "choice": {
+      "description": "The player chooses between options. Sets schism or unlocks paths.",
+      "required_files": ["core.js"]
+    },
+    "triad_select": {
+      "description": "The player selects the correct option from a set of three.",
+      "required_files": ["puzzle-solver.js"]
+    },
+    "recall": {
+      "description": "The player recalls a dream or memory. Subjective answer may have multiple correct options.",
+      "required_files": ["puzzle-solver.js"]
+    },
+    "sequence": {
+      "description": "The player arranges glyphs in the correct order.",
+      "required_files": ["puzzle-solver.js"]
+    },
+    "balance": {
+      "description": "The player chooses which structural element needs attention.",
+      "required_files": ["puzzle-solver.js"]
+    },
+    "sequence_recall": {
+      "description": "The player chants or selects glyphs in a specific sequence.",
+      "required_files": ["audio-engine.js", "puzzle-solver.js"]
+    },
+    "final_chant": {
+      "description": "The player speaks their own name as an offering.",
+      "required_files": ["audio-engine.js"]
+    },
+    "final_offering": {
+      "description": "The player speaks a word they have been afraid to say.",
+      "required_files": ["audio-engine.js"]
+    }
+  },
+  
+  "glyph_reference": {
+    "foundational": [
+      { "glyph": "𐤀", "name": "Aleph", "meaning": "Ox · Beginning · Strength", "frequency_hz": 261.63, "note": "C4" },
+      { "glyph": "𐤃", "name": "Dalet", "meaning": "Door · Passage · Threshold", "frequency_hz": 349.23, "note": "F4" },
+      { "glyph": "𐤆", "name": "Zayin", "meaning": "Weapon · Division · Cut", "frequency_hz": 493.88, "note": "B4" },
+      { "glyph": "𐤌", "name": "Mem", "meaning": "Water · Chaos · Deep", "frequency_hz": 880.00, "note": "A5" },
+      { "glyph": "𐤉", "name": "Yod", "meaning": "Hand · Action · Making", "frequency_hz": 659.25, "note": "E5" },
+      { "glyph": "𐤎", "name": "Samekh", "meaning": "Pillar · Support · Hold", "frequency_hz": 1046.50, "note": "C6" },
+      { "glyph": "𐤕", "name": "Taw", "meaning": "Mark · Completion · Seal", "frequency_hz": 2093.00, "note": "C7" }
+    ],
+    "extended": [
+      { "glyph": "𐤁", "name": "Bet", "meaning": "House · Shelter · Container", "frequency_hz": 293.66, "note": "D4" },
+      { "glyph": "𐤂", "name": "Gimel", "meaning": "Camel · Journey · Endurance", "frequency_hz": 329.63, "note": "E4" },
+      { "glyph": "𐤄", "name": "He", "meaning": "Window · Revelation · Light", "frequency_hz": 392.00, "note": "G4" },
+      { "glyph": "𐤅", "name": "Waw", "meaning": "Hook · Connection · Binding", "frequency_hz": 440.00, "note": "A4" },
+      { "glyph": "𐤇", "name": "Heth", "meaning": "Fence · Boundary · Protection", "frequency_hz": 523.25, "note": "C5" },
+      { "glyph": "𐤈", "name": "Teth", "meaning": "Snake · Wisdom · Coiled", "frequency_hz": 587.33, "note": "D5" },
+      { "glyph": "𐤊", "name": "Kaph", "meaning": "Palm · Bend · Surrender", "frequency_hz": 698.46, "note": "F5" },
+      { "glyph": "𐤋", "name": "Lamed", "meaning": "Goad · Authority · Direction", "frequency_hz": 783.99, "note": "G5" },
+      { "glyph": "𐤍", "name": "Nun", "meaning": "Snake · Eternity · Renewal", "frequency_hz": 987.77, "note": "B5" },
+      { "glyph": "𐤏", "name": "Ayin", "meaning": "Eye · Perception · Witness", "frequency_hz": 1174.66, "note": "D6" },
+      { "glyph": "𐤐", "name": "Pe", "meaning": "Mouth · Speech · Prophecy", "frequency_hz": 1318.51, "note": "E6" },
+      { "glyph": "𐤑", "name": "Tsade", "meaning": "Hook · Harvest · Gathering", "frequency_hz": 1396.91, "note": "F6" },
+      { "glyph": "𐤒", "name": "Qoph", "meaning": "Sun · Cycle · Return", "frequency_hz": 1567.98, "note": "G6" },
+      { "glyph": "𐤓", "name": "Resh", "meaning": "Head · Beginning Again · Leadership", "frequency_hz": 1760.00, "note": "A6" },
+      { "glyph": "𐤔", "name": "Shin", "meaning": "Tooth · Consumption · Fire", "frequency_hz": 1975.53, "note": "B6" }
+    ],
+    "schism": [
+      { "glyph": "𒀭𒈹", "name": "Ishtar", "meaning": "Goddess · Love · War · Morning Star", "frequency_hz": 554.37, "note": "C#5" }
+    ]
+  },
+  
+  "triads": [
+    { "name": "The Fool's Step", "glyphs": ["𐤀", "𐤐", "𐤕"], "meaning": "The word that starts and ends the journey" },
+    { "name": "The Descent", "glyphs": ["𐤃", "𐤌", "𐤒"], "meaning": "The threshold into the deep that returns" },
+    { "name": "The Return", "glyphs": ["𐤓", "𐤏", "𐤔"], "meaning": "Seeing clearly after transformation" },
+    { "name": "The Hearth", "glyphs": ["𐤁", "𐤎", "𐤇"], "meaning": "The protected center that holds" },
+    { "name": "The Covenant", "glyphs": ["𐤅", "𐤈", "𐤕"], "meaning": "The binding that endures" },
+    { "name": "The Harvest", "glyphs": ["𐤑", "𐤊", "𐤋"], "meaning": "The gathering of what was sown" },
+    { "name": "The Vision", "glyphs": ["𐤄", "𐤍", "𐤒"], "meaning": "The window to eternity" },
+    { "name": "The Wound", "glyphs": ["𐤆", "𐤉", "𐤌"], "meaning": "The cut that becomes healing" }
+  ],
+  
+  "difficulty_progression": {
+    "threshold": 1,
+    "door-chamber": 1,
+    "blade-room": 2,
+    "deep-well": 2,
+    "hand-chamber": 3,
+    "pillar-hall": 3,
+    "seal": 4,
+    "adzmyst-seal": 3,
+    "adzmist-seal": 3
+  },
+  
+  "estimated_playtime_minutes": 25,
+  "replayability": "The schism offers two distinct endings. The extended glyphs (15 additional) can be unlocked as optional content."
+}
