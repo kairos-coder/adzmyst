@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adzmist · The Breath · Proto-Sinaitic Language of the Monolith</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=Noto+Sans+Egyptian+Hieroglyphs&display=swap" rel="stylesheet">
+  <style>
+    /* ═══════════════════════════════════════════════════════════════
+       ADZMIST — THE BREATH · AIR PILLAR
+       Proto-Sinaitic · The language beneath the words
+       Pale sky · Silver glyphs · Weightless meaning
+    ═══════════════════════════════════════════════════════════════ */
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --sky-pale:     #e8f0f8;
+      --sky-mist:     #d0e0f0;
+      --sky-deep:     #b0c8e0;
+      --twilight:     #1a2a3a;
+      --twilight-deep:#0a1520;
+      --silver:       #c0c8d0;
+      --silver-bright:#e0e8f0;
+      --silver-dark:  #8090a0;
+      --gold-air:     #c8a870;
+      --breath:       rgba(255,255,255,0.6);
+      --ink:          #2a3a4a;
+      --ink-dim:      #5a6a7a;
+      --border:       rgba(128,144,160,0.25);
+      --glyph-size:   64px;
+    }
+
+    body {
+      background: var(--sky-pale);
+      background-image: 
+        radial-gradient(ellipse 80% 60% at 30% 20%, rgba(255,255,255,0.4) 0%, transparent 60%),
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(128,144,160,0.05) 2px, rgba(128,144,160,0.05) 4px);
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      color: var(--ink);
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* Breath particles — floating glyphs in background */
+    .breath-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .floating-glyph {
+      position: absolute;
+      font-size: 24px;
+      opacity: 0.06;
+      animation: float 20s infinite linear;
+      font-family: 'Noto Sans Egyptian Hieroglyphs', monospace;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.08; }
+      90% { opacity: 0.08; }
+      100% { transform: translateY(-20vh) rotate(360deg); opacity: 0; }
+    }
+
+    /* Navigation */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: rgba(232,240,248,0.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 200;
+    }
+
+    .nav-brand {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .nav-brand-title {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 13px;
+      color: var(--twilight);
+      letter-spacing: 2px;
+    }
+
+    .nav-brand-sub {
+      font-family: 'Cinzel', serif;
+      font-size: 7px;
+      letter-spacing: 5px;
+      color: var(--silver-dark);
+      text-transform: uppercase;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 16px;
+      list-style: none;
+      flex-wrap: wrap;
+    }
+
+    .nav-links a {
+      font-family: 'Cinzel', serif;
+      font-size: 8px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--ink-dim);
+      text-decoration: none;
+      transition: color 0.2s;
+      padding: 4px 0;
+      border-bottom: 1px solid transparent;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: var(--twilight);
+      border-bottom-color: var(--gold-air);
+    }
+
+    /* Container */
+    .container {
+      position: relative;
+      z-index: 2;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 80px 24px 60px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .header-sigil {
+      font-size: 64px;
+      margin-bottom: 16px;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.1));
+      animation: breathPulse 4s ease-in-out infinite;
+    }
+
+    @keyframes breathPulse {
+      0%, 100% { transform: scale(1); opacity: 0.7; }
+      50% { transform: scale(1.05); opacity: 1; }
+    }
+
+    .header h1 {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: clamp(28px, 6vw, 48px);
+      color: var(--twilight);
+      letter-spacing: 4px;
+      margin-bottom: 8px;
+    }
+
+    .header .subtitle {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      color: var(--silver-dark);
+      margin-bottom: 16px;
+    }
+
+    .header .breath-line {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 18px;
+      color: var(--ink-dim);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      display: inline-block;
+      padding: 8px 24px;
+    }
+
+    /* Explanation Cards */
+    .card {
+      background: rgba(255,255,255,0.55);
+      backdrop-filter: blur(4px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 32px;
+      transition: all 0.3s;
+    }
+
+    .card:hover {
+      background: rgba(255,255,255,0.7);
+      border-color: rgba(200,168,112,0.3);
+    }
+
+    .card h2 {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 18px;
+      color: var(--twilight);
+      margin-bottom: 16px;
+      letter-spacing: 2px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .card h2 .glyph {
+      font-family: 'Noto Sans Egyptian Hieroglyphs', monospace;
+      font-size: 28px;
+      color: var(--gold-air);
+    }
+
+    .card p {
+      font-size: 17px;
+      line-height: 1.7;
+      color: var(--ink);
+      margin-bottom: 16px;
+    }
+
+    .card p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* The Seven Foundational Glyphs */
+    .glyph-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 24px;
+      margin: 32px 0;
+    }
+
+    .glyph-card {
+      text-align: center;
+      padding: 20px 12px;
+      background: rgba(255,255,255,0.4);
+      border-radius: 12px;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+
+    .glyph-card:hover {
+      background: rgba(255,255,255,0.7);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+
+    .glyph-symbol {
+      font-family: 'Noto Sans Egyptian Hieroglyphs', monospace;
+      font-size: 48px;
+      color: var(--twilight);
+      margin-bottom: 8px;
+    }
+
+    .glyph-name {
+      font-family: 'Cinzel', serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--gold-air);
+      letter-spacing: 2px;
+      margin-bottom: 4px;
+    }
+
+    .glyph-letter {
+      font-family: 'Cinzel', serif;
+      font-size: 11px;
+      color: var(--silver-dark);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .glyph-meaning {
+      font-size: 12px;
+      color: var(--ink-dim);
+      font-style: italic;
+      line-height: 1.4;
+    }
+
+    /* The Acronym */
+    .acronym {
+      text-align: center;
+      margin: 40px 0;
+      padding: 24px;
+      background: linear-gradient(135deg, var(--sky-pale), var(--sky-mist));
+      border-radius: 20px;
+      border: 1px solid var(--border);
+    }
+
+    .acronym-letters {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 32px;
+      letter-spacing: 16px;
+      color: var(--twilight);
+      margin-bottom: 12px;
+    }
+
+    .acronym-word {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 24px;
+      color: var(--gold-air);
+      letter-spacing: 8px;
+      margin-bottom: 8px;
+    }
+
+    .acronym-meaning {
+      font-style: italic;
+      color: var(--ink-dim);
+      font-size: 14px;
+    }
+
+    /* Link to glyph table */
+    .portal {
+      text-align: center;
+      margin-top: 24px;
+    }
+
+    .portal-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-family: 'Cinzel', serif;
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      padding: 14px 32px;
+      background: var(--twilight);
+      color: var(--sky-pale);
+      text-decoration: none;
+      border-radius: 40px;
+      transition: all 0.3s;
+      border: 1px solid var(--gold-air);
+    }
+
+    .portal-btn:hover {
+      background: var(--twilight-deep);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      gap: 20px;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 40px 24px;
+      font-size: 7px;
+      letter-spacing: 4px;
+      color: var(--silver-dark);
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+      font-family: 'Cinzel', serif;
+      text-transform: uppercase;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      nav { padding: 0 12px; }
+      .nav-links { gap: 10px; }
+      .container { padding: 76px 16px 40px; }
+      .glyph-grid { gap: 12px; }
+      .glyph-symbol { font-size: 36px; }
+      .acronym-letters { font-size: 22px; letter-spacing: 8px; }
+      .acronym-word { font-size: 18px; letter-spacing: 4px; }
+      .card { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="breath-bg" id="breathBg"></div>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-brand-title">Adzmist</div>
+    <div class="nav-brand-sub">The Breath · The Fourth Pillar</div>
+  </div>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">Breath</a></li>
+    <li><a href="glyphs.html">Glyphs</a></li>
+    <li><a href="lexicon.html">Lexicon</a></li>
+    <li><a href="inscriptions.html">Inscriptions</a></li>
+    <li><a href="../divination/index.html">Temple</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+  <div class="header">
+    <div class="header-sigil">𓐍 𓂝 𓋴 𓅓 𓇋 𓏏 𓂧</div>
+    <h1>ADZMIST</h1>
+    <div class="subtitle">The Breath · The Fourth Pillar</div>
+    <div class="breath-line">𐤀 𐤃 𐤆 𐤌 𐤉 𐤎 𐤕</div>
+  </div>
+
+  <!-- What is Adzmist? -->
+  <div class="card">
+    <h2><span class="glyph">𓌹</span> What Is Adzmist?</h2>
+    <p><strong>Adzmist</strong> is the constructed language of the monolith — the breath that carries meaning between the gods, the cards, and the stories. It is built upon the <strong>Proto-Sinaitic script</strong>, the mother of all alphabets, the bridge between Egyptian hieroglyphs and the letters you are reading now.</p>
+    <p>Where GAIA is the earth (cognitive architecture), Divination is fire (the deck), and Ealdforn is water (narrative), <strong>Adzmist is air</strong> — the invisible medium through which all meaning travels. Every word spoken in the temple, every card drawn, every prophecy whispered — Adzmist is the breath behind it.</p>
+  </div>
+
+  <!-- The Seven Foundational Glyphs -->
+  <div class="card">
+    <h2><span class="glyph">𓋴</span> The Seven Foundational Glyphs</h2>
+    <p>The language rests on seven sacred glyphs — the letters that form the name <strong>ADZMIST</strong> itself. These are the pillars of the breath:</p>
+    
+    <div class="glyph-grid">
+      <div class="glyph-card">
+        <div class="glyph-symbol">𐤀</div>
+        <div class="glyph-name">Aleph</div>
+        <div class="glyph-letter">A</div>
+        <div class="glyph-meaning">Ox · Strength · Beginning</div>
+      </div>
+      <div class="glyph-card">
+        <div class="glyph-symbol">𐤃</div>
+        <div class="glyph-name">Dalet</div>
+        <div class="glyph-letter">D</div>
+        <div class="glyph-meaning">Door · Passage · Threshold</div>
+      </div>
+      <div class="glyph-card">
+        <div class="glyph-symbol">𐤆</div>
+        <div class="glyph-name">Zayin</div>
+        <div class="glyph-letter">Z</div>
+        <div class="glyph-meaning">Weapon · Division · The Cut</div>
+      </div>
+      <div class="glyph-card">
+        <div class="glyph-symbol">𐤌</div>
+        <div class="glyph-name">Mem</div>
+        <div class="glyph-letter">M</div>
+        <div class="glyph-meaning">Water · Chaos · The Deep</div>
+      </div>
+      <div class="glyph-card">
+        <div class="glyph-symbol">𐤉</div>
+        <div class="glyph-name">Yod</div>
+        <div class="glyph-letter">Y</div>
+        <div class="glyph-meaning">Hand · Action · Making</div>
+      </div>
+      <div class="glyph-card">
+        <div class="glyph-symbol">𐤎</div>
+        <div class="glyph-name">Samek</div>
+        <div class="glyph-letter">S</div>
+        <div class="glyph-meaning">Pillar · Support · What Holds</div>
+      </div>
+      <div class="glyph-card">
+        <div class="glyph-symbol">𐤕</div>
+        <div class="glyph-name">Taw</div>
+        <div class="glyph-letter">T</div>
+        <div class="glyph-meaning">Mark · Signature · Completion</div>
+      </div>
+    </div>
+
+    <p>These seven letters form the acronym <strong>A D Z M Y S T</strong> — which rearranges to <strong>ADZ MYST</strong> (the mystic's adze) and gives the language its name: <strong>ADZMIST</strong>.</p>
+  </div>
+
+  <!-- The Acronym -->
+  <div class="acronym">
+    <div class="acronym-letters">𐤀 𐤃 𐤆 𐤌 𐤉 𐤎 𐤕</div>
+    <div class="acronym-word">A D Z M Y S T</div>
+    <div class="acronym-meaning">The mystic's adze — the tool that carves meaning from silence</div>
+  </div>
+
+  <!-- How It Works -->
+  <div class="card">
+    <h2><span class="glyph">𓂝</span> How Adzmist Works</h2>
+    <p>The language is built in layers:</p>
+    <p><strong>1. Glyphs (22+)</strong> — Each Proto-Sinaitic symbol carries a core meaning (ox, door, water, hand). These are the atoms of the language.</p>
+    <p><strong>2. Root Words</strong> — Combinations of glyphs form root words. For example, <em>Aleph + Mem</em> (strength + water) might mean "ocean" or "deep power."</p>
+    <p><strong>3. Grammar</strong> — Adzmist grammar is minimal. Tense is inferred from context. Word order is flexible. The breath does not demand precision — it demands presence.</p>
+    <p><strong>4. Inscriptions</strong> — Longer texts carved in Adzmist. Prophecies. Card names. God epithets. The language is not for casual conversation. It is for <em>testimony</em>.</p>
+  </div>
+
+  <!-- The Breath as Filter -->
+  <div class="card">
+    <h2><span class="glyph">𓏏</span> The Breath as Filter</h2>
+    <p>The seven glyphs are also a <strong>purification ritual</strong>. Every old file, every dead project, every abandoned repo is measured against them:</p>
+    <ul style="margin-left: 24px; line-height: 1.8; color: var(--ink-dim);">
+      <li><strong>Aleph</strong> — Does it seed something new?</li>
+      <li><strong>Dalet</strong> — Does it open a threshold?</li>
+      <li><strong>Zayin</strong> — Does it cut cleanly?</li>
+      <li><strong>Mem</strong> — Does it hold depth?</li>
+      <li><strong>Yod</strong> — Does it do work?</li>
+      <li><strong>Samek</strong> — Does it support the structure?</li>
+      <li><strong>Taw</strong> — Does it bear the mark of completion?</li>
+    </ul>
+    <p>If a project fails three or more, it is carved away. The breath clears the dead wood. Only the living remains.</p>
+  </div>
+
+  <!-- Portal to Glyphs -->
+  <div class="portal">
+    <a href="glyphs.html" class="portal-btn">𓌹 Enter the Glyph Table 𓋴</a>
+  </div>
+
+</div>
+
+<footer>
+  ADZMIST · THE BREATH · THE FOURTH PILLAR<br>
+  PROTO-SINAITIC · THE LANGUAGE BENEATH THE WORDS · THE FIRE HOLDS
+</footer>
+
+<script>
+  // Floating glyphs in the background
+  const glyphs = ['𐤀', '𐤃', '𐤆', '𐤌', '𐤉', '𐤎', '𐤕', '𓌹', '𓋴', '𓂝', '𓅓', '𓇋', '𓏏', '𓐍'];
+  const breathBg = document.getElementById('breathBg');
+  
+  for (let i = 0; i < 40; i++) {
+    const glyph = document.createElement('div');
+    glyph.className = 'floating-glyph';
+    glyph.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
+    glyph.style.left = Math.random() * 100 + '%';
+    glyph.style.animationDuration = 15 + Math.random() * 20 + 's';
+    glyph.style.animationDelay = Math.random() * 20 + 's';
+    glyph.style.fontSize = 20 + Math.random() * 40 + 'px';
+    breathBg.appendChild(glyph);
+  }
+</script>
+
+</body>
+</html>
