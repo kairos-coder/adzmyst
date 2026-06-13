@@ -1,0 +1,258 @@
+{
+  "meta": {
+    "title": "Glyph Chant · The Sound of Adzmyst",
+    "description": "Each glyph carries a frequency. The chant is the breath made audible.",
+    "version": "1.0.0",
+    "last_updated": "2026-06-13"
+  },
+  "chants": [
+    {
+      "glyph": "𐤀",
+      "name": "Aleph",
+      "letter": "A",
+      "sound": "ah",
+      "frequency_hz": 261.63,
+      "note": "C4",
+      "duration_ms": 1500,
+      "chant_text": "Ahhhhh... the ox lows in the field of beginning.",
+      "meditation": "The first breath. The pull of the plow. Strength without direction yet."
+    },
+    {
+      "glyph": "𐤁",
+      "name": "Bet",
+      "letter": "B",
+      "sound": "b",
+      "frequency_hz": 293.66,
+      "note": "D4",
+      "duration_ms": 800,
+      "chant_text": "Buh... the house encloses what the breath has spoken.",
+      "meditation": "Shelter. The body as container. The word finds a home."
+    },
+    {
+      "glyph": "𐤂",
+      "name": "Gimel",
+      "letter": "C/G",
+      "sound": "g",
+      "frequency_hz": 329.63,
+      "note": "E4",
+      "duration_ms": 1000,
+      "chant_text": "Guh... the camel carries the load across the desert.",
+      "meditation": "Journey. Endurance. What moves when staying is not an option."
+    },
+    {
+      "glyph": "𐤃",
+      "name": "Dalet",
+      "letter": "D",
+      "sound": "d",
+      "frequency_hz": 349.23,
+      "note": "F4",
+      "duration_ms": 900,
+      "chant_text": "Duh... the door opens. The threshold is now.",
+      "meditation": "Choice. Passage. The moment between what was and what will be."
+    },
+    {
+      "glyph": "𐤄",
+      "name": "He",
+      "letter": "E",
+      "sound": "eh",
+      "frequency_hz": 392.00,
+      "note": "G4",
+      "duration_ms": 1200,
+      "chant_text": "Ehhhh... the window reveals what was hidden.",
+      "meditation": "Revelation. Light entering. The room is no longer dark."
+    },
+    {
+      "glyph": "𐤅",
+      "name": "Waw",
+      "letter": "F/U/V/W/Y",
+      "sound": "w",
+      "frequency_hz": 440.00,
+      "note": "A4",
+      "duration_ms": 700,
+      "chant_text": "Wuh... the hook connects what would otherwise drift apart.",
+      "meditation": "Binding. Attachment. The link that holds the chain."
+    },
+    {
+      "glyph": "𐤆",
+      "name": "Zayin",
+      "letter": "Z",
+      "sound": "z",
+      "frequency_hz": 493.88,
+      "note": "B4",
+      "duration_ms": 600,
+      "chant_text": "Zzzzz... the weapon cuts. The division is clean.",
+      "meditation": "Judgment. Separation. What is necessary and what is excess."
+    },
+    {
+      "glyph": "𐤇",
+      "name": "Heth",
+      "letter": "H",
+      "sound": "h (guttural)",
+      "frequency_hz": 523.25,
+      "note": "C5",
+      "duration_ms": 1100,
+      "chant_text": "Hhhhh... the fence marks the sacred ground.",
+      "meditation": "Boundary. Protection. The edge where inside meets outside."
+    },
+    {
+      "glyph": "𐤈",
+      "name": "Teth",
+      "letter": "T (soft)",
+      "sound": "t (soft)",
+      "frequency_hz": 587.33,
+      "note": "D5",
+      "duration_ms": 800,
+      "chant_text": "Tttt... the snake coils. Wisdom sleeps in the grass.",
+      "meditation": "Danger as teacher. The coiled thing that strikes when ignored."
+    },
+    {
+      "glyph": "𐤉",
+      "name": "Yod",
+      "letter": "Y",
+      "sound": "y",
+      "frequency_hz": 659.25,
+      "note": "E5",
+      "duration_ms": 500,
+      "chant_text": "Yuh... the hand reaches. The world is shaped.",
+      "meditation": "Action. Making. The breath becomes touch."
+    },
+    {
+      "glyph": "𐤊",
+      "name": "Kaph",
+      "letter": "K",
+      "sound": "k",
+      "frequency_hz": 698.46,
+      "note": "F5",
+      "duration_ms": 750,
+      "chant_text": "Kuh... the palm bends. Surrender is not weakness.",
+      "meditation": "Opening. Yielding. What receives must first open."
+    },
+    {
+      "glyph": "𐤋",
+      "name": "Lamed",
+      "letter": "L",
+      "sound": "l",
+      "frequency_hz": 783.99,
+      "note": "G5",
+      "duration_ms": 900,
+      "chant_text": "Llll... the goad guides the ox. Authority is direction.",
+      "meditation": "Control. Leadership. The hand that guides without forcing."
+    },
+    {
+      "glyph": "𐤌",
+      "name": "Mem",
+      "letter": "M",
+      "sound": "m",
+      "frequency_hz": 880.00,
+      "note": "A5",
+      "duration_ms": 2000,
+      "chant_text": "Mmmmm... the water flows. The deep remembers.",
+      "meditation": "Chaos. The unconscious. What moves beneath the surface."
+    },
+    {
+      "glyph": "𐤍",
+      "name": "Nun",
+      "letter": "N",
+      "sound": "n",
+      "frequency_hz": 987.77,
+      "note": "B5",
+      "duration_ms": 1000,
+      "chant_text": "Nnnn... the snake sheds. Eternity is a circle.",
+      "meditation": "Renewal. Death as transformation. What falls away makes room."
+    },
+    {
+      "glyph": "𐤎",
+      "name": "Samek",
+      "letter": "S",
+      "sound": "s",
+      "frequency_hz": 1046.50,
+      "note": "C6",
+      "duration_ms": 600,
+      "chant_text": "Ssss... the pillar holds. The structure is unseen.",
+      "meditation": "Support. Stability. What carries weight without asking."
+    },
+    {
+      "glyph": "𐤏",
+      "name": "Ayin",
+      "letter": "O",
+      "sound": "o (deep)",
+      "frequency_hz": 1174.66,
+      "note": "D6",
+      "duration_ms": 1300,
+      "chant_text": "Ohhhhh... the eye sees without being seen.",
+      "meditation": "Perception. Witness. The watcher who does not interfere."
+    },
+    {
+      "glyph": "𐤐",
+      "name": "Pe",
+      "letter": "P",
+      "sound": "p",
+      "frequency_hz": 1318.51,
+      "note": "E6",
+      "duration_ms": 500,
+      "chant_text": "Puh... the mouth speaks. The breath becomes word.",
+      "meditation": "Prophecy. Speech. The sound that creates."
+    },
+    {
+      "glyph": "𐤑",
+      "name": "Tsade",
+      "letter": "Ts",
+      "sound": "ts",
+      "frequency_hz": 1396.91,
+      "note": "F6",
+      "duration_ms": 650,
+      "chant_text": "Tssss... the hook catches. The harvest is gathered.",
+      "meditation": "Gathering. What was cast out returns."
+    },
+    {
+      "glyph": "𐤒",
+      "name": "Qoph",
+      "letter": "Q",
+      "sound": "q (deep)",
+      "frequency_hz": 1567.98,
+      "note": "G6",
+      "duration_ms": 1100,
+      "chant_text": "Qhhhh... the sun on the horizon. The cycle turns.",
+      "meditation": "Return. The eternal. What sets always rises."
+    },
+    {
+      "glyph": "𐤓",
+      "name": "Resh",
+      "letter": "R",
+      "sound": "r",
+      "frequency_hz": 1760.00,
+      "note": "A6",
+      "duration_ms": 800,
+      "chant_text": "Rrrr... the head thinks. Therefore what is.",
+      "meditation": "Mind. Beginning again. The crown that leads."
+    },
+    {
+      "glyph": "𐤔",
+      "name": "Shin",
+      "letter": "Sh",
+      "sound": "sh",
+      "frequency_hz": 1975.53,
+      "note": "B6",
+      "duration_ms": 700,
+      "chant_text": "Shhhh... the tooth consumes. Fire transforms.",
+      "meditation": "Destruction as creation. What burns makes way."
+    },
+    {
+      "glyph": "𐤕",
+      "name": "Taw",
+      "letter": "T",
+      "sound": "t",
+      "frequency_hz": 2093.00,
+      "note": "C7",
+      "duration_ms": 900,
+      "chant_text": "Tuh... the mark is made. This is finished. This is true.",
+      "meditation": "Completion. Signature. The seal that holds."
+    }
+  ],
+  "sequences": {
+    "foundational": ["𐤀", "𐤃", "𐤆", "𐤌", "𐤉", "𐤎", "𐤕"],
+    "the_breath": ["𐤐", "𐤄", "𐤓", "𐤀", "𐤕", "𐤄"],
+    "the_descent": ["𐤌", "𐤍", "𐤒", "𐤐", "𐤄"],
+    "the_return": ["𐤓", "𐤏", "𐤔", "𐤉", "𐤕"]
+  }
+}
