@@ -9,71 +9,107 @@
 </head>
 <body>
 
-<div class="game-launcher">
-  <div class="launcher-background">
-    <div class="floating-glyphs" id="floatingGlyphs"></div>
+<div id="gameApp">
+  <!-- Launcher Screen -->
+  <div id="launcherScreen" class="game-screen active">
+    <div class="launcher-background">
+      <div class="floating-glyphs" id="floatingGlyphs"></div>
+    </div>
+    <div class="launcher-panel">
+      <div class="title-glyph">𓌹</div>
+      <h1 class="game-title">ADZMYST</h1>
+      <div class="game-subtitle">The Breath Game</div>
+      <div class="game-tagline">A floating temple. 22 glyphs. One forgotten language.</div>
+      <div class="launcher-buttons">
+        <button id="newGameBtn" class="game-btn primary">𓋴 Begin the Descent</button>
+        <button id="loadGameBtn" class="game-btn secondary">𓌹 Load Saved Breath</button>
+      </div>
+      <div class="game-instructions">
+        <p>✦ You wake in a floating temple. The sky is pale blue. Glyphs drift past like leaves.</p>
+        <p>✦ Learn each glyph's meaning, sound, and frequency. Only when the breath is whole will the door open.</p>
+        <p>✦ Speak the glyphs. Solve the triads. Choose your schism.</p>
+        <p>✦ The fire holds. Begin.</p>
+      </div>
+    </div>
   </div>
-  
-  <div class="launcher-panel">
-    <div class="title-glyph">𓌹</div>
-    <h1 class="game-title">ADZMYST</h1>
-    <div class="game-subtitle">The Breath Game</div>
-    <div class="game-tagline">A floating temple. 22 glyphs. One forgotten language.</div>
-    
-    <div class="launcher-buttons">
-      <button id="newGameBtn" class="game-btn primary">𓋴 Begin the Descent</button>
-      <button id="loadGameBtn" class="game-btn secondary">𓌹 Load Saved Breath</button>
+
+  <!-- Game Dashboard Screen -->
+  <div id="gameScreen" class="game-screen" style="display: none;">
+    <div class="game-header">
+      <button id="mapBtn" class="header-btn">🗺️ Map</button>
+      <div id="inventoryBtn" class="inventory-compact">𓌹 <span id="glyphCount">0</span>/22</div>
+      <button id="saveBtn" class="header-btn">💾 Save</button>
     </div>
-    
-    <div class="game-instructions">
-      <p>✦ You wake in a floating temple. The sky is pale blue. Glyphs drift past like leaves.</p>
-      <p>✦ The tower at the center holds the memory of the language — but the door is sealed.</p>
-      <p>✦ Learn each glyph's meaning, sound, and frequency. Only when the breath is whole will the door open.</p>
-      <p>✦ Speak the glyphs. Solve the triads. Choose your schism: <strong>Adzmist</strong> (Ishtar, the goddess) or <strong>Adzmyst</strong> (Yod, the hand).</p>
-      <p>✦ The fire holds. Begin.</p>
+
+    <div id="sceneContainer" class="scene-container">
+      <!-- Dynamic scene content loaded here -->
     </div>
-    
-    <div class="launcher-footer">
-      <span>Part of the Ealdforn universe · The Air Pillar</span>
+
+    <div class="game-footer">
+      <button id="resetBtn" class="footer-btn">⟳ Reset Room</button>
+      <div id="progressBar" class="progress-bar">
+        <div id="progressFill" class="progress-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Map Modal -->
+  <div id="mapModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <span class="modal-close">&times;</span>
+      <h2>𓌹 The Air Temple 𓋴</h2>
+      <div id="mapGrid" class="map-grid"></div>
+    </div>
+  </div>
+
+  <!-- Inventory Modal -->
+  <div id="inventoryModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <span class="modal-close">&times;</span>
+      <h2>𓋴 Collected Glyphs 𓌹</h2>
+      <div id="inventoryList" class="inventory-grid"></div>
     </div>
   </div>
 </div>
 
-<script src="js/game-state.js"></script>
+<script src="shared/glyph-chant.js"></script>
+<script src="engine/scene-loader.js"></script>
+<script src="engine/puzzle-solver.js"></script>
+<script src="engine/audio-engine.js"></script>
+<script src="engine/core.js"></script>
 <script>
-  // Floating glyphs animation
+  // Floating glyphs for launcher
   const glyphs = ['𐤀', '𐤃', '𐤆', '𐤌', '𐤉', '𐤎', '𐤕', '𐤁', '𐤂', '𐤄', '𐤅', '𐤇', '𐤈', '𐤊', '𐤋', '𐤍', '𐤏', '𐤐', '𐤑', '𐤒', '𐤓', '𐤔'];
   const container = document.getElementById('floatingGlyphs');
-  
-  for (let i = 0; i < 60; i++) {
-    const glyph = document.createElement('span');
-    glyph.className = 'float-glyph';
-    glyph.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
-    glyph.style.left = Math.random() * 100 + '%';
-    glyph.style.animationDuration = 10 + Math.random() * 20 + 's';
-    glyph.style.animationDelay = Math.random() * 15 + 's';
-    glyph.style.fontSize = 20 + Math.random() * 50 + 'px';
-    glyph.style.opacity = 0.05 + Math.random() * 0.1;
-    container.appendChild(glyph);
+  if (container) {
+    for (let i = 0; i < 60; i++) {
+      const glyph = document.createElement('span');
+      glyph.className = 'float-glyph';
+      glyph.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
+      glyph.style.left = Math.random() * 100 + '%';
+      glyph.style.animationDuration = 10 + Math.random() * 20 + 's';
+      glyph.style.animationDelay = Math.random() * 15 + 's';
+      glyph.style.fontSize = 20 + Math.random() * 50 + 'px';
+      container.appendChild(glyph);
+    }
   }
-  
-  // New game
+
+  // Initialize game
   document.getElementById('newGameBtn').addEventListener('click', () => {
-    if (AdzmystGame) {
-      AdzmystGame.newGame();
-      window.location.href = 'rooms/threshold.html';
+    if (window.AdzmystEngine) {
+      AdzmystEngine.newGame();
+      AdzmystEngine.loadScene('threshold');
+      document.getElementById('launcherScreen').style.display = 'none';
+      document.getElementById('gameScreen').style.display = 'block';
     }
   });
-  
-  // Load game
+
   document.getElementById('loadGameBtn').addEventListener('click', () => {
-    if (AdzmystGame) {
-      if (AdzmystGame.loadGame()) {
-        const savedRoom = localStorage.getItem('adzmyst_current_room') || 'rooms/threshold.html';
-        window.location.href = savedRoom;
-      } else {
-        alert('No saved breath found. Begin a new descent.');
-      }
+    if (window.AdzmystEngine && AdzmystEngine.loadGame()) {
+      document.getElementById('launcherScreen').style.display = 'none';
+      document.getElementById('gameScreen').style.display = 'block';
+    } else {
+      alert('No saved breath found. Begin a new descent.');
     }
   });
 </script>
