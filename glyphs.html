@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adzmist · The Glyphs · Proto-Sinaitic Table</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=Noto+Sans+Egyptian+Hieroglyphs&display=swap" rel="stylesheet">
+  <style>
+    /* Same base as index.html — air aesthetic */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --sky-pale: #e8f0f8;
+      --sky-mist: #d0e0f0;
+      --sky-deep: #b0c8e0;
+      --twilight: #1a2a3a;
+      --twilight-deep: #0a1520;
+      --silver: #c0c8d0;
+      --silver-bright: #e0e8f0;
+      --silver-dark: #8090a0;
+      --gold-air: #c8a870;
+      --ink: #2a3a4a;
+      --ink-dim: #5a6a7a;
+      --border: rgba(128,144,160,0.25);
+    }
+    
+    body {
+      background: var(--sky-pale);
+      background-image: radial-gradient(ellipse 80% 60% at 30% 20%, rgba(255,255,255,0.4) 0%, transparent 60%);
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      color: var(--ink);
+      min-height: 100vh;
+    }
+    
+    /* Navigation — same as index.html */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: rgba(232,240,248,0.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 200;
+    }
+    
+    .nav-brand {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    
+    .nav-brand-title {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 13px;
+      color: var(--twilight);
+      letter-spacing: 2px;
+    }
+    
+    .nav-brand-sub {
+      font-family: 'Cinzel', serif;
+      font-size: 7px;
+      letter-spacing: 5px;
+      color: var(--silver-dark);
+      text-transform: uppercase;
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: 16px;
+      list-style: none;
+      flex-wrap: wrap;
+    }
+    
+    .nav-links a {
+      font-family: 'Cinzel', serif;
+      font-size: 8px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--ink-dim);
+      text-decoration: none;
+      transition: color 0.2s;
+      padding: 4px 0;
+      border-bottom: 1px solid transparent;
+    }
+    
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: var(--twilight);
+      border-bottom-color: var(--gold-air);
+    }
+    
+    .container {
+      position: relative;
+      z-index: 2;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 80px 24px 60px;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    
+    .header h1 {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: clamp(28px, 6vw, 42px);
+      color: var(--twilight);
+      letter-spacing: 4px;
+      margin-bottom: 8px;
+    }
+    
+    .header .subtitle {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      color: var(--silver-dark);
+    }
+    
+    /* Glyph Table */
+    .glyph-table-wrapper {
+      overflow-x: auto;
+      background: rgba(255,255,255,0.55);
+      backdrop-filter: blur(4px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 4px;
+    }
+    
+    .glyph-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: 'Cormorant Garamond', serif;
+    }
+    
+    .glyph-table th {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 16px 12px;
+      background: rgba(255,255,255,0.4);
+      color: var(--twilight);
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+    
+    .glyph-table td {
+      padding: 14px 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--ink);
+      vertical-align: top;
+    }
+    
+    .glyph-table tr:hover {
+      background: rgba(255,255,255,0.3);
+    }
+    
+    .glyph-symbol {
+      font-family: 'Noto Sans Egyptian Hieroglyphs', monospace;
+      font-size: 28px;
+      text-align: center;
+    }
+    
+    .glyph-name {
+      font-family: 'Cinzel', serif;
+      font-weight: 700;
+      color: var(--gold-air);
+    }
+    
+    .glyph-letter {
+      font-family: 'Cinzel', serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--twilight);
+    }
+    
+    .glyph-meaning {
+      font-style: italic;
+      color: var(--ink-dim);
+    }
+    
+    .glyph-adzmist {
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    
+    .glyph-arcana {
+      font-family: 'Cinzel', serif;
+      font-size: 11px;
+      color: var(--gold-air);
+    }
+    
+    .acronym-reminder {
+      text-align: center;
+      margin-top: 32px;
+      padding: 20px;
+      background: rgba(200,168,112,0.08);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    
+    .acronym-reminder span {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 18px;
+      letter-spacing: 8px;
+      color: var(--twilight);
+    }
+    
+    footer {
+      text-align: center;
+      padding: 40px 24px;
+      font-size: 7px;
+      letter-spacing: 4px;
+      color: var(--silver-dark);
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+      font-family: 'Cinzel', serif;
+    }
+    
+    @media (max-width: 700px) {
+      .glyph-table th, .glyph-table td {
+        padding: 8px 6px;
+        font-size: 12px;
+      }
+      .glyph-symbol { font-size: 20px; }
+      .container { padding: 76px 16px 40px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-brand-title">Adzmist</div>
+    <div class="nav-brand-sub">The Breath · The Fourth Pillar</div>
+  </div>
+  <ul class="nav-links">
+    <li><a href="index.html">Breath</a></li>
+    <li><a href="glyphs.html" class="active">Glyphs</a></li>
+    <li><a href="lexicon.html">Lexicon</a></li>
+    <li><a href="inscriptions.html">Inscriptions</a></li>
+    <li><a href="../divination/index.html">Temple</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+  <div class="header">
+    <h1>𐤀 𐤁 𐤂 𐤃 𐤄 𐤅 𐤆 𐤇 𐤈 𐤉 𐤊 𐤋 𐤌 𐤍 𐤎 𐤏 𐤐 𐤑 𐤒 𐤓 𐤔 𐤕</h1>
+    <div class="subtitle">The 22 Glyphs · Proto-Sinaitic · The Mother Alphabet</div>
+  </div>
+
+  <div class="glyph-table-wrapper">
+    <table class="glyph-table">
+      <thead>
+        <tr>
+          <th>Glyph</th>
+          <th>Name</th>
+          <th>Letter</th>
+          <th>Meaning</th>
+          <th>Adzmist Interpretation</th>
+          <th>Major Arcana</th>
+        </tr>
+      </thead>
+      <tbody id="glyphTableBody">
+        <!-- JavaScript will populate this from the glyphs.json data -->
+      </tbody>
+    </table>
+  </div>
+
+  <div class="acronym-reminder">
+    <span>𐤀 𐤃 𐤆 𐤌 𐤉 𐤎 𐤕</span>
+    <p style="margin-top: 12px; font-size: 13px; color: var(--ink-dim);">A D Z M Y S T — The mystic's adze. The seven foundational glyphs that name the breath.</p>
+  </div>
+</div>
+
+<footer>
+  ADZMIST · THE BREATH · PROTO-SINAITIC · THE LANGUAGE BENEATH THE WORDS<br>
+  THE FIRE HOLDS · THE GLYPHS CARVE MEANING FROM SILENCE
+</footer>
+
+<script>
+  // Glyph data — 22 Proto-Sinaitic glyphs
+  const glyphs = [
+    { symbol: "𐤀", name: "Aleph", letter: "A", meaning: "Ox", adzmist: "Strength, beginning, the pull. What draws the plow through unbroken ground.", arcana: "The Fool (0)" },
+    { symbol: "𐤁", name: "Bet", letter: "B", meaning: "House", adzmist: "Container, shelter, the body. What holds the spirit in the world.", arcana: "The Magician (I)" },
+    { symbol: "𐤂", name: "Gimel", letter: "C/G", meaning: "Camel", adzmist: "Journey, carrying, endurance. What moves across the desert of the self.", arcana: "The High Priestess (II)" },
+    { symbol: "𐤃", name: "Dalet", letter: "D", meaning: "Door", adzmist: "Threshold, passage, choice. What opens between what was and what will be.", arcana: "The Empress (III)" },
+    { symbol: "𐤄", name: "He", letter: "E", meaning: "Window", adzmist: "Revelation, light, seeing. What illuminates the room from outside.", arcana: "The Emperor (IV)" },
+    { symbol: "𐤅", name: "Waw", letter: "F/U/V/W/Y", meaning: "Hook", adzmist: "Connection, binding, attachment. What links what would otherwise drift apart.", arcana: "The Hierophant (V)" },
+    { symbol: "𐤆", name: "Zayin", letter: "Z", meaning: "Weapon", adzmist: "Division, cutting, judgment. What separates the necessary from the excess.", arcana: "The Lovers (VI)" },
+    { symbol: "𐤇", name: "Heth", letter: "H", meaning: "Fence", adzmist: "Enclosure, boundary, protection. What marks the edge of the sacred.", arcana: "The Chariot (VII)" },
+    { symbol: "𐤈", name: "Teth", letter: "T (soft)", meaning: "Snake", adzmist: "Wisdom, danger, the coiled. What waits in the grass to teach.", arcana: "Justice (VIII)" },
+    { symbol: "𐤉", name: "Yod", letter: "Y", meaning: "Hand", adzmist: "Action, making, crafting. What reaches out to shape the world.", arcana: "The Hermit (IX)" },
+    { symbol: "𐤊", name: "Kaph", letter: "K", meaning: "Palm", adzmist: "Bend, surrender, opening. What yields so that something may enter.", arcana: "Wheel of Fortune (X)" },
+    { symbol: "𐤋", name: "Lamed", letter: "L", meaning: "Ox Goad", adzmist: "Authority, direction, control. What guides the strength already present.", arcana: "Strength (XI)" },
+    { symbol: "𐤌", name: "Mem", letter: "M", meaning: "Water", adzmist: "Chaos, depth, the unconscious. What flows beneath the surface.", arcana: "The Hanged Man (XII)" },
+    { symbol: "𐤍", name: "Nun", letter: "N", meaning: "Snake", adzmist: "Eternity, renewal, shedding. What dies and is reborn in the same skin.", arcana: "Death (XIII)" },
+    { symbol: "𐤎", name: "Samek", letter: "S", meaning: "Pillar", adzmist: "Support, stability, what holds. The structure that does not ask to be seen.", arcana: "Temperance (XIV)" },
+    { symbol: "𐤏", name: "Ayin", letter: "O", meaning: "Eye", adzmist: "Perception, witness, vision. What sees without being seen.", arcana: "The Devil (XV)" },
+    { symbol: "𐤐", name: "Pe", letter: "P", meaning: "Mouth", adzmist: "Speech, breath, prophecy. What speaks the world into being.", arcana: "The Tower (XVI)" },
+    { symbol: "𐤑", name: "Tsade", letter: "Ts", meaning: "Fish Hook", adzmist: "Harvest, gathering, catch. What brings in what was cast out.", arcana: "The Star (XVII)" },
+    { symbol: "𐤒", name: "Qoph", letter: "Q", meaning: "Sun on Horizon", adzmist: "Cycle, return, the eternal. What sets and rises again.", arcana: "The Moon (XVIII)" },
+    { symbol: "𐤓", name: "Resh", letter: "R", meaning: "Head", adzmist: "Beginning again, leadership. What thinks, therefore what is.", arcana: "The Sun (XIX)" },
+    { symbol: "𐤔", name: "Shin", letter: "Sh", meaning: "Tooth", adzmist: "Consumption, fire, transformation. What devours to make way for the new.", arcana: "Judgment (XX)" },
+    { symbol: "𐤕", name: "Taw", letter: "T", meaning: "Mark", adzmist: "Signature, completion, seal. What says: this is finished, this is true.", arcana: "The World (XXI)" }
+  ];
+
+  // Populate the table
+  const tbody = document.getElementById('glyphTableBody');
+  
+  glyphs.forEach(g => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td class="glyph-symbol">${g.symbol}</td>
+      <td class="glyph-name">${g.name}</td>
+      <td class="glyph-letter">${g.letter}</td>
+      <td class="glyph-meaning">${g.meaning}</td>
+      <td class="glyph-adzmist">${g.adzmist}</td>
+      <td class="glyph-arcana">${g.arcana}</td>
+    `;
+    tbody.appendChild(row);
+  });
+</script>
+
+</body>
+</html>
