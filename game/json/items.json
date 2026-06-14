@@ -1,0 +1,51 @@
+{
+  "items": {
+    "air": [
+      {
+        "id": "air-stylus",
+        "name": "Silver Stylus",
+        "glyph": "𐤉",
+        "description": "A stylus of pale silver. Warm to the touch. It leaves no mark on stone — only on vellum prepared with breath.",
+        "useRoom": "air-scribe-desk"
+      },
+      {
+        "id": "air-pigment",
+        "name": "Breath Pigment",
+        "glyph": "𐤀",
+        "description": "A bowl of pigment that shifts between silver and pale blue. It never runs dry but only writes true words.",
+        "useRoom": "air-scribe-desk"
+      },
+      {
+        "id": "air-vellum",
+        "name": "Unwritten Vellum",
+        "glyph": "𐤃",
+        "description": "A scrap of vellum. When held to the light, faint letters appear — then vanish.",
+        "useRoom": "air-scribe-desk"
+      },
+      {
+        "id": "air-lens",
+        "name": "Star Lens",
+        "glyph": "𐤄",
+        "description": "A lens of polished crystal. Through it, the observatory stars resolve into glyphs.",
+        "useRoom": "air-observatory"
+      },
+      {
+        "id": "air-key-glyph",
+        "name": "Wind Key",
+        "glyph": "𐤆",
+        "description": "A small stone carved with the Zayin glyph. It hums when held near a locked door.",
+        "useRoom": null
+      },
+      {
+        "id": "air-seal",
+        "name": "Breath Seal",
+        "glyph": "𐤕",
+        "description": "The mark of completion. Placing this on the sanctum door opens the way out.",
+        "useRoom": "air-sanctum"
+      }
+    ],
+    "fire": [],
+    "earth": [],
+    "water": []
+  }
+}
