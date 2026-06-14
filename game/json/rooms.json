@@ -1,0 +1,86 @@
+{
+  "meta": {
+    "description": "Room templates for procedural dungeon generation. Each Age has its own deck of room types.",
+    "version": "1.0.0"
+  },
+  "templates": {
+    "air": [
+      {
+        "id": "air-wind-gallery",
+        "name": "Wind Gallery",
+        "type": "puzzle",
+        "description": "A long tunnel carved by endless wind. Rings of pale stone recede into darkness. Streaks of silver light race along the walls.",
+        "puzzleType": "glyph-sequence",
+        "cssClass": "room-wind-gallery",
+        "exits": ["north", "south"],
+        "itemSlots": 1,
+        "wallInscriptions": true,
+        "atmosphere": "The air hums. Sometimes it sounds like a voice just beyond hearing."
+      },
+      {
+        "id": "air-codex-chamber",
+        "name": "Codex Chamber",
+        "type": "puzzle",
+        "description": "A square room dominated by a massive stone wall carved with a 3×3 grid. Each cell holds a faded glyph.",
+        "puzzleType": "rune-codex",
+        "cssClass": "room-codex-chamber",
+        "exits": ["north", "east", "west"],
+        "itemSlots": 2,
+        "wallInscriptions": true,
+        "atmosphere": "The grid pulses faintly when you look away."
+      },
+      {
+        "id": "air-scribe-desk",
+        "name": "Scribe Desk",
+        "type": "puzzle",
+        "description": "An angled stone desk covered in ritual objects — a stylus, a bowl of pale pigment, a scrap of vellum.",
+        "puzzleType": "ritual-assembly",
+        "cssClass": "room-scribe-desk",
+        "exits": ["north", "south", "east"],
+        "itemSlots": 3,
+        "wallInscriptions": false,
+        "atmosphere": "The vellum is warm, as if recently handled."
+      },
+      {
+        "id": "air-observatory",
+        "name": "Observatory",
+        "type": "puzzle",
+        "description": "A circular room open to a false sky. Constellations of glyph-light drift across the dome. A stone plinth stands at center.",
+        "puzzleType": "star-alignment",
+        "cssClass": "room-observatory",
+        "exits": ["north", "south", "east", "west"],
+        "itemSlots": 1,
+        "wallInscriptions": false,
+        "atmosphere": "The stars here are not the stars you know."
+      },
+      {
+        "id": "air-inscription-hall",
+        "name": "Inscription Hall",
+        "type": "puzzle",
+        "description": "A narrow corridor lined with floor-to-ceiling inscriptions. The text covers every surface — even the floor.",
+        "puzzleType": "decode-transcribe",
+        "cssClass": "room-inscription-hall",
+        "exits": ["east", "west"],
+        "itemSlots": 1,
+        "wallInscriptions": true,
+        "atmosphere": "The inscriptions shift when you're not looking directly at them."
+      },
+      {
+        "id": "air-sanctum",
+        "name": "Sanctum of Breath",
+        "type": "sanctum",
+        "description": "A vast domed chamber. At its center, a column of swirling silver light rises from floor to ceiling. The exit portal.",
+        "puzzleType": null,
+        "cssClass": "room-sanctum",
+        "exits": ["north", "south", "east", "west"],
+        "itemSlots": 0,
+        "wallInscriptions": true,
+        "atmosphere": "The breath is visible here. It hangs in the air like incense smoke.",
+        "isExit": true
+      }
+    ],
+    "fire": [],
+    "earth": [],
+    "water": []
+  }
+}
