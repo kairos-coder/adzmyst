@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADZMYST · Air · Codex Chamber</title>
+<link rel="stylesheet" href="air-base.css">
+<style>
+  /* ── CODEX CHAMBER SPECIFIC ── */
+  .codex-layout {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: clamp(1rem, 3vw, 2.5rem);
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 560px;
+  }
+
+  .codex-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .codex-cell {
+    width: clamp(50px, 8vw, 72px);
+    height: clamp(50px, 8vw, 72px);
+    border: 1px solid rgba(122,184,212,0.25);
+    background: rgba(10,18,40,0.7);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2px;
+    font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+    color: var(--gold-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .codex-cell .seq-num {
+    position: absolute; top: 2px; left: 4px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.4rem; letter-spacing: 0.05em;
+    color: rgba(122,184,212,0.3);
+  }
+  .codex-cell .cell-name {
+    font-family: 'Cinzel', serif;
+    font-size: 0.35rem; letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: rgba(200,168,74,0.4);
+  }
+  .codex-cell.filled {
+    border-color: var(--gold);
+    background: rgba(200,168,74,0.12);
+    color: var(--gold);
+    box-shadow: 0 0 12px rgba(200,168,74,0.2);
+  }
+  .codex-cell.filled .cell-name { color: rgba(200,168,74,0.7); }
+  .codex-cell.correct {
+    border-color: var(--unlock);
+    background: rgba(168,216,144,0.12);
+    color: var(--unlock);
+    box-shadow: 0 0 16px rgba(168,216,144,0.25);
+    animation: correctpulse 0.6s ease;
+  }
+  @keyframes correctpulse {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.08); }
+    100% { transform: scale(1); }
+  }
+  .codex-cell.wrong {
+    border-color: var(--danger);
+    animation: wrongshake 0.4s ease;
+  }
+  @keyframes wrongshake {
+    0%, 100% { transform: translateX(0); }
+    25%  { transform: translateX(-4px); }
+    75%  { transform: translateX(4px); }
+  }
+
+  .codex-side {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 0.8rem;
+  }
+
+  .rune-tray-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.55rem; letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--silver); opacity: 0.5;
+    text-align: center;
+  }
+
+  .rune-tray-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5px;
+  }
+
+  .rune-tile {
+    width: clamp(38px, 6vw, 52px);
+    height: clamp(38px, 6vw, 52px);
+    background: rgba(15,25,50,0.8);
+    border: 1px solid rgba(74,122,170,0.3);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: clamp(0.9rem, 1.8vw, 1.3rem);
+    color: var(--silver);
+  }
+  .rune-tile .rune-name {
+    font-family: 'Cinzel', serif;
+    font-size: 0.35rem; letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+  }
+  .rune-tile:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: rgba(200,168,74,0.1);
+  }
+  .rune-tile.active {
+    border-color: var(--age-accent);
+    color: var(--age-accent);
+    background: rgba(122,184,212,0.1);
+    box-shadow: 0 0 10px rgba(122,184,212,0.2);
+  }
+
+  .codex-clue {
+    font-size: 0.78rem; line-height: 1.8;
+    max-width: 520px; text-align: center;
+    color: var(--silver); opacity: 0.65;
+    font-style: italic;
+  }
+
+  .codex-feedback {
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem; letter-spacing: 0.15em;
+    min-height: 1.2rem; text-align: center;
+    transition: all 0.3s;
+  }
+  .codex-feedback.wrong { color: var(--danger); }
+  .codex-feedback.right { color: var(--unlock); }
+
+  .codex-progress {
+    display: flex; gap: 4px; justify-content: center;
+    margin-top: 0.6rem;
+  }
+  .prog-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    border: 1px solid rgba(200,168,74,0.3);
+    background: transparent;
+    transition: all 0.3s;
+  }
+  .prog-dot.filled { background: var(--gold); border-color: var(--gold); }
+  .prog-dot.correct { background: var(--unlock); border-color: var(--unlock); }
+
+  /* Wall inscription hint */
+  .wall-hint {
+    position: absolute;
+    font-size: clamp(1rem, 2.5vw, 1.8rem);
+    color: var(--gold);
+    opacity: 0.3;
+    letter-spacing: 0.3em;
+    pointer-events: none;
+  }
+  .wall-hint.top-left  { top: 12%; left: 6%; }
+  .wall-hint.top-right { top: 12%; right: 6%; }
+  .wall-hint.bottom    { bottom: 16%; left: 50%; transform: translateX(-50%); }
+</style>
+</head>
+<body>
+
+<div id="sky"></div>
+<div id="wind-streaks"></div>
+<div id="fade"></div>
+
+<div id="hud">
+  <div id="hud-room">Air · Codex Chamber</div>
+  <div id="hud-glyphs"></div>
+  <div id="hud-progress">Puzzles: 0/6</div>
+</div>
+
+<button id="minimap-toggle" onclick="document.getElementById('minimap-container').classList.toggle('visible')">Map</button>
+<div id="minimap-container" class="visible">
+  <canvas id="minimap-canvas" width="92" height="92"></canvas>
+</div>
+
+<div id="viewport">
+  <div id="scene">
+    <div class="face face-north" id="face-north"></div>
+    <div class="face face-south" id="face-south"></div>
+    <div class="face face-east"  id="face-east"></div>
+    <div class="face face-west"  id="face-west"></div>
+    <div class="face face-floor" id="face-floor"></div>
+    <div class="face face-ceiling" id="face-ceiling"></div>
+  </div>
+</div>
+
+<div id="bottom-nav">
+  <button class="b-btn" onclick="returnToAtrium()">← Atrium</button>
+  <div id="breadcrumb">Atrium · Air · Codex Chamber</div>
+  <button class="b-btn" disabled style="opacity:0.2;">→</button>
+</div>
+
+<div id="log"></div>
+
+<script>
+// ── ROOM DEFINITION ──────────────────────────────────────────
+ROOM_ID = 3;
+ROOM_TEMPLATE = 'air-codex-chamber';
+EXITS = { north: 'air_06.html', south: null, east: null, west: 'air_02.html' };
+PUZZLE_TYPE = 'rune-codex';
+
+// ── CODEX SOLUTION ───────────────────────────────────────────
+// 3×3 grid filled with sacred seven glyphs
+// Row 1: Aleph(0)  Dalet(3)  Zayin(6)
+// Row 2: Mem(12)   Yod(9)    Samek(14)
+// Row 3: Aleph(0)  Dalet(3)  Taw(21)
+const CODEX_SOLUTION = [0, 3, 6, 12, 9, 14, 0, 3, 21];
+
+// Wall hint glyphs
+const WALL_HINT_ROW1 = '𐤀 𐤃 𐤆';
+const WALL_HINT_ROW2 = '𐤌 𐤉 𐤎';
+const WALL_HINT_ROW3 = '𐤀 𐤃 𐤕';
+
+PUZZLE = {
+  cells: Array(9).fill(null),
+  selectedRune: null,
+
+  init() {
+    this.build();
+  },
+
+  build() {
+    const container = document.getElementById('puzzle-container');
+    const pool = sacredSeven.map(i => GLYPHS[i]);
+
+    container.innerHTML = `
+      <div class="codex-layout">
+        <div>
+          <div class="codex-grid" id="codex-grid"></div>
+          <div class="codex-progress" id="codex-progress"></div>
+        </div>
+
+        <div class="codex-side">
+          <div class="rune-tray-label">The Sacred Seven</div>
+          <div class="rune-tray-grid" id="rune-tray-grid"></div>
+          <div class="codex-feedback" id="codex-feedback"></div>
+        </div>
+      </div>
+      <div class="codex-clue">
+        "Nine marks, three rows — the breath sets the order.<br>
+        The wall remembers. Study it."
+      </div>
+    `;
+
+    // Build 3×3 grid
+    const grid = document.getElementById('codex-grid');
+    for (let i = 0; i < 9; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'codex-cell';
+      cell.id = `cell-${i}`;
+      cell.innerHTML = `
+        <span class="seq-num">${i + 1}</span>
+        <span class="cell-glyph"></span>
+        <span class="cell-name"></span>
+      `;
+      cell.addEventListener('click', () => this.placeRune(i));
+      grid.appendChild(cell);
+    }
+
+    // Build rune tray
+    const tray = document.getElementById('rune-tray-grid');
+    pool.forEach(g => {
+      const tile = document.createElement('div');
+      tile.className = 'rune-tile';
+      tile.id = `rtile-${g.id}`;
+      tile.innerHTML = `${g.symbol}<span class="rune-name">${g.name}</span>`;
+      tile.title = g.meaning;
+      tile.addEventListener('click', () => this.selectRune(g.id));
+      tray.appendChild(tile);
+    });
+
+    this.renderProgress();
+  },
+
+  selectRune(glyphId) {
+    this.selectedRune = (this.selectedRune === glyphId) ? null : glyphId;
+    document.querySelectorAll('.rune-tile').forEach(t => {
+      t.classList.toggle('active', parseInt(t.id.replace('rtile-', '')) === this.selectedRune);
+    });
+    const fb = document.getElementById('codex-feedback');
+    if (this.selectedRune !== null) {
+      const g = GLYPHS.find(gl => gl.id === this.selectedRune);
+      if (g) {
+        fb.textContent = `${g.symbol} ${g.name} · ${g.meaning}`;
+        fb.className = 'codex-feedback';
+      }
+    } else {
+      fb.textContent = '';
+      fb.className = 'codex-feedback';
+    }
+  },
+
+  placeRune(cellIdx) {
+    if (this.selectedRune === null) {
+      // Clear cell if occupied
+      if (this.cells[cellIdx] !== null) {
+        this.cells[cellIdx] = null;
+        this.renderGrid();
+        this.renderProgress();
+        addLog(`Cleared slot ${cellIdx + 1}`);
+      }
+      return;
+    }
+    this.cells[cellIdx] = this.selectedRune;
+    this.renderGrid();
+    this.renderProgress();
+
+    if (this.cells.every(c => c !== null)) {
+      setTimeout(() => this.validate(), 400);
+    }
+  },
+
+  renderGrid() {
+    for (let i = 0; i < 9; i++) {
+      const cell  = document.getElementById(`cell-${i}`);
+      const glyph = cell.querySelector('.cell-glyph');
+      const name  = cell.querySelector('.cell-name');
+      if (this.cells[i] !== null) {
+        const g = GLYPHS.find(gl => gl.id === this.cells[i]);
+        if (g) {
+          glyph.textContent = g.symbol;
+          name.textContent  = g.name;
+        }
+        cell.classList.add('filled');
+        cell.classList.remove('correct', 'wrong');
+      } else {
+        glyph.textContent = '';
+        name.textContent  = '';
+        cell.classList.remove('filled', 'correct', 'wrong');
+      }
+    }
+  },
+
+  renderProgress() {
+    const prog = document.getElementById('codex-progress');
+    prog.innerHTML = this.cells.map(c => {
+      const cls = c !== null ? 'prog-dot filled' : 'prog-dot';
+      return `<div class="${cls}"></div>`;
+    }).join('');
+  },
+
+  validate() {
+    const correct = CODEX_SOLUTION.every((v, i) => v === this.cells[i]);
+    const fb = document.getElementById('codex-feedback');
+
+    if (correct) {
+      for (let i = 0; i < 9; i++) {
+        setTimeout(() => {
+          document.getElementById(`cell-${i}`).classList.add('correct');
+        }, i * 60);
+      }
+      fb.textContent = '𐤕 The nine are spoken true · The chamber yields';
+      fb.className = 'codex-feedback right';
+      const prog = document.getElementById('codex-progress');
+      prog.innerHTML = this.cells.map(() =>
+        '<div class="prog-dot correct"></div>'
+      ).join('');
+      markPuzzleSolved(ROOM_ID);
+      addLog('Codex solved — the inscription glows');
+      updateHUD();
+      setTimeout(() => { buildRoom(); updateHUD(); }, 1800);
+    } else {
+      for (let i = 0; i < 9; i++) {
+        if (this.cells[i] !== CODEX_SOLUTION[i]) {
+          document.getElementById(`cell-${i}`).classList.add('wrong');
+          setTimeout(() => {
+            document.getElementById(`cell-${i}`).classList.remove('wrong');
+          }, 600);
+        }
+      }
+      fb.textContent = '𐤆 The sequence is wrong · The wall holds';
+      fb.className = 'codex-feedback wrong';
+      addLog('Wrong codex — study the wall');
+      setTimeout(() => {
+        this.cells = Array(9).fill(null);
+        this.selectedRune = null;
+        this.renderGrid();
+        this.renderProgress();
+        document.querySelectorAll('.rune-tile').forEach(t => t.classList.remove('active'));
+        fb.textContent = 'Study the wall again · Begin anew';
+        fb.className = 'codex-feedback';
+      }, 1000);
+    }
+  },
+};
+</script>
+
+<script src="engine.js"></script>
+<script>
+// ── OVERRIDE: Add wall inscription hints ─────────────────────
+const _origBuild = buildRoom;
+buildRoom = function() {
+  _origBuild();
+
+  if (!isPuzzleSolved(ROOM_ID)) {
+    const north = document.getElementById('face-north');
+    const hints = document.createElement('div');
+    hints.innerHTML = `
+      <div class="wall-hint top-left">${WALL_HINT_ROW1}</div>
+      <div class="wall-hint top-right">${WALL_HINT_ROW2}</div>
+      <div class="wall-hint bottom">${WALL_HINT_ROW3}</div>
+    `;
+    north.appendChild(hints);
+  }
+};
+
+initEngine();
+</script>
+</body>
+</html>
