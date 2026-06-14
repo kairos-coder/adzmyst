@@ -6,13 +6,14 @@
 <title>ADZMYST · The Age of Air</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Cinzel+Decorative:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
 <style>
+/* ── TOKENS (overridden by palette on load) ── */
 :root {
   --void:       #07080f;
   --sky-deep:   #0a1428;
   --sky-mid:    #1a3050;
   --cerulean:   #4a7aaa;
-  --air-cyan:   #7ab8d4;
-  --air-pale:   #b8dce8;
+  --age-accent: #7ab8d4;
+  --age-pale:   #b8dce8;
   --silver:     #b8cce0;
   --breath:     #e8f2ff;
   --gold:       #c8a84a;
@@ -24,7 +25,6 @@
   --wall-bg:    rgba(15,28,55,0.6);
   --desk-wood:  #3a2a1a;
   --desk-top:   #4a3520;
-  --candle-wax: #e8d890;
   --ink-dark:   #1a1030;
 }
 
@@ -42,7 +42,7 @@ html, body {
 /* ── SKY ── */
 #sky {
   position: fixed; inset: 0; z-index: 0;
-  background: linear-gradient(180deg, #03050e 0%, #0d1a35 30%, #1a3055 60%, #253a60 100%);
+  background: linear-gradient(180deg, var(--void) 0%, var(--sky-deep) 30%, var(--sky-mid) 60%, var(--sky-deep) 100%);
   animation: skybreath 20s ease-in-out infinite alternate;
 }
 @keyframes skybreath {
@@ -55,7 +55,7 @@ html, body {
 .wind-streak {
   position: fixed; z-index: 1;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--air-pale), transparent);
+  background: linear-gradient(90deg, transparent, var(--age-pale), transparent);
   opacity: 0;
   pointer-events: none;
   animation: windpass var(--dur, 4s) ease-in-out var(--delay, 0s) infinite;
@@ -87,7 +87,7 @@ html, body {
 #hud-room {
   font-family: 'Cinzel', serif;
   font-size: 0.7rem; letter-spacing: 0.3em;
-  color: var(--air-cyan); text-transform: uppercase;
+  color: var(--age-accent); text-transform: uppercase;
 }
 #hud-glyphs { font-size: 1.2rem; color: var(--gold); opacity: 0.6; letter-spacing: 0.2em; }
 #hud-progress {
@@ -106,9 +106,7 @@ html, body {
 .room.active { display: flex; }
 
 /* ── ROOM 1 — THRESHOLD ── */
-#room-threshold {
-  perspective: 800px;
-}
+#room-threshold { perspective: 800px; }
 
 .tunnel-frame {
   position: relative;
@@ -117,7 +115,6 @@ html, body {
   transform-style: preserve-3d;
 }
 
-/* Nested tunnel rings for depth illusion */
 .tunnel-ring {
   position: absolute;
   border: 1px solid rgba(122,184,212,0.3);
@@ -139,7 +136,7 @@ html, body {
   font-family: 'Cinzel Decorative', serif;
   font-size: clamp(1.4rem, 4vw, 2.5rem);
   letter-spacing: 0.3em;
-  color: var(--air-cyan);
+  color: var(--age-accent);
   text-shadow: 0 0 30px rgba(122,184,212,0.5);
 }
 .room-subtitle {
@@ -156,7 +153,6 @@ html, body {
   font-style: italic;
 }
 
-/* Glyph clue embedded in wall */
 .wall-clue {
   font-size: clamp(2rem, 5vw, 3.5rem);
   color: var(--gold); letter-spacing: 0.4em;
@@ -173,7 +169,6 @@ html, body {
   margin-top: -0.5rem;
 }
 
-/* Passage arch */
 .passage-arch {
   width: clamp(100px, 18vw, 160px);
   height: clamp(130px, 24vw, 210px);
@@ -188,14 +183,14 @@ html, body {
   margin-top: 0.5rem;
 }
 .passage-arch:hover {
-  border-color: var(--air-cyan);
+  border-color: var(--age-accent);
   background: rgba(122,184,212,0.12);
   box-shadow: 0 0 30px rgba(122,184,212,0.2), inset 0 0 20px rgba(122,184,212,0.1);
 }
 .passage-arch::after {
   content: '→';
   font-size: 1.5rem;
-  color: var(--air-cyan); opacity: 0.7;
+  color: var(--age-accent); opacity: 0.7;
 }
 .passage-arch .arch-label {
   position: absolute; bottom: -1.5rem;
@@ -206,14 +201,9 @@ html, body {
 }
 
 /* ── ROOM 2 — CODEX CHAMBER ── */
-#room-codex {
-  gap: 1.5rem;
-  padding: 1rem;
-}
+#room-codex { gap: 1.5rem; padding: 1rem; }
 
-.codex-header {
-  text-align: center;
-}
+.codex-header { text-align: center; }
 .codex-title {
   font-family: 'Cinzel Decorative', serif;
   font-size: clamp(1.2rem, 3vw, 2rem);
@@ -237,7 +227,6 @@ html, body {
   flex-wrap: wrap;
 }
 
-/* 3×3 grid */
 .codex-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -299,11 +288,8 @@ html, body {
   75%  { transform: translateX(4px); }
 }
 
-/* Rune tray */
 .rune-tray {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
+  display: flex; flex-direction: column; gap: 0.6rem;
 }
 .tray-label {
   font-family: 'Cinzel', serif;
@@ -342,19 +328,16 @@ html, body {
   background: rgba(200,168,74,0.1);
 }
 .rune-tile.active {
-  border-color: var(--air-cyan);
-  color: var(--air-cyan);
+  border-color: var(--age-accent);
+  color: var(--age-accent);
   background: rgba(122,184,212,0.1);
   box-shadow: 0 0 10px rgba(122,184,212,0.2);
 }
 
-/* Codex clue panel */
 .codex-clue {
-  font-size: 0.82rem;
-  line-height: 1.8; max-width: 520px;
+  font-size: 0.82rem; line-height: 1.8; max-width: 520px;
   color: var(--silver); opacity: 0.65;
-  font-style: italic;
-  text-align: center;
+  font-style: italic; text-align: center;
 }
 
 .codex-feedback {
@@ -366,7 +349,6 @@ html, body {
 .codex-feedback.wrong { color: var(--danger); }
 .codex-feedback.right { color: var(--unlock); }
 
-/* Progress indicator */
 .codex-progress {
   display: flex; gap: 4px; justify-content: center;
 }
@@ -381,10 +363,7 @@ html, body {
 .prog-dot.correct { background: var(--unlock); border-color: var(--unlock); }
 
 /* ── ROOM 3 — SCRIBE'S DESK ── */
-#room-desk {
-  gap: 1rem;
-  padding: 1rem;
-}
+#room-desk { gap: 1rem; padding: 1rem; }
 
 .desk-header { text-align: center; }
 .desk-title {
@@ -409,11 +388,7 @@ html, body {
   gap: 1.2rem;
 }
 
-/* CSS 3D desk surface */
-.desk-3d {
-  perspective: 600px;
-  perspective-origin: 50% 20%;
-}
+.desk-3d { perspective: 600px; perspective-origin: 50% 20%; }
 
 .desk-surface {
   width: clamp(300px, 55vw, 520px);
@@ -434,7 +409,6 @@ html, body {
   padding: 1rem 1.5rem;
 }
 
-/* Desk grain */
 .desk-surface::before {
   content: '';
   position: absolute; inset: 0;
@@ -449,7 +423,6 @@ html, body {
   pointer-events: none;
 }
 
-/* Desk slots — where you drop objects */
 .desk-slot {
   width: clamp(55px, 9vw, 80px);
   height: clamp(55px, 9vw, 80px);
@@ -471,7 +444,7 @@ html, body {
   position: absolute; bottom: 3px;
 }
 .desk-slot.highlight {
-  border-color: var(--air-cyan);
+  border-color: var(--age-accent);
   background: rgba(122,184,212,0.08);
   box-shadow: 0 0 12px rgba(122,184,212,0.2);
 }
@@ -490,7 +463,6 @@ html, body {
   pointer-events: none;
 }
 
-/* Object shelf — where you pick up items */
 .object-shelf {
   display: flex;
   gap: clamp(0.8rem, 2vw, 1.5rem);
@@ -515,7 +487,7 @@ html, body {
   transform: translateY(-3px);
 }
 .shelf-object.selected {
-  border-color: var(--air-cyan);
+  border-color: var(--age-accent);
   background: rgba(122,184,212,0.1);
   box-shadow: 0 0 14px rgba(122,184,212,0.25);
   transform: translateY(-4px);
@@ -534,7 +506,6 @@ html, body {
   color: var(--gold-dim);
 }
 
-/* Desk clue */
 .desk-clue {
   font-size: 0.85rem; line-height: 1.8;
   max-width: 480px; text-align: center;
@@ -567,19 +538,15 @@ html, body {
 .desk-btn.primary { border-color: var(--gold); color: var(--gold); }
 .desk-btn.primary:hover { background: rgba(200,168,74,0.1); }
 
-/* ── ROOM 4 — EXIT PORTAL ── */
-#room-exit {
-  gap: 2rem;
-  text-align: center;
-  padding: 2rem;
-}
+/* ── ROOM 4 — EXIT ── */
+#room-exit { gap: 2rem; text-align: center; padding: 2rem; }
 
 .exit-title {
   font-family: 'Cinzel Decorative', serif;
   font-size: clamp(1.5rem, 4vw, 3rem);
   color: var(--breath);
   letter-spacing: 0.3em;
-  text-shadow: 0 0 40px rgba(122,184,212,0.6), 0 0 80px rgba(122,184,212,0.3);
+  text-shadow: 0 0 40px var(--age-glow, rgba(122,184,212,0.6)), 0 0 80px var(--age-glow, rgba(122,184,212,0.3));
 }
 .exit-lore {
   font-size: clamp(0.9rem, 1.5vw, 1rem);
@@ -592,7 +559,7 @@ html, body {
   width: clamp(100px, 16vw, 160px);
   height: clamp(100px, 16vw, 160px);
   border-radius: 50%;
-  border: 2px solid var(--air-cyan);
+  border: 2px solid var(--age-accent);
   background: radial-gradient(circle, rgba(122,184,212,0.15) 0%, transparent 70%);
   display: flex; align-items: center; justify-content: center;
   font-size: 3rem;
@@ -622,7 +589,7 @@ html, body {
   font-family: 'Cinzel', serif;
   font-size: 0.65rem; letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: var(--air-cyan); opacity: 0.7;
+  color: var(--age-accent); opacity: 0.7;
 }
 
 /* ── BOTTOM NAV ── */
@@ -676,14 +643,13 @@ html, body {
 <!-- HUD -->
 <div id="hud">
   <div id="hud-room">The Age of Air · Room I</div>
-  <div id="hud-glyphs">𐤀 𐤃 𐤆 𐤌 𐤉 𐤎 𐤕</div>
+  <div id="hud-glyphs"></div>
   <div id="hud-progress">I · II · III · IV</div>
 </div>
 
 <!-- ══ ROOM 1 — THRESHOLD ══ -->
 <div class="room active" id="room-threshold">
   <div class="tunnel-frame">
-    <!-- Depth rings -->
     <div class="tunnel-ring" style="width:100%;height:100%;--tz:0px;opacity:0.6;border-radius:2px;"></div>
     <div class="tunnel-ring" style="width:82%;height:82%;--tz:-60px;opacity:0.4;border-radius:3px;"></div>
     <div class="tunnel-ring" style="width:64%;height:64%;--tz:-120px;opacity:0.25;border-radius:4px;"></div>
@@ -691,17 +657,12 @@ html, body {
     <div class="tunnel-ring" style="width:28%;height:28%;--tz:-240px;opacity:0.08;border-radius:6px;"></div>
 
     <div class="threshold-content">
-      <div class="room-title">The Threshold</div>
-      <div class="room-subtitle">The Age of Air · First Chamber</div>
-      <div class="room-lore">
-        The breath that names things entered here.<br>
-        Before words, there were marks. Before marks, there was wind.<br>
-        Study the wall before you advance.
-      </div>
+      <div class="room-title" id="threshold-title">The Threshold</div>
+      <div class="room-subtitle" id="threshold-subtitle">The Age of Air · First Chamber</div>
+      <div class="room-lore" id="threshold-lore"></div>
 
-      <!-- Glyph clue: the codex answer is written here in plain sight -->
-      <div class="wall-clue" title="The breath is the key — read left to right, top to bottom">𐤀𐤃𐤆 · 𐤌𐤉𐤎 · 𐤀𐤃𐤕</div>
-      <div class="wall-clue-label">The Wall of Nine · Study it well</div>
+      <div class="wall-clue" id="wall-clue" title="The breath is the key"></div>
+      <div class="wall-clue-label">The Wall · Study it well</div>
 
       <div class="passage-arch" onclick="Realm.goRoom(2)">
         <span class="arch-label">Enter the Codex Chamber</span>
@@ -713,63 +674,41 @@ html, body {
 <!-- ══ ROOM 2 — CODEX CHAMBER ══ -->
 <div class="room" id="room-codex">
   <div class="codex-header">
-    <div class="codex-title">The Codex of Nine</div>
-    <div class="codex-instruction">Select a rune · Place it in sequence · Nine slots · The order was written on the wall</div>
+    <div class="codex-title" id="codex-title">The Codex of Nine</div>
+    <div class="codex-instruction" id="codex-instruction">Select a rune · Place it in sequence</div>
   </div>
 
   <div class="codex-layout">
-    <!-- 3×3 grid -->
     <div>
-      <div class="codex-grid" id="codex-grid">
-        <!-- 9 cells built by JS -->
-      </div>
-      <div class="codex-progress" id="codex-progress" style="margin-top:0.8rem;">
-        <!-- 9 dots -->
-      </div>
+      <div class="codex-grid" id="codex-grid"></div>
+      <div class="codex-progress" id="codex-progress" style="margin-top:0.8rem;"></div>
     </div>
 
-    <!-- Rune tray -->
     <div class="rune-tray">
-      <div class="tray-label">The Seven Glyphs</div>
-      <div class="rune-tray-grid" id="rune-tray-grid">
-        <!-- tiles built by JS -->
-      </div>
+      <div class="tray-label">The Sacred Glyphs</div>
+      <div class="rune-tray-grid" id="rune-tray-grid"></div>
       <div class="codex-feedback" id="codex-feedback"></div>
     </div>
   </div>
 
-  <div class="codex-clue">
-    "Nine marks, three rows — the breath sets the order.<br>
-    Strength opens. Door and cut follow. The deep comes next,<br>
-    with hand and pillar. The final row: strength returns, then door, then the mark of completion."
-  </div>
+  <div class="codex-clue" id="codex-clue"></div>
 </div>
 
 <!-- ══ ROOM 3 — SCRIBE'S DESK ══ -->
 <div class="room" id="room-desk">
   <div class="desk-header">
-    <div class="desk-title">The Scribe's Desk</div>
-    <div class="desk-instruction">Place each object in the right ritual order · left to right · as the inscription demands</div>
+    <div class="desk-title" id="desk-title">The Scribe's Desk</div>
+    <div class="desk-instruction" id="desk-instruction">Place each object in the correct order</div>
   </div>
 
   <div class="desk-scene">
-    <!-- 3D desk -->
     <div class="desk-3d">
-      <div class="desk-surface" id="desk-surface">
-        <!-- 3 slots built by JS -->
-      </div>
+      <div class="desk-surface" id="desk-surface"></div>
     </div>
 
-    <!-- Object shelf -->
-    <div class="object-shelf" id="object-shelf">
-      <!-- built by JS -->
-    </div>
+    <div class="object-shelf" id="object-shelf"></div>
 
-    <div class="desk-clue" id="desk-clue">
-      "The candle is lit before the book is opened.<br>
-      The book is opened before the inkwell is unstoppered.<br>
-      Light · Word · Mark — in that order, the ritual is complete."
-    </div>
+    <div class="desk-clue" id="desk-clue"></div>
 
     <div class="desk-feedback" id="desk-feedback"></div>
 
@@ -782,15 +721,10 @@ html, body {
 
 <!-- ══ ROOM 4 — EXIT ══ -->
 <div class="room" id="room-exit">
-  <div class="exit-title">The Age of Air — Traversed</div>
-  <div class="exit-lore">
-    You have read the wall. You have spoken the nine.<br>
-    You have lit the candle, opened the book, and unstoppered the ink.<br>
-    The breath has passed through you and become language.<br>
-    Return to the Atrium — the other Ages call.
-  </div>
+  <div class="exit-title" id="exit-title">The Age of Air — Traversed</div>
+  <div class="exit-lore" id="exit-lore"></div>
   <div style="display:flex;flex-direction:column;align-items:center;gap:0.8rem;">
-    <div class="exit-portal" onclick="Realm.returnToAtrium()">𓂝</div>
+    <div class="exit-portal" onclick="Realm.returnToAtrium()" id="exit-icon">𓂝</div>
     <div class="exit-label">Return to the Atrium</div>
   </div>
 </div>
@@ -806,49 +740,122 @@ html, body {
 <div id="log" id="log-entries"></div>
 
 <script>
-// ══ DATA ════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// ADZMYST · AGE OF AIR · JSON-DRIVEN DUNGEON
+// Loads canon from json/ folder. All Ages follow this pattern.
+// ═══════════════════════════════════════════════════════════════
 
-const GLYPHS = [
-  { g: '𐤀', name: 'Aleph',  meaning: 'Ox · Strength · Beginning' },
-  { g: '𐤃', name: 'Dalet',  meaning: 'Door · Passage · Threshold' },
-  { g: '𐤆', name: 'Zayin',  meaning: 'Weapon · Division · The Cut' },
-  { g: '𐤌', name: 'Mem',    meaning: 'Water · Chaos · The Deep' },
-  { g: '𐤉', name: 'Yod',    meaning: 'Hand · Action · Making' },
-  { g: '𐤎', name: 'Samek',  meaning: 'Pillar · Support · What Holds' },
-  { g: '𐤕', name: 'Taw',    meaning: 'Mark · Signature · Completion' },
-];
+// ── GLOBAL DATA (loaded from JSON) ────────────────────────────
+const AGE_ID = 'air';  // Change this for fire.html, earth.html, water.html
+let GLYPHS = [];       // Full 22-glyph array from glyphs.json
+let AGE = null;        // This Age's data from ages.json
+let ITEMS = [];        // This Age's items from items.json
+let ROOMS = [];        // This Age's room templates from rooms.json
+let PALETTE = null;    // This Age's color palette from palettes.json
+let sacredSeven = [];  // Indices of the 7 sacred glyphs
 
-// Codex solution: 9 glyph indices, left→right, top→bottom
-// Wall clue shows: 𐤀𐤃𐤆 · 𐤌𐤉𐤎 · 𐤀𐤃𐤕
-// Row 1: Aleph(0) Dalet(1) Zayin(2)
-// Row 2: Mem(3)   Yod(4)   Samek(5)
-// Row 3: Aleph(0) Dalet(1) Taw(6)
-const CODEX_SOLUTION = [0, 1, 2, 3, 4, 5, 0, 1, 6];
+// ── DATA LOADER ───────────────────────────────────────────────
+async function loadJSON(path) {
+  const res = await fetch(path);
+  if (!res.ok) throw new Error(`Failed to load ${path}: ${res.status}`);
+  return res.json();
+}
 
-// Desk ritual solution: [candle, book, inkwell] → positions [0,1,2]
-// Correct order: Light(candle) → Word(book) → Mark(inkwell)
-const DESK_OBJECTS = [
-  { id: 'candle',  icon: '🕯️', name: 'Candle',  desc: 'Light' },
-  { id: 'book',    icon: '📖', name: 'Book',    desc: 'Word' },
-  { id: 'inkwell', icon: '🖋️', name: 'Inkwell', desc: 'Mark' },
-];
-const DESK_SOLUTION = ['candle', 'book', 'inkwell']; // left→right
+async function loadCanon() {
+  try {
+    const [glyphsData, agesData, itemsData, roomsData, palettesData] = await Promise.all([
+      loadJSON('json/glyphs.json'),
+      loadJSON('json/ages.json'),
+      loadJSON('json/items.json'),
+      loadJSON('json/rooms.json'),
+      loadJSON('json/palettes.json'),
+    ]);
 
-// ══ STATE ════════════════════════════════════════════════════
+    GLYPHS = glyphsData.glyphs;
+    sacredSeven = glyphsData.meta.sacredSeven;
 
+    // Find this Age
+    AGE = agesData.ages.find(a => a.id === AGE_ID);
+    if (!AGE) throw new Error(`Age "${AGE_ID}" not found in ages.json`);
+
+    // This Age's items
+    ITEMS = itemsData.items[AGE_ID] || [];
+
+    // This Age's room templates
+    ROOMS = roomsData.templates[AGE_ID] || [];
+
+    // This Age's palette
+    PALETTE = palettesData.palettes[AGE_ID] || palettesData.palettes.air;
+
+    console.log(`[${AGE.name}] Canon loaded: ${GLYPHS.length} glyphs, ${ITEMS.length} items, ${ROOMS.length} room templates`);
+    return true;
+  } catch (err) {
+    console.error(`[${AGE_ID}] Failed to load canon:`, err);
+    return false;
+  }
+}
+
+// ── APPLY PALETTE ─────────────────────────────────────────────
+function applyPalette() {
+  if (!PALETTE) return;
+  const root = document.documentElement.style;
+  root.setProperty('--sky-deep', PALETTE.secondary);
+  root.setProperty('--sky-mid', PALETTE.accent);
+  root.setProperty('--age-accent', PALETTE.portal);
+  root.setProperty('--age-pale', PALETTE.silverBright);
+  root.setProperty('--silver', PALETTE.silver);
+  root.setProperty('--breath', PALETTE.silverBright);
+  root.setProperty('--gold', PALETTE.gold);
+  root.setProperty('--gold-dim', PALETTE.silverDark);
+  root.setProperty('--unlock', PALETTE.unlock);
+  root.setProperty('--danger', '#c87070');
+  root.setProperty('--gold-glow', PALETTE.border.replace('0.3', '0.35'));
+}
+
+// ── PUZZLE DATA (derived from JSON) ───────────────────────────
+// Codex solution: 9 glyph IDs forming a 3×3 grid
+// Built from the Age's inscription pattern, repeated with variation
+let CODEX_SOLUTION = [];
+
+function buildCodexSolution() {
+  // Air's codex: rows from the sacred seven, forming a 3×3 pattern
+  // Row 1: Aleph(0)  Dalet(3)  Zayin(6)
+  // Row 2: Mem(12)   Yod(9)    Samek(14)
+  // Row 3: Aleph(0)  Dalet(3)  Taw(21)
+  // Maps to: first three sacred in order, middle three, then first two + last
+  const s = sacredSeven; // [0, 3, 6, 12, 9, 14, 21]
+  CODEX_SOLUTION = [
+    s[0], s[1], s[2],  // Row 1
+    s[3], s[4], s[5],  // Row 2
+    s[0], s[1], s[6],  // Row 3
+  ];
+}
+
+// Desk solution: item IDs in left-to-right order
+let DESK_OBJECTS = [];
+let DESK_SOLUTION = [];
+
+function buildDeskData() {
+  // Air items: candle(light), book(word), inkwell(mark)
+  // Solution order: as they appear in items.json
+  DESK_OBJECTS = ITEMS.filter(item => item.useRoom === 'air-scribe-desk');
+  if (DESK_OBJECTS.length >= 3) {
+    DESK_SOLUTION = DESK_OBJECTS.slice(0, 3).map(item => item.id);
+  }
+}
+
+// ── STATE ────────────────────────────────────────────────────
 const S = {
   currentRoom: 1,
-  // Codex
-  codexCells: Array(9).fill(null),   // glyph index or null
-  selectedRune: null,                // currently selected rune index
+  codexCells: Array(9).fill(null),
+  selectedRune: null,
   codexSolved: false,
-  // Desk
-  deskSlots: [null, null, null],     // object id or null
+  deskSlots: [null, null, null],
   selectedObj: null,
   deskSolved: false,
 
   save() {
-    localStorage.setItem('adzmyst_air', JSON.stringify({
+    localStorage.setItem(`adzmyst_${AGE_ID}`, JSON.stringify({
       codexSolved: this.codexSolved,
       deskSolved: this.deskSolved,
       room: this.currentRoom,
@@ -856,7 +863,7 @@ const S = {
   },
   load() {
     try {
-      const d = JSON.parse(localStorage.getItem('adzmyst_air') || '{}');
+      const d = JSON.parse(localStorage.getItem(`adzmyst_${AGE_ID}`) || '{}');
       if (d.codexSolved) this.codexSolved = true;
       if (d.deskSolved)  this.deskSolved  = true;
       if (d.room && d.room > 1) this.currentRoom = d.room;
@@ -864,8 +871,7 @@ const S = {
   },
 };
 
-// ══ LOGGING ══════════════════════════════════════════════════
-
+// ── LOGGING ──────────────────────────────────────────────────
 const logLines = [];
 function addLog(msg) {
   logLines.unshift(msg);
@@ -874,8 +880,82 @@ function addLog(msg) {
     logLines.map(l => `<div>${l}</div>`).join('');
 }
 
-// ══ REALM NAV ════════════════════════════════════════════════
+// ── CONTENT POPULATION (from JSON) ────────────────────────────
+function populateContent() {
+  // HUD
+  document.getElementById('hud-glyphs').textContent =
+    sacredSeven.map(i => GLYPHS[i].symbol).join(' ');
 
+  // Threshold
+  document.getElementById('threshold-title').textContent = ROOMS[0]?.name || 'The Threshold';
+  document.getElementById('threshold-subtitle').textContent =
+    `${AGE.name} · ${ROOMS[0]?.name || 'First Chamber'}`;
+  document.getElementById('threshold-lore').textContent =
+    ROOMS[0]?.atmosphere || AGE.lore;
+
+  // Wall clue: the codex answer written out
+  const wallGlyphs = buildWallClue();
+  document.getElementById('wall-clue').textContent = wallGlyphs;
+  document.getElementById('wall-clue').title = 'The breath is the key — read left to right, top to bottom';
+
+  // Codex chamber
+  document.getElementById('codex-title').textContent = ROOMS[1]?.name || 'The Codex Chamber';
+  document.getElementById('codex-instruction').textContent =
+    'Select a rune · Place it in sequence · Nine slots · The order was written on the wall';
+  document.getElementById('codex-clue').textContent = buildCodexClue();
+
+  // Desk
+  document.getElementById('desk-title').textContent = ROOMS[2]?.name || "The Scribe's Desk";
+  document.getElementById('desk-instruction').textContent =
+    'Place each object in the correct ritual order · left to right · as the inscription demands';
+  document.getElementById('desk-clue').textContent = buildDeskClue();
+
+  // Exit
+  document.getElementById('exit-title').textContent = `${AGE.name} — Traversed`;
+  document.getElementById('exit-lore').textContent = buildExitLore();
+  document.getElementById('exit-icon').textContent = AGE.icon;
+}
+
+function buildWallClue() {
+  // Show the codex solution as a 3×3 display with row separators
+  const s = CODEX_SOLUTION;
+  if (s.length < 9) return '𐤀𐤃𐤆 · 𐤌𐤉𐤎 · 𐤀𐤃𐤕'; // fallback
+  const row1 = s.slice(0, 3).map(i => GLYPHS[i].symbol).join('');
+  const row2 = s.slice(3, 6).map(i => GLYPHS[i].symbol).join('');
+  const row3 = s.slice(6, 9).map(i => GLYPHS[i].symbol).join('');
+  return `${row1} · ${row2} · ${row3}`;
+}
+
+function buildCodexClue() {
+  // Generate a poetic clue from the glyph meanings
+  const s = CODEX_SOLUTION;
+  if (s.length < 9) return '"Study the wall. The breath sets the order."';
+  const r1 = s.slice(0, 3).map(i => GLYPHS[i].meaning.split('·')[0].trim()).join(', ');
+  const r2 = s.slice(3, 6).map(i => GLYPHS[i].meaning.split('·')[0].trim()).join(', ');
+  const r3 = s.slice(6, 9).map(i => GLYPHS[i].meaning.split('·')[0].trim()).join(', ');
+  return `"Nine marks, three rows — the breath sets the order.
+First row: ${r1}.
+Second row: ${r2}.
+Third row: ${r3}."`;
+}
+
+function buildDeskClue() {
+  if (DESK_OBJECTS.length < 3) return '"Place the objects in the correct order."';
+  const names = DESK_SOLUTION.map(id => {
+    const obj = DESK_OBJECTS.find(o => o.id === id);
+    return obj ? obj.desc : id;
+  });
+  return `"${names[0]} comes first. Then ${names[1]}. Finally ${names[2]} — in that order, the ritual is complete."`;
+}
+
+function buildExitLore() {
+  return `You have read the wall. You have spoken the nine.
+You have completed the ritual of ${AGE.name}.
+The breath has passed through you and become language.
+Return to the Atrium — the other Ages call.`;
+}
+
+// ── REALM NAV ────────────────────────────────────────────────
 const Realm = {
   goRoom(n) {
     fade(() => {
@@ -901,17 +981,19 @@ const Realm = {
 };
 
 function updateHUD(room) {
-  const names = ['', 'The Threshold', 'The Codex Chamber', "The Scribe's Desk", 'The Exit'];
+  const names = ['', ROOMS[0]?.name || 'The Threshold',
+                    ROOMS[1]?.name || 'The Codex Chamber',
+                    ROOMS[2]?.name || "The Scribe's Desk",
+                    'The Exit'];
   const rooms = ['', 'I', 'II', 'III', 'IV'];
   document.getElementById('hud-room').textContent =
-    `The Age of Air · Room ${rooms[room]}`;
+    `${AGE.name} · Room ${rooms[room]}`;
   document.getElementById('breadcrumb').textContent =
-    `Atrium · Age of Air · ${names[room]}`;
+    `Atrium · ${AGE.name} · ${names[room]}`;
 
-  // Mark progress in HUD
   const steps = ['I', 'II', 'III', 'IV'];
   document.getElementById('hud-progress').innerHTML =
-    steps.map((s,i) => {
+    steps.map((s, i) => {
       const done = i + 1 < room;
       const cur  = i + 1 === room;
       const col  = done ? 'var(--unlock)' : cur ? 'var(--gold)' : 'rgba(184,204,224,0.3)';
@@ -925,8 +1007,7 @@ function fade(fn) {
   setTimeout(() => { fn(); setTimeout(() => el.classList.remove('active'), 80); }, 500);
 }
 
-// ══ CODEX ENGINE ═════════════════════════════════════════════
-
+// ── CODEX ENGINE ─────────────────────────────────────────────
 const Codex = {
   init() {
     this.buildGrid();
@@ -955,28 +1036,32 @@ const Codex = {
   buildTray() {
     const tray = document.getElementById('rune-tray-grid');
     tray.innerHTML = '';
-    GLYPHS.forEach((g, i) => {
+    // Show only the sacred seven (or full 22 — you decide)
+    const pool = sacredSeven.map(i => GLYPHS[i]);
+    pool.forEach((g, displayIdx) => {
       const tile = document.createElement('div');
       tile.className = 'rune-tile';
-      tile.id = `rtile-${i}`;
-      tile.innerHTML = `${g.g}<span class="rune-name">${g.name}</span>`;
+      tile.id = `rtile-${g.id}`;
+      tile.innerHTML = `${g.symbol}<span class="rune-name">${g.name}</span>`;
       tile.title = g.meaning;
-      tile.addEventListener('click', () => Codex.selectRune(i));
+      tile.addEventListener('click', () => Codex.selectRune(g.id));
       tray.appendChild(tile);
     });
   },
 
-  selectRune(idx) {
+  selectRune(glyphId) {
     if (S.codexSolved) return;
-    S.selectedRune = (S.selectedRune === idx) ? null : idx;
-    document.querySelectorAll('.rune-tile').forEach((t, i) => {
-      t.classList.toggle('active', i === S.selectedRune);
+    S.selectedRune = (S.selectedRune === glyphId) ? null : glyphId;
+    document.querySelectorAll('.rune-tile').forEach(t => {
+      t.classList.toggle('active', parseInt(t.id.replace('rtile-', '')) === S.selectedRune);
     });
     const fb = document.getElementById('codex-feedback');
     if (S.selectedRune !== null) {
-      const g = GLYPHS[S.selectedRune];
-      fb.textContent = `${g.g} ${g.name} · ${g.meaning}`;
-      fb.className = 'codex-feedback';
+      const g = GLYPHS.find(gl => gl.id === S.selectedRune);
+      if (g) {
+        fb.textContent = `${g.symbol} ${g.name} · ${g.meaning}`;
+        fb.className = 'codex-feedback';
+      }
     } else {
       fb.textContent = '';
     }
@@ -985,7 +1070,6 @@ const Codex = {
   placeRune(cellIdx) {
     if (S.codexSolved) return;
     if (S.selectedRune === null) {
-      // If cell has a rune, clear it
       if (S.codexCells[cellIdx] !== null) {
         S.codexCells[cellIdx] = null;
         this.renderGrid();
@@ -994,12 +1078,9 @@ const Codex = {
       }
       return;
     }
-
     S.codexCells[cellIdx] = S.selectedRune;
     this.renderGrid();
     this.renderProgress();
-
-    // Check if grid is full → auto-validate
     if (S.codexCells.every(c => c !== null)) {
       setTimeout(() => this.validate(), 300);
     }
@@ -1011,9 +1092,11 @@ const Codex = {
       const glyph = document.querySelector(`#cell-${i} .cell-glyph`);
       const name  = document.querySelector(`#cell-${i} .cell-name`);
       if (S.codexCells[i] !== null) {
-        const g = GLYPHS[S.codexCells[i]];
-        glyph.textContent = g.g;
-        name.textContent  = g.name;
+        const g = GLYPHS.find(gl => gl.id === S.codexCells[i]);
+        if (g) {
+          glyph.textContent = g.symbol;
+          name.textContent  = g.name;
+        }
         cell.classList.add('filled');
         cell.classList.remove('correct', 'wrong');
       } else {
@@ -1039,7 +1122,6 @@ const Codex = {
     const fb = document.getElementById('codex-feedback');
 
     if (correct) {
-      // Light up all cells
       for (let i = 0; i < 9; i++) {
         setTimeout(() => {
           document.getElementById(`cell-${i}`).classList.add('correct');
@@ -1053,7 +1135,6 @@ const Codex = {
       addLog('Codex solved — passage opens');
       setTimeout(() => Realm.goRoom(3), 2000);
     } else {
-      // Find wrong cells
       for (let i = 0; i < 9; i++) {
         if (S.codexCells[i] !== CODEX_SOLUTION[i]) {
           document.getElementById(`cell-${i}`).classList.add('wrong');
@@ -1063,7 +1144,6 @@ const Codex = {
       fb.textContent = '𐤆 The sequence is wrong · The wall holds';
       fb.className = 'codex-feedback wrong';
       addLog('Wrong codex — the wall holds');
-      // Clear wrong cells only
       setTimeout(() => {
         S.codexCells = Array(9).fill(null);
         S.selectedRune = null;
@@ -1077,8 +1157,7 @@ const Codex = {
   },
 };
 
-// ══ DESK ENGINE ══════════════════════════════════════════════
-
+// ── DESK ENGINE ──────────────────────────────────────────────
 const Desk = {
   init() {
     this.buildSlots();
@@ -1087,7 +1166,7 @@ const Desk = {
 
   buildSlots() {
     const surface = document.getElementById('desk-surface');
-    const labels  = ['Left · First', 'Centre · Second', 'Right · Third'];
+    const labels = ['Left · First', 'Centre · Second', 'Right · Third'];
     surface.innerHTML = '';
     for (let i = 0; i < 3; i++) {
       const slot = document.createElement('div');
@@ -1110,10 +1189,10 @@ const Desk = {
       el.className = 'shelf-object';
       el.id = `sobj-${obj.id}`;
       el.innerHTML = `
-        <span class="obj-icon">${obj.icon}</span>
+        <span class="obj-icon">${obj.glyph || '◆'}</span>
         <span class="obj-name">${obj.name}</span>
       `;
-      el.title = obj.desc;
+      el.title = obj.description;
       el.addEventListener('click', () => Desk.selectObject(obj.id));
       shelf.appendChild(el);
     });
@@ -1121,7 +1200,6 @@ const Desk = {
 
   selectObject(id) {
     if (S.deskSolved) return;
-    // If already placed, ignore
     if (S.deskSlots.includes(id)) return;
     S.selectedObj = (S.selectedObj === id) ? null : id;
     document.querySelectorAll('.shelf-object').forEach(el => {
@@ -1131,7 +1209,7 @@ const Desk = {
     const fb = document.getElementById('desk-feedback');
     if (S.selectedObj) {
       const obj = DESK_OBJECTS.find(o => o.id === S.selectedObj);
-      fb.textContent = `${obj.icon} ${obj.name} selected · Click a slot to place it`;
+      fb.textContent = obj ? `${obj.name} selected · Click a slot to place it` : '';
       fb.className = 'desk-feedback';
     } else {
       fb.textContent = '';
@@ -1141,22 +1219,18 @@ const Desk = {
   placeOnSlot(slotIdx) {
     if (S.deskSolved) return;
     if (!S.selectedObj) {
-      // Clear slot if occupied
       if (S.deskSlots[slotIdx]) {
         const freed = S.deskSlots[slotIdx];
         S.deskSlots[slotIdx] = null;
         this.renderDesk();
-        addLog(`Removed ${freed} from slot ${slotIdx + 1}`);
+        addLog(`Removed item from slot ${slotIdx + 1}`);
       }
       return;
     }
-    // Don't place if already in another slot
     if (S.deskSlots.includes(S.selectedObj)) return;
-
     S.deskSlots[slotIdx] = S.selectedObj;
     S.selectedObj = null;
     this.renderDesk();
-
     if (S.deskSlots.every(s => s !== null)) {
       setTimeout(() => this.checkRitual(), 300);
     }
@@ -1165,10 +1239,10 @@ const Desk = {
   renderDesk() {
     for (let i = 0; i < 3; i++) {
       const slot = document.getElementById(`dslot-${i}`);
-      const obj  = DESK_OBJECTS.find(o => o.id === S.deskSlots[i]);
+      const obj = DESK_OBJECTS.find(o => o.id === S.deskSlots[i]);
       const iconEl = slot.querySelector('.slot-obj');
       if (obj) {
-        iconEl.textContent = obj.icon;
+        iconEl.textContent = obj.glyph || obj.name.charAt(0);
         slot.classList.add('filled');
         slot.classList.remove('correct-pos', 'highlight');
       } else {
@@ -1177,9 +1251,9 @@ const Desk = {
         slot.classList.add('highlight');
       }
     }
-    // Shelf
     DESK_OBJECTS.forEach(obj => {
       const el = document.getElementById(`sobj-${obj.id}`);
+      if (!el) return;
       if (S.deskSlots.includes(obj.id)) {
         el.classList.add('placed');
         el.classList.remove('selected');
@@ -1187,7 +1261,6 @@ const Desk = {
         el.classList.remove('placed');
       }
     });
-    // Deselect
     document.querySelectorAll('.shelf-object').forEach(el => {
       if (!el.classList.contains('placed')) el.classList.remove('selected');
     });
@@ -1196,7 +1269,7 @@ const Desk = {
   clearDesk() {
     S.deskSlots = [null, null, null];
     S.selectedObj = null;
-    S.deskSolved  = false;
+    S.deskSolved = false;
     this.renderDesk();
     document.getElementById('desk-feedback').textContent = '';
     addLog('Desk cleared');
@@ -1212,7 +1285,7 @@ const Desk = {
           document.getElementById(`dslot-${i}`).classList.add('correct-pos');
         }, i * 150);
       }
-      fb.textContent = '𐤕 Light · Word · Mark — the ritual is complete · The way opens';
+      fb.textContent = '𐤕 The ritual is complete · The way opens';
       fb.className = 'desk-feedback right';
       S.deskSolved = true;
       S.save();
@@ -1224,46 +1297,58 @@ const Desk = {
       addLog('Wrong ritual order — try again');
       setTimeout(() => {
         this.clearDesk();
-        fb.textContent = '"Light · Word · Mark — read the clue again"';
+        fb.textContent = 'Read the clue again';
         fb.className = 'desk-feedback';
       }, 1200);
     }
   },
 };
 
-// ══ INIT ═════════════════════════════════════════════════════
+// ── INIT ─────────────────────────────────────────────────────
+async function init() {
+  const ok = await loadCanon();
+  if (!ok) {
+    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:var(--danger);font-family:Cinzel,serif;">Failed to load Age data. Return to the <a href="index.html" style="color:var(--gold);">Atrium</a>.</div>';
+    return;
+  }
 
-S.load();
-Codex.init();
-Desk.init();
+  applyPalette();
+  buildCodexSolution();
+  buildDeskData();
+  populateContent();
 
-// Restore to correct room if returning
-if (S.currentRoom > 1) {
-  const ids = ['', 'room-threshold', 'room-codex', 'room-desk', 'room-exit'];
-  document.querySelectorAll('.room').forEach(r => r.classList.remove('active'));
-  document.getElementById(ids[S.currentRoom]).classList.add('active');
-  updateHUD(S.currentRoom);
+  S.load();
+  Codex.init();
+  Desk.init();
+
+  // Restore to correct room
+  if (S.currentRoom > 1) {
+    const ids = ['', 'room-threshold', 'room-codex', 'room-desk', 'room-exit'];
+    document.querySelectorAll('.room').forEach(r => r.classList.remove('active'));
+    document.getElementById(ids[S.currentRoom]).classList.add('active');
+    updateHUD(S.currentRoom);
+  }
+
+  if (S.codexSolved) {
+    CODEX_SOLUTION.forEach((v, i) => S.codexCells[i] = v);
+    Codex.renderGrid();
+    Codex.renderProgress();
+  }
+  if (S.deskSolved) {
+    DESK_SOLUTION.forEach((id, i) => S.deskSlots[i] = id);
+    Desk.renderDesk();
+  }
+
+  addLog(`You stand at the Threshold of ${AGE.name}`);
+  addLog('Study the wall before you advance');
 }
 
-// If codex was already solved, mark it
-if (S.codexSolved) {
-  CODEX_SOLUTION.forEach((v, i) => S.codexCells[i] = v);
-  Codex.renderGrid();
-  Codex.renderProgress();
-}
-if (S.deskSolved) {
-  DESK_SOLUTION.forEach((id, i) => S.deskSlots[i] = id);
-  Desk.renderDesk();
-}
-
-addLog('You stand at the Threshold of Air');
-addLog('Study the wall before you advance');
-
-// Keyboard
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') Realm.returnToAtrium();
   if (e.key === 'Backspace') Realm.goBack();
 });
+
+init();
 </script>
 </body>
 </html>
