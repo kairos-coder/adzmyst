@@ -1,0 +1,44 @@
+{
+  "puzzleTypes": {
+    "glyph-sequence": {
+      "name": "Glyph Sequence",
+      "description": "Arrange glyphs in the correct order to unlock a door or reveal a passage.",
+      "mechanic": "triad",
+      "inputType": "glyph-grid",
+      "slots": 3,
+      "glyphPool": "all"
+    },
+    "rune-codex": {
+      "name": "Rune Codex",
+      "description": "A 3×3 grid of glyphs. Select the correct three in the correct order.",
+      "mechanic": "grid-select",
+      "inputType": "3x3-grid",
+      "slots": 3,
+      "glyphPool": "age-specific"
+    },
+    "ritual-assembly": {
+      "name": "Ritual Assembly",
+      "description": "Place ritual objects in the correct positions to complete a ceremony.",
+      "mechanic": "drag-drop",
+      "inputType": "object-slots",
+      "slots": 3,
+      "glyphPool": "none"
+    },
+    "star-alignment": {
+      "name": "Star Alignment",
+      "description": "Rotate constellation rings to align glyph-stars with their anchors.",
+      "mechanic": "rotation",
+      "inputType": "ring-rotate",
+      "slots": 3,
+      "glyphPool": "all"
+    },
+    "decode-transcribe": {
+      "name": "Decode & Transcribe",
+      "description": "Read a wall inscription and transcribe the hidden message using glyph buttons.",
+      "mechanic": "transcription",
+      "inputType": "glyph-grid",
+      "slots": 4,
+      "glyphPool": "all"
+    }
+  }
+}
