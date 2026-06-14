@@ -1030,14 +1030,8 @@ const Game = {
   },
 
   travelToAge(ageId) {
-    if (ageId === 'air' && State.scene !== 'air') {
-      this.fadeTransition(() => {
-        State.scene = 'air';
-        buildAgeRoom('air');
-        document.getElementById('hud-location').textContent = AGES.air.name;
-        document.getElementById('sky').style.filter = 'hue-rotate(15deg) brightness(1.2)';
-        addLog('You breathe the Age of Air');
-      });
+    if (ageId === 'air') {
+      this.fadeTransition(() => { window.location.href = 'air.html'; });
     } else if (ageId !== 'air') {
       this.fadeTransition(() => {
         State.scene = ageId;
