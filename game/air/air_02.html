@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADZMYST · Air · Wind Gallery</title>
+<link rel="stylesheet" href="air-base.css">
+<style>
+  /* ── WIND GALLERY SPECIFIC ── */
+  .gallery-streaks {
+    position: absolute; inset: 0;
+    pointer-events: none; z-index: 2;
+  }
+  .gallery-streak {
+    position: absolute;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(122,184,212,0.3), transparent);
+    animation: streakdrift var(--sd, 3s) ease-in-out var(--sdd, 0s) infinite;
+  }
+  @keyframes streakdrift {
+    0%, 100% { opacity: 0.1; transform: translateX(-20px); }
+    50%      { opacity: 0.4; transform: translateX(20px); }
+  }
+
+  .glyph-sequence-puzzle {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 1rem;
+  }
+  .sequence-slots {
+    display: flex; gap: 0.6rem;
+  }
+  .seq-slot {
+    width: 48px; height: 48px;
+    border: 1px solid rgba(200,168,74,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    color: var(--gold-dim);
+    background: rgba(10,18,40,0.6);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .seq-slot.filled {
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+  .seq-glyph-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5px;
+  }
+  .seq-glyph-btn {
+    width: 44px; height: 44px;
+    background: rgba(15,25,50,0.7);
+    border: 1px solid rgba(74,122,170,0.25);
+    color: var(--silver);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+  .seq-glyph-btn .sname {
+    font-size: 0.35rem; font-family: 'Cinzel', serif;
+    color: var(--gold-dim); text-transform: uppercase;
+  }
+  .seq-glyph-btn:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+  .seq-feedback {
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem; letter-spacing: 0.15em;
+    min-height: 1.2rem;
+  }
+  .seq-feedback.wrong { color: var(--danger); }
+  .seq-feedback.right { color: var(--unlock); }
+</style>
+</head>
+<body>
+
+<div id="sky"></div>
+<div id="wind-streaks"></div>
+<div id="fade"></div>
+
+<div id="hud">
+  <div id="hud-room">Air · Wind Gallery</div>
+  <div id="hud-glyphs"></div>
+  <div id="hud-progress">Puzzles: 0/6</div>
+</div>
+
+<button id="minimap-toggle" onclick="document.getElementById('minimap-container').classList.toggle('visible')">Map</button>
+<div id="minimap-container" class="visible">
+  <canvas id="minimap-canvas" width="92" height="92"></canvas>
+</div>
+
+<div id="viewport">
+  <div id="scene">
+    <div class="face face-north" id="face-north"></div>
+    <div class="face face-south" id="face-south"></div>
+    <div class="face face-east"  id="face-east"></div>
+    <div class="face face-west"  id="face-west"></div>
+    <div class="face face-floor" id="face-floor"></div>
+    <div class="face face-ceiling" id="face-ceiling"></div>
+  </div>
+</div>
+
+<div id="bottom-nav">
+  <button class="b-btn" onclick="returnToAtrium()">← Atrium</button>
+  <div id="breadcrumb">Atrium · Air · Wind Gallery</div>
+  <button class="b-btn" disabled style="opacity:0.2;">→</button>
+</div>
+
+<div id="log"></div>
+
+<script>
+// ── ROOM DEFINITION ──────────────────────────────────────────
+ROOM_ID = 2;
+ROOM_TEMPLATE = 'air-wind-gallery';
+EXITS = { north: 'air_05.html', south: null, east: 'air_03.html', west: 'air_01.html' };
+PUZZLE_TYPE = 'glyph-sequence';
+
+// ── PUZZLE: Glyph Sequence ──────────────────────────────────
+// Solution: Aleph (0) → Dalet (3) → Zayin (6) — the first row of the codex
+const SEQ_SOLUTION = [0, 3, 6]; // glyph IDs from the sacred seven
+
+PUZZLE = {
+  slots: [null, null, null],
+
+  init() {
+    this.build();
+  },
+
+  build() {
+    const container = document.getElementById('puzzle-container');
+    const pool = sacredSeven.map(i => GLYPHS[i]);
+
+    container.innerHTML = `
+      <div class="glyph-sequence-puzzle">
+        <p style="font-family:Cinzel,serif;font-size:0.6rem;letter-spacing:0.15em;color:var(--silver);opacity:0.6;text-transform:uppercase;">
+          The wind speaks three names — listen
+        </p>
+        <div class="sequence-slots" id="seq-slots">
+          <div class="seq-slot" id="seq-s0" onclick="PUZZLE.clearSlot(0)">·</div>
+          <div class="seq-slot" id="seq-s1" onclick="PUZZLE.clearSlot(1)">·</div>
+          <div class="seq-slot" id="seq-s2" onclick="PUZZLE.clearSlot(2)">·</div>
+        </div>
+        <div class="seq-glyph-grid" id="seq-grid"></div>
+        <div class="seq-feedback" id="seq-feedback"></div>
+      </div>
+    `;
+
+    // Build glyph buttons
+    const grid = document.getElementById('seq-grid');
+    pool.forEach(g => {
+      const btn = document.createElement('div');
+      btn.className = 'seq-glyph-btn';
+      btn.innerHTML = `${g.symbol}<span class="sname">${g.name}</span>`;
+      btn.title = g.meaning;
+      btn.addEventListener('click', () => this.selectGlyph(g.id));
+      grid.appendChild(btn);
+    });
+  },
+
+  selectGlyph(glyphId) {
+    const slot = this.slots.findIndex(s => s === null);
+    if (slot === -1) return;
+    this.slots[slot] = glyphId;
+    this.render();
+
+    if (this.slots.every(s => s !== null)) {
+      setTimeout(() => this.check(), 300);
+    }
+  },
+
+  clearSlot(idx) {
+    this.slots[idx] = null;
+    this.render();
+  },
+
+  render() {
+    for (let i = 0; i < 3; i++) {
+      const el = document.getElementById(`seq-s${i}`);
+      if (this.slots[i] !== null) {
+        const g = GLYPHS.find(gl => gl.id === this.slots[i]);
+        el.textContent = g ? g.symbol : '?';
+        el.classList.add('filled');
+      } else {
+        el.textContent = '·';
+        el.classList.remove('filled');
+      }
+    }
+  },
+
+  check() {
+    const fb = document.getElementById('seq-feedback');
+    const correct = SEQ_SOLUTION.every((v, i) => v === this.slots[i]);
+
+    if (correct) {
+      fb.textContent = '𐤕 The wind speaks true · The gallery opens';
+      fb.className = 'seq-feedback right';
+      markPuzzleSolved(ROOM_ID);
+      addLog('Wind Gallery puzzle solved');
+      updateHUD();
+      // Rebuild room to show solved state
+      setTimeout(() => { buildRoom(); updateHUD(); }, 1500);
+    } else {
+      fb.textContent = '𐤆 The wind howls · Try again';
+      fb.className = 'seq-feedback wrong';
+      setTimeout(() => {
+        this.slots = [null, null, null];
+        this.render();
+        fb.textContent = '';
+        fb.className = 'seq-feedback';
+      }, 1000);
+    }
+  }
+};
+</script>
+
+<script src="engine.js"></script>
+<script>
+// ── OVERRIDE: Add wind streaks to the room ───────────────────
+const _origBuild = buildRoom;
+buildRoom = function() {
+  _origBuild();
+  // Add gallery-specific streaks
+  const north = document.getElementById('face-north');
+  const streaks = document.createElement('div');
+  streaks.className = 'gallery-streaks';
+  for (let i = 0; i < 12; i++) {
+    const s = document.createElement('div');
+    s.className = 'gallery-streak';
+    s.style.top = (8 + i * 7.5) + '%';
+    s.style.width = (50 + Math.random() * 40) + 'vw';
+    s.style.setProperty('--sd', (2 + Math.random() * 3) + 's');
+    s.style.setProperty('--sdd', Math.random() * 2 + 's');
+    streaks.appendChild(s);
+  }
+  north.appendChild(streaks);
+};
+
+initEngine();
+</script>
+</body>
+</html>
