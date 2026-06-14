@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ADZMYST · The Breath · Enter the Ages</title>
+<title>ADZMYST · The Atrium · The Breath Between Ages</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Cinzel+Decorative:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
 <style>
@@ -23,6 +23,7 @@
     --portal-water:#4a7ab8;
     --unlock:      #a8d890;
     --danger:      #c85050;
+    --locked-dim:  #4a3a2a;
     --trans-panel: rgba(13, 18, 37, 0.72);
     --trans-wall:  rgba(20, 35, 65, 0.55);
   }
@@ -91,7 +92,7 @@
     perspective-origin: 50% 50%;
   }
 
-  /* ── SCENE CONTAINER (the 3D room) ── */
+  /* ── SCENE CONTAINER ── */
   #scene {
     position: absolute;
     width: 100%; height: 100%;
@@ -107,7 +108,6 @@
     backface-visibility: hidden;
     display: flex; align-items: center; justify-content: center;
   }
-
   .face-north {
     background: var(--trans-wall);
     transform: translateZ(-40vw);
@@ -259,7 +259,9 @@
     transition: transform 0.3s;
   }
   .portal-ring:hover { transform: scale(1.05); }
-  .portal-ring:hover .portal-circle { box-shadow: 0 0 40px var(--pc), 0 0 80px rgba(255,255,255,0.1); }
+  .portal-ring:hover .portal-circle {
+    box-shadow: 0 0 40px var(--pc), 0 0 80px rgba(255,255,255,0.1);
+  }
 
   .portal-circle {
     width: clamp(70px, 10vw, 120px);
@@ -285,7 +287,7 @@
   @keyframes portalspin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
   .portal-locked .portal-circle::before {
-    content: '𐤎'; /* Samek - pillar/support - the locked glyph */
+    content: '𐤎';
     position: absolute;
     font-size: 0.8em;
     color: var(--glyph-dim);
@@ -293,6 +295,7 @@
     z-index: 2;
   }
   .portal-locked .portal-circle > span { opacity: 0.3; }
+  .portal-locked { cursor: pointer; }
 
   .portal-label {
     font-family: 'Cinzel', serif;
@@ -302,6 +305,25 @@
     color: var(--silver);
     opacity: 0.8;
   }
+
+  /* Status badge */
+  .portal-status {
+    font-family: 'Cinzel', serif;
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.6rem;
+    border-radius: 3px;
+  }
+  .portal-status.unlocked {
+    color: var(--unlock);
+    border: 1px solid rgba(168,216,144,0.4);
+  }
+  .portal-status.locked {
+    color: var(--locked-dim);
+    border: 1px solid rgba(74,58,42,0.4);
+  }
+
   .portal-glyph-key {
     font-size: clamp(0.8rem, 1.5vw, 1.1rem);
     color: var(--glyph-dim);
@@ -315,7 +337,26 @@
   #portal-earth { --pc: var(--portal-earth); --pcr: 106,148,100; bottom: 20%; left: 8%; }
   #portal-water { --pc: var(--portal-water); --pcr: 74,122,184;  bottom: 20%; right: 8%; }
 
-  /* ── GLYPH PANEL (puzzle) ── */
+  /* Enter button on unlocked portal */
+  .portal-enter {
+    font-family: 'Cinzel', serif;
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.8rem;
+    background: transparent;
+    border: 1px solid rgba(168,216,144,0.5);
+    color: var(--unlock);
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 0.2rem;
+  }
+  .portal-enter:hover {
+    background: rgba(168,216,144,0.1);
+    border-color: var(--unlock);
+  }
+
+  /* ── GLYPH PANEL ── */
   #glyph-panel {
     position: fixed; inset: 0; z-index: 40;
     display: none;
@@ -381,7 +422,6 @@
     min-height: 3rem;
   }
 
-  /* Glyph selection grid */
   .glyph-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -421,7 +461,6 @@
     box-shadow: 0 0 16px rgba(200,168,74,0.3);
   }
 
-  /* Selected triad display */
   .triad-display {
     display: flex; align-items: center; justify-content: center; gap: 0.5rem;
     margin-bottom: 1.2rem;
@@ -472,7 +511,6 @@
     background: rgba(200,168,74,0.15);
   }
 
-  /* Panel feedback */
   .panel-feedback {
     text-align: center;
     font-family: 'Cinzel', serif;
@@ -484,65 +522,6 @@
   }
   .panel-feedback.wrong { color: var(--danger); }
   .panel-feedback.right { color: var(--unlock); }
-
-  /* ── AGE ROOMS ── */
-  .age-content {
-    position: absolute; inset: 0;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    pointer-events: none;
-    text-align: center;
-    padding: 2rem;
-  }
-  .age-title {
-    font-family: 'Cinzel Decorative', serif;
-    font-size: clamp(1.5rem, 4vw, 3rem);
-    letter-spacing: 0.3em;
-    margin-bottom: 0.8rem;
-  }
-  .age-subtitle {
-    font-family: 'Cinzel', serif;
-    font-size: clamp(0.6rem, 1.2vw, 0.8rem);
-    letter-spacing: 0.4em;
-    text-transform: uppercase;
-    opacity: 0.6;
-    margin-bottom: 1.5rem;
-  }
-  .age-lore {
-    font-size: clamp(0.85rem, 1.5vw, 1rem);
-    line-height: 1.8;
-    max-width: 480px;
-    opacity: 0.75;
-    font-style: italic;
-    margin-bottom: 2rem;
-  }
-  .age-glyph-wall {
-    font-size: clamp(2rem, 5vw, 4rem);
-    letter-spacing: 0.4em;
-    opacity: 0.35;
-    pointer-events: all;
-  }
-
-  /* Interactable objects in Age rooms */
-  .interactable {
-    pointer-events: all;
-    cursor: pointer;
-    transition: opacity 0.3s;
-  }
-  .interactable:hover { opacity: 1 !important; }
-
-  /* Wall inscriptions */
-  .wall-inscription {
-    position: absolute;
-    font-size: clamp(1.2rem, 2.5vw, 2rem);
-    color: var(--glyph-gold);
-    opacity: 0.4;
-    letter-spacing: 0.3em;
-    pointer-events: none;
-  }
-  .wall-inscription.top-left  { top: 15%; left: 8%; }
-  .wall-inscription.top-right { top: 15%; right: 8%; }
-  .wall-inscription.bottom    { bottom: 18%; left: 50%; transform: translateX(-50%); }
 
   /* ── TOOLTIP ── */
   #tooltip {
@@ -653,6 +632,19 @@
   #journal .log-entry { margin-bottom: 0.2rem; }
   #journal .log-entry::before { content: '› '; color: var(--glyph-dim); }
 
+  /* ── DASHBOARD STATS ── */
+  #dashboard-stats {
+    position: fixed; bottom: 4rem; right: 1.5rem; z-index: 30;
+    font-family: 'Cinzel', serif;
+    font-size: 0.55rem;
+    letter-spacing: 0.15em;
+    color: var(--silver-dark);
+    opacity: 0.6;
+    text-align: right;
+    pointer-events: none;
+    line-height: 1.8;
+  }
+
   /* ── RESPONSIVE ── */
   @media (max-width: 600px) {
     #portal-fire  { top: 10%; right: 5%; }
@@ -662,6 +654,7 @@
     .glyph-btn    { font-size: 1rem; }
     .glyph-btn span.name { display: none; }
     .triad-slot   { width: 42px; height: 42px; font-size: 1.3rem; }
+    #dashboard-stats { display: none; }
   }
 </style>
 </head>
@@ -699,7 +692,6 @@
 <!-- Game viewport -->
 <div id="viewport">
   <div id="scene">
-    <!-- Room faces (populated by JS) -->
     <div class="face face-north" id="face-north"></div>
     <div class="face face-south" id="face-south"></div>
     <div class="face face-east"  id="face-east"></div>
@@ -714,7 +706,6 @@
   <button class="nav-btn" id="nav-left"  onclick="Game.turnLeft()">◁ West</button>
   <button class="nav-btn" id="nav-look-back" onclick="Game.turnAround()" title="Turn around">↺</button>
   <button class="nav-btn" id="nav-forward" onclick="Game.moveForward()" disabled>Forward</button>
-  <button class="nav-btn" id="nav-look-back2" onclick="Game.turnAround()" style="display:none"></button>
   <button class="nav-btn" id="nav-right" onclick="Game.turnRight()">East ▷</button>
 </div>
 
@@ -726,7 +717,6 @@
     <div class="panel-inscription" id="panel-inscription"></div>
     <div class="panel-riddle" id="panel-riddle"></div>
 
-    <!-- Triad being assembled -->
     <div class="triad-display">
       <div class="triad-slot" id="triad-0" onclick="Game.clearTriadSlot(0)">·</div>
       <span class="triad-sep">·</span>
@@ -735,7 +725,6 @@
       <div class="triad-slot" id="triad-2" onclick="Game.clearTriadSlot(2)">·</div>
     </div>
 
-    <!-- All 7 sacred glyphs as selectable buttons -->
     <div class="glyph-grid" id="glyph-grid"></div>
 
     <div class="panel-actions">
@@ -752,112 +741,118 @@
 <!-- Journal log -->
 <div id="journal"><div id="journal-entries"></div></div>
 
+<!-- Dashboard stats -->
+<div id="dashboard-stats">
+  <div id="stat-ages">Ages Open: 1 / 4</div>
+  <div id="stat-glyphs">Glyphs Known: 7</div>
+</div>
+
 <script>
-// ── GLYPH DATA ──────────────────────────────────────────────
-const GLYPHS = [
-  { glyph: '𐤀', name: 'Aleph', letter: 'A', meaning: 'Ox · Strength · Beginning' },
-  { glyph: '𐤃', name: 'Dalet', letter: 'D', meaning: 'Door · Passage · Threshold' },
-  { glyph: '𐤆', name: 'Zayin', letter: 'Z', meaning: 'Weapon · Division · The Cut' },
-  { glyph: '𐤌', name: 'Mem',   letter: 'M', meaning: 'Water · Chaos · The Deep' },
-  { glyph: '𐤉', name: 'Yod',   letter: 'Y', meaning: 'Hand · Action · Making' },
-  { glyph: '𐤎', name: 'Samek', letter: 'S', meaning: 'Pillar · Support · What Holds' },
-  { glyph: '𐤕', name: 'Taw',   letter: 'T', meaning: 'Mark · Signature · Completion' },
-];
+// ═══════════════════════════════════════════════════════════════
+// ADZMYST ATRIUM — DASHBOARD
+// Loads JSON canon, renders portals, manages glyph puzzles
+// ═══════════════════════════════════════════════════════════════
 
-// ── WORLD DATA ───────────────────────────────────────────────
-// Each Age has an inscription (visible on the portal) and a solution triad.
-// The riddle gives a poetic clue without revealing the answer.
-const AGES = {
-  air: {
-    id: 'air',
-    name: 'The Age of Air',
-    subtitle: 'Adzmyst · The Breath · Home',
-    color: '#7ab8d4',
-    glyph: '𐤀',
-    icon: '𓂝',
-    inscription: '𐤀 𐤃 𐤆',   // Aleph · Dalet · Zayin
-    solution: [0, 1, 2],        // indices into GLYPHS
-    riddle: '"The ox finds the door. The door reveals the cut. Strength opens passage into division — the first breath."',
-    lore: 'Wind made visible. Light made legible. The first language was not spoken — it was exhaled.',
-    unlocked: true,             // Home Age — always open
-  },
-  fire: {
-    id: 'fire',
-    name: 'The Age of Fire',
-    subtitle: 'Apollo · Prophecy · The Forge',
-    color: '#d4784a',
-    glyph: '𐤕',
-    icon: '𓇋',
-    inscription: '𐤕 𐤉 𐤀',   // Taw · Yod · Aleph
-    solution: [6, 4, 0],
-    riddle: '"The mark precedes the making. The hand precedes the strength. What is completed must first be begun — and fire is the sign of that beginning."',
-    lore: 'Here the gods forge their names. Every prophecy is a scar carved in light.',
-    unlocked: false,
-  },
-  earth: {
-    id: 'earth',
-    name: 'The Age of Earth',
-    subtitle: 'Gaia · Root · The Bone',
-    color: '#6a9464',
-    glyph: '𐤎',
-    icon: '𓌹',
-    inscription: '𐤎 𐤌 𐤃',   // Samek · Mem · Dalet
-    solution: [5, 3, 1],
-    riddle: '"The pillar stands in the deep. The deep finds the door. What holds must also pass — roots are not walls."',
-    lore: 'Stone that breathes. Root that remembers. The earth does not forget what the sky names.',
-    unlocked: false,
-  },
-  water: {
-    id: 'water',
-    name: 'The Age of Water',
-    subtitle: 'Divination · The Deep · Reflection',
-    color: '#4a7ab8',
-    glyph: '𐤌',
-    icon: '𓏏',
-    inscription: '𐤌 𐤉 𐤕',   // Mem · Yod · Taw
-    solution: [3, 4, 6],
-    riddle: '"The deep does not speak — it acts. The hand draws from chaos what the mark makes permanent. Draw the card. Read the tide."',
-    lore: 'Every card drawn here was always waiting. The water knew your question before you did.',
-    unlocked: false,
-  },
-};
+// ── GLOBAL DATA (loaded from JSON) ────────────────────────────
+let GLYPHS = [];        // Full 22-glyph array
+let AGES = {};          // { air: {...}, fire: {...}, ... }
+let sacredSeven = [];   // Indices of the 7 sacred glyphs
 
-// ── SCENE DEFINITIONS ────────────────────────────────────────
-const SCENES = {
-  atrium: {
-    id: 'atrium',
-    name: 'The Atrium',
-    buildNorth: buildAtrium,
-    buildSouth: null,
-    buildEast: null,
-    buildWest: null,
-    facing: 0,
-  },
-};
+// ── DATA LOADER ───────────────────────────────────────────────
+async function loadJSON(path) {
+  const res = await fetch(path);
+  if (!res.ok) throw new Error(`Failed to load ${path}: ${res.status}`);
+  return res.json();
+}
+
+async function loadCanon() {
+  try {
+    const glyphsData = await loadJSON('json/glyphs.json');
+    const agesData   = await loadJSON('json/ages.json');
+
+    GLYPHS = glyphsData.glyphs;
+    sacredSeven = glyphsData.meta.sacredSeven;
+
+    // Convert ages array to object keyed by id
+    AGES = {};
+    agesData.ages.forEach(age => { AGES[age.id] = age; });
+
+    console.log(`[Atrium] Canon loaded: ${GLYPHS.length} glyphs, ${Object.keys(AGES).length} ages`);
+    return true;
+  } catch (err) {
+    console.error('[Atrium] Failed to load canon:', err);
+    // Fallback to minimal embedded data so the page doesn't break
+    loadFallbackData();
+    return false;
+  }
+}
+
+function loadFallbackData() {
+  // Minimal fallback — the original 7 glyphs + 4 ages
+  GLYPHS = [
+    { id:0, symbol:'𐤀', name:'Aleph', letter:'A', meaning:'Ox · Strength · Beginning', sacred:true },
+    { id:1, symbol:'𐤃', name:'Dalet', letter:'D', meaning:'Door · Passage · Threshold', sacred:true },
+    { id:2, symbol:'𐤆', name:'Zayin', letter:'Z', meaning:'Weapon · Division · The Cut', sacred:true },
+    { id:3, symbol:'𐤌', name:'Mem',   letter:'M', meaning:'Water · Chaos · The Deep', sacred:true },
+    { id:4, symbol:'𐤉', name:'Yod',   letter:'Y', meaning:'Hand · Action · Making', sacred:true },
+    { id:5, symbol:'𐤎', name:'Samek', letter:'S', meaning:'Pillar · Support · What Holds', sacred:true },
+    { id:6, symbol:'𐤕', name:'Taw',   letter:'T', meaning:'Mark · Signature · Completion', sacred:true },
+  ];
+  sacredSeven = [0,1,2,3,4,5,6];
+  AGES = {
+    air:   { id:'air',   name:'The Age of Air',   subtitle:'Adzmyst · Breath · Home',  color:'#7ab8d4', glyph:'𐤀', icon:'𓂝', inscription:'𐤀 𐤃 𐤆', solution:[0,1,2], riddle:'The ox finds the door...', lore:'Wind made visible.', unlocked:true,  page:'air.html' },
+    fire:  { id:'fire',  name:'The Age of Fire',  subtitle:'Apollo · Prophecy · Forge',color:'#d4784a', glyph:'𐤕', icon:'𓇋', inscription:'𐤕 𐤉 𐤀', solution:[6,4,0], riddle:'The mark precedes...',     lore:'Here the gods forge.', unlocked:false, page:'fire.html' },
+    earth: { id:'earth', name:'The Age of Earth', subtitle:'Gaia · Root · The Bone',  color:'#6a9464', glyph:'𐤎', icon:'𓌹', inscription:'𐤎 𐤌 𐤃', solution:[5,3,1], riddle:'The pillar stands...',    lore:'Stone that breathes.', unlocked:false, page:'earth.html' },
+    water: { id:'water', name:'The Age of Water', subtitle:'Divination · The Deep',   color:'#4a7ab8', glyph:'𐤌', icon:'𓏏', inscription:'𐤌 𐤉 𐤕', solution:[3,4,6], riddle:'The deep does not speak...',lore:'Every card drawn.',    unlocked:false, page:'water.html' },
+  };
+}
 
 // ── STATE ────────────────────────────────────────────────────
 const State = {
   scene: 'atrium',
-  facing: 0,           // 0=N 90=E 180=S 270=W
+  facing: 0,
   panelAge: null,
   triad: [null, null, null],
   log: [],
+  agesUnlocked: {},
 
   save() {
-    const data = { unlocked: {} };
-    for (const k in AGES) data.unlocked[k] = AGES[k].unlocked;
-    localStorage.setItem('adzmyst_state', JSON.stringify(data));
+    const data = {
+      unlocked: { ...this.agesUnlocked },
+      log: this.log.slice(0, 10)
+    };
+    localStorage.setItem('adzmyst_atrium', JSON.stringify(data));
   },
+
   load() {
     try {
-      const raw = localStorage.getItem('adzmyst_state');
+      const raw = localStorage.getItem('adzmyst_atrium');
       if (!raw) return;
       const data = JSON.parse(raw);
-      for (const k in data.unlocked) {
-        if (AGES[k]) AGES[k].unlocked = data.unlocked[k];
+      this.agesUnlocked = data.unlocked || {};
+      this.log = data.log || [];
+      // Apply to AGES
+      for (const k in this.agesUnlocked) {
+        if (AGES[k]) AGES[k].unlocked = this.agesUnlocked[k];
       }
-    } catch(e) {}
+    } catch(e) {
+      console.warn('[Atrium] Could not load save state:', e);
+    }
   },
+
+  markUnlocked(ageId) {
+    this.agesUnlocked[ageId] = true;
+    AGES[ageId].unlocked = true;
+    this.save();
+    this.updateDashboard();
+  },
+
+  updateDashboard() {
+    const unlocked = Object.values(AGES).filter(a => a.unlocked).length;
+    const total = Object.values(AGES).length;
+    document.getElementById('stat-ages').textContent = `Ages Open: ${unlocked} / ${total}`;
+    document.getElementById('stat-glyphs').textContent = `Glyphs Known: ${GLYPHS.length}`;
+  }
 };
 
 // ── STARS CANVAS ─────────────────────────────────────────────
@@ -892,15 +887,17 @@ function initStars() {
   });
 }
 
-// ── GLYPH GRID ───────────────────────────────────────────────
+// ── GLYPH GRID (for puzzle panel) ────────────────────────────
 function buildGlyphGrid() {
   const grid = document.getElementById('glyph-grid');
   grid.innerHTML = '';
-  GLYPHS.forEach((g, i) => {
+  // Show all 22 glyphs (or just sacred 7 if panel is for a sacred lock)
+  const pool = GLYPHS; // Full pool — the puzzle determines which are valid
+  pool.forEach((g, i) => {
     const btn = document.createElement('button');
     btn.className = 'glyph-btn';
     btn.id = `gbtn-${i}`;
-    btn.innerHTML = `${g.glyph}<span class="name">${g.name}</span>`;
+    btn.innerHTML = `${g.symbol}<span class="name">${g.name}</span>`;
     btn.title = g.meaning;
     btn.onclick = () => Game.selectGlyph(i);
     grid.appendChild(btn);
@@ -923,71 +920,115 @@ function hideTooltip() {
 // ── LOG ──────────────────────────────────────────────────────
 function addLog(msg) {
   State.log.unshift(msg);
-  if (State.log.length > 4) State.log.pop();
+  if (State.log.length > 10) State.log.pop();
   const el = document.getElementById('journal-entries');
   el.innerHTML = State.log.map(l => `<div class="log-entry">${l}</div>`).join('');
+  State.save();
 }
 
 // ── BUILD ATRIUM ─────────────────────────────────────────────
 function buildAtrium() {
   const north = document.getElementById('face-north');
 
+  // Build the sacred glyph string for display
+  const sacredGlyphs = sacredSeven.map(i => GLYPHS[i].symbol).join(' ');
+
   north.innerHTML = `
     <div class="atrium-title">
       <h1>ADZMYST</h1>
       <p>The Breath · The Atrium · Four Ages</p>
-      <div class="atrium-glyphs">𐤀 𐤃 𐤆 𐤌 𐤉 𐤎 𐤕</div>
+      <div class="atrium-glyphs">${sacredGlyphs}</div>
     </div>
 
-    <div class="wall-inscription top-left">𐤀𐤃𐤆</div>
-    <div class="wall-inscription top-right">𐤌𐤉𐤎𐤕</div>
+    <div class="wall-inscription top-left">${sacredGlyphs.substring(0, 5)}</div>
+    <div class="wall-inscription top-right">${sacredGlyphs.substring(6)}</div>
     <div class="wall-inscription bottom" style="opacity:0.2;font-size:1rem;letter-spacing:0.5em;">THE BREATH CARVES MEANING FROM SILENCE</div>
 
     ${Object.values(AGES).map(age => buildPortalHTML(age)).join('')}
   `;
 
-  // Attach portal events after DOM insert
+  // Attach events after DOM insert
   Object.values(AGES).forEach(age => {
     const el = document.getElementById(`portal-${age.id}`);
     if (!el) return;
-    el.addEventListener('click', () => Game.activatePortal(age.id));
+
+    // Clicking a locked portal opens the puzzle
+    // Clicking an unlocked portal... we add an enter button instead
+    el.addEventListener('click', () => {
+      if (!age.unlocked) {
+        Game.activatePortal(age.id);
+      }
+    });
+
     el.addEventListener('mouseenter', () =>
-      showTooltip(el, age.unlocked ? `Enter ${age.name}` : `Locked · Speak the triad`)
+      showTooltip(el, age.unlocked ? `${age.name} — Open` : `Locked · Speak the triad to enter`)
     );
     el.addEventListener('mouseleave', hideTooltip);
+
+    // Enter button for unlocked portals
+    const enterBtn = el.querySelector('.portal-enter');
+    if (enterBtn) {
+      enterBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        Game.travelToAge(age.id);
+      });
+      enterBtn.addEventListener('mouseenter', (e) => {
+        e.stopPropagation();
+        showTooltip(enterBtn, `Enter ${age.name}`);
+      });
+      enterBtn.addEventListener('mouseleave', hideTooltip);
+    }
   });
 }
 
 function buildPortalHTML(age) {
   const locked = !age.unlocked ? 'portal-locked' : 'portal-unlocked';
+  const statusLabel = age.unlocked ? 'OPEN' : 'LOCKED';
+  const statusClass = age.unlocked ? 'unlocked' : 'locked';
+
   return `
     <div class="portal-ring ${locked}" id="portal-${age.id}" style="--pc:${age.color}">
       <div class="portal-circle" style="--pc:${age.color}">
         <span>${age.icon}</span>
       </div>
       <div class="portal-label">${age.name}</div>
+      <div class="portal-status ${statusClass}">${statusLabel}</div>
       <div class="portal-glyph-key">${age.inscription}</div>
+      ${age.unlocked ? `<button class="portal-enter">Enter Dungeon</button>` : ''}
     </div>
   `;
 }
 
-// ── BUILD AGE ROOMS ──────────────────────────────────────────
-function buildAgeRoom(ageId) {
+function refreshPortal(ageId) {
   const age = AGES[ageId];
-  const north = document.getElementById('face-north');
-  north.innerHTML = `
-    <div class="age-content">
-      <div class="age-title" style="color:${age.color};text-shadow:0 0 40px ${age.color}80">
-        ${age.name}
-      </div>
-      <div class="age-subtitle">${age.subtitle}</div>
-      <div class="age-lore">${age.lore}</div>
-      <div class="age-glyph-wall interactable" title="The sacred inscription">${age.inscription}</div>
-    </div>
-    <div class="wall-inscription top-left" style="color:${age.color}">${age.glyph}${age.glyph}${age.glyph}</div>
-    <div class="wall-inscription top-right" style="color:${age.color}">${age.inscription}</div>
-    <div class="wall-inscription bottom">𐤀𐤃𐤆𐤌𐤉𐤎𐤕</div>
-  `;
+  const el = document.getElementById(`portal-${ageId}`);
+  if (!el) return;
+
+  // Rebuild the portal HTML
+  el.outerHTML = buildPortalHTML(age);
+
+  // Re-attach events
+  const newEl = document.getElementById(`portal-${ageId}`);
+  newEl.addEventListener('click', () => {
+    if (!age.unlocked) Game.activatePortal(age.id);
+  });
+  newEl.addEventListener('mouseenter', () =>
+    showTooltip(newEl, age.unlocked ? `${age.name} — Open` : `Locked · Speak the triad`)
+  );
+  newEl.addEventListener('mouseleave', hideTooltip);
+
+  const enterBtn = newEl.querySelector('.portal-enter');
+  if (enterBtn) {
+    enterBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      Game.travelToAge(age.id);
+    });
+    enterBtn.addEventListener('mouseenter', (e) => {
+      e.stopPropagation();
+      showTooltip(enterBtn, `Enter ${age.name}`);
+    });
+    enterBtn.addEventListener('mouseleave', hideTooltip);
+  }
 }
 
 // ── MAIN GAME CONTROLLER ─────────────────────────────────────
@@ -997,10 +1038,9 @@ const Game = {
     intro.classList.add('hide');
     setTimeout(() => { intro.style.display = 'none'; }, 1000);
     addLog('You enter the Atrium');
-    addLog('Four portals await');
+    addLog('Four Ages await beyond the portals');
   },
 
-  // Turn the camera by rotating the scene
   turn(degrees) {
     State.facing = (State.facing + degrees + 360) % 360;
     document.getElementById('scene').style.transform =
@@ -1015,8 +1055,7 @@ const Game = {
   turnAround()  { this.turn(180); },
 
   moveForward() {
-    // Placeholder — will navigate between rooms in future Ages
-    addLog('The path is not yet carved');
+    addLog('Use the portal buttons to enter an Age');
   },
 
   // ── PORTAL ACTIVATION ────────────────────────────────────
@@ -1030,28 +1069,14 @@ const Game = {
   },
 
   travelToAge(ageId) {
-    if (ageId === 'air') {
-      this.fadeTransition(() => { window.location.href = 'air.html'; });
-    } else if (ageId !== 'air') {
-      this.fadeTransition(() => {
-        State.scene = ageId;
-        buildAgeRoom(ageId);
-        document.getElementById('hud-location').textContent = AGES[ageId].name;
-        addLog(`You enter ${AGES[ageId].name}`);
-      });
+    const age = AGES[ageId];
+    if (!age.unlocked) {
+      this.openPanel(ageId);
+      return;
     }
-  },
-
-  returnToAtrium() {
+    // Navigate to the Age dungeon page
     this.fadeTransition(() => {
-      State.scene = 'atrium';
-      State.facing = 0;
-      document.getElementById('scene').style.transform = '';
-      buildAtrium();
-      document.getElementById('hud-location').textContent = 'The Atrium';
-      document.getElementById('sky').style.filter = '';
-      document.getElementById('hud-compass').textContent = 'FACING NORTH';
-      addLog('You return to the Atrium');
+      window.location.href = age.page;
     });
   },
 
@@ -1070,7 +1095,7 @@ const Game = {
     State.panelAge = ageId;
     State.triad = [null, null, null];
 
-    document.getElementById('panel-title').textContent = age.name.toUpperCase();
+    document.getElementById('panel-title').textContent = `PORTAL OF ${age.name.toUpperCase()}`;
     document.getElementById('panel-subtitle').textContent = 'Read the breath · Select the triad · Speak it true';
     document.getElementById('panel-inscription').textContent = age.inscription;
     document.getElementById('panel-riddle').textContent = age.riddle;
@@ -1090,9 +1115,8 @@ const Game = {
   },
 
   selectGlyph(idx) {
-    // Find first empty slot
     const slot = State.triad.findIndex(s => s === null);
-    if (slot === -1) return; // triad full
+    if (slot === -1) return;
     State.triad[slot] = idx;
     this.renderTriad();
     this.renderGlyphBtns();
@@ -1109,7 +1133,7 @@ const Game = {
     for (let i = 0; i < 3; i++) {
       const el = document.getElementById(`triad-${i}`);
       if (State.triad[i] !== null) {
-        el.textContent = GLYPHS[State.triad[i]].glyph;
+        el.textContent = GLYPHS[State.triad[i]].symbol;
         el.classList.add('filled');
       } else {
         el.textContent = '·';
@@ -1136,19 +1160,19 @@ const Game = {
       return;
     }
 
-    const correct = age.solution.every((v, i) => v === State.triad[i]);
+    // Compare against the age's solution (array of glyph IDs)
+    const correct = age.solution.every((glyphId, i) => glyphId === State.triad[i]);
 
     if (correct) {
       fb.textContent = '𐤕 The breath is true · The portal opens';
       fb.className = 'panel-feedback right';
-      AGES[State.panelAge].unlocked = true;
-      State.save();
+      State.markUnlocked(State.panelAge);
       addLog(`${age.name} — portal opened`);
 
       setTimeout(() => {
         this.closePanel();
-        this.refreshPortal(State.panelAge);
-        setTimeout(() => this.travelToAge(State.panelAge), 400);
+        refreshPortal(State.panelAge);
+        setTimeout(() => this.travelToAge(State.panelAge), 600);
       }, 1200);
     } else {
       fb.textContent = '𐤆 The breath is false · The portal holds';
@@ -1158,15 +1182,6 @@ const Game = {
       this.renderGlyphBtns();
       addLog('Wrong triad — the portal holds');
     }
-  },
-
-  refreshPortal(ageId) {
-    const el = document.getElementById(`portal-${ageId}`);
-    if (!el) return;
-    el.classList.remove('portal-locked');
-    el.classList.add('portal-unlocked');
-    const keyEl = el.querySelector('.portal-glyph-key');
-    if (keyEl) keyEl.style.color = 'var(--unlock)';
   },
 };
 
@@ -1179,38 +1194,28 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft'  || e.key === 'a') Game.turnLeft();
   if (e.key === 'ArrowRight' || e.key === 'd') Game.turnRight();
   if (e.key === 'ArrowDown'  || e.key === 's') Game.turnAround();
-  if (e.key === 'Escape' && State.scene !== 'atrium') Game.returnToAtrium();
 });
-
-// ── BACK BUTTON (when in an Age) ─────────────────────────────
-document.getElementById('nav-forward').addEventListener('click', () => {
-  if (State.scene !== 'atrium') Game.returnToAtrium();
-});
-
-// Update forward button label based on scene
-function updateNav() {
-  const fwd = document.getElementById('nav-forward');
-  if (State.scene !== 'atrium') {
-    fwd.textContent = '← Atrium';
-    fwd.disabled = false;
-  } else {
-    fwd.textContent = 'Forward';
-    fwd.disabled = true;
-  }
-}
-// Hook into travelToAge & returnToAtrium
-const _origTravel  = Game.travelToAge.bind(Game);
-const _origReturn  = Game.returnToAtrium.bind(Game);
-Game.travelToAge = function(id) { _origTravel(id); setTimeout(updateNav, 600); };
-Game.returnToAtrium = function() { _origReturn(); setTimeout(updateNav, 600); };
 
 // ── INIT ─────────────────────────────────────────────────────
-State.load();
-initStars();
-buildGlyphGrid();
-buildAtrium();
-addLog('The Atrium holds four portals');
-addLog('Only the triad opens the way');
+async function init() {
+  await loadCanon();
+  State.load();
+  State.updateDashboard();
+  initStars();
+  buildGlyphGrid();
+  buildAtrium();
+
+  // Restore log display
+  const el = document.getElementById('journal-entries');
+  el.innerHTML = State.log.map(l => `<div class="log-entry">${l}</div>`).join('');
+
+  if (State.log.length === 0) {
+    addLog('The Atrium holds four portals');
+    addLog('Only the triad opens the way');
+  }
+}
+
+init();
 </script>
 </body>
 </html>
