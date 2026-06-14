@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADZMYST · The Age of Air</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Cinzel+Decorative:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --void:       #07080f;
+  --sky-deep:   #0a1428;
+  --sky-mid:    #1a3050;
+  --cerulean:   #4a7aaa;
+  --air-cyan:   #7ab8d4;
+  --air-pale:   #b8dce8;
+  --silver:     #b8cce0;
+  --breath:     #e8f2ff;
+  --gold:       #c8a84a;
+  --gold-dim:   #6a5830;
+  --gold-glow:  rgba(200,168,74,0.35);
+  --unlock:     #a8d890;
+  --danger:     #c87070;
+  --panel-bg:   rgba(10,18,40,0.88);
+  --wall-bg:    rgba(15,28,55,0.6);
+  --desk-wood:  #3a2a1a;
+  --desk-top:   #4a3520;
+  --candle-wax: #e8d890;
+  --ink-dark:   #1a1030;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--void);
+  color: var(--breath);
+  font-family: 'Cormorant Garamond', serif;
+  user-select: none;
+}
+
+/* ── SKY ── */
+#sky {
+  position: fixed; inset: 0; z-index: 0;
+  background: linear-gradient(180deg, #03050e 0%, #0d1a35 30%, #1a3055 60%, #253a60 100%);
+  animation: skybreath 20s ease-in-out infinite alternate;
+}
+@keyframes skybreath {
+  0%   { filter: brightness(1) hue-rotate(0deg); }
+  50%  { filter: brightness(1.12) hue-rotate(8deg); }
+  100% { filter: brightness(0.92) hue-rotate(-5deg); }
+}
+
+/* Wind streaks */
+.wind-streak {
+  position: fixed; z-index: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--air-pale), transparent);
+  opacity: 0;
+  pointer-events: none;
+  animation: windpass var(--dur, 4s) ease-in-out var(--delay, 0s) infinite;
+}
+@keyframes windpass {
+  0%   { opacity: 0; transform: translateX(-100vw); }
+  15%  { opacity: 0.25; }
+  85%  { opacity: 0.15; }
+  100% { opacity: 0; transform: translateX(100vw); }
+}
+
+/* ── FADE ── */
+#fade {
+  position: fixed; inset: 0; z-index: 100;
+  background: var(--void);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+#fade.active { opacity: 1; pointer-events: all; }
+
+/* ── HUD ── */
+#hud {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+  padding: 1rem 1.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+  background: linear-gradient(180deg, rgba(7,8,15,0.9) 0%, transparent 100%);
+  pointer-events: none;
+}
+#hud-room {
+  font-family: 'Cinzel', serif;
+  font-size: 0.7rem; letter-spacing: 0.3em;
+  color: var(--air-cyan); text-transform: uppercase;
+}
+#hud-glyphs { font-size: 1.2rem; color: var(--gold); opacity: 0.6; letter-spacing: 0.2em; }
+#hud-progress {
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem; letter-spacing: 0.2em;
+  color: var(--silver); opacity: 0.6;
+}
+
+/* ── ROOMS ── */
+.room {
+  position: fixed; inset: 0; z-index: 10;
+  display: none;
+  flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.room.active { display: flex; }
+
+/* ── ROOM 1 — THRESHOLD ── */
+#room-threshold {
+  perspective: 800px;
+}
+
+.tunnel-frame {
+  position: relative;
+  width: min(640px, 92vw);
+  height: min(480px, 70vh);
+  transform-style: preserve-3d;
+}
+
+/* Nested tunnel rings for depth illusion */
+.tunnel-ring {
+  position: absolute;
+  border: 1px solid rgba(122,184,212,0.3);
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%) translateZ(var(--tz, 0px));
+  transition: opacity 0.5s;
+}
+
+.threshold-content {
+  position: relative; z-index: 5;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 1.2rem;
+  text-align: center;
+  padding: 2rem;
+}
+
+.room-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(1.4rem, 4vw, 2.5rem);
+  letter-spacing: 0.3em;
+  color: var(--air-cyan);
+  text-shadow: 0 0 30px rgba(122,184,212,0.5);
+}
+.room-subtitle {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(0.6rem, 1.2vw, 0.75rem);
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--silver); opacity: 0.6;
+}
+.room-lore {
+  font-size: clamp(0.85rem, 1.5vw, 1rem);
+  line-height: 1.9; max-width: 400px;
+  color: var(--silver); opacity: 0.75;
+  font-style: italic;
+}
+
+/* Glyph clue embedded in wall */
+.wall-clue {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  color: var(--gold); letter-spacing: 0.4em;
+  opacity: 0.5;
+  text-shadow: 0 0 15px var(--gold-glow);
+  cursor: help;
+  transition: opacity 0.3s;
+}
+.wall-clue:hover { opacity: 1; }
+.wall-clue-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.6rem; letter-spacing: 0.25em;
+  color: var(--gold-dim); text-transform: uppercase;
+  margin-top: -0.5rem;
+}
+
+/* Passage arch */
+.passage-arch {
+  width: clamp(100px, 18vw, 160px);
+  height: clamp(130px, 24vw, 210px);
+  border: 2px solid rgba(122,184,212,0.4);
+  border-bottom: none;
+  border-radius: 50% 50% 0 0 / 60% 60% 0 0;
+  background: linear-gradient(180deg, rgba(122,184,212,0.08) 0%, transparent 100%);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.4s;
+  margin-top: 0.5rem;
+}
+.passage-arch:hover {
+  border-color: var(--air-cyan);
+  background: rgba(122,184,212,0.12);
+  box-shadow: 0 0 30px rgba(122,184,212,0.2), inset 0 0 20px rgba(122,184,212,0.1);
+}
+.passage-arch::after {
+  content: '→';
+  font-size: 1.5rem;
+  color: var(--air-cyan); opacity: 0.7;
+}
+.passage-arch .arch-label {
+  position: absolute; bottom: -1.5rem;
+  font-family: 'Cinzel', serif;
+  font-size: 0.6rem; letter-spacing: 0.2em;
+  color: var(--silver); opacity: 0.5;
+  text-transform: uppercase; white-space: nowrap;
+}
+
+/* ── ROOM 2 — CODEX CHAMBER ── */
+#room-codex {
+  gap: 1.5rem;
+  padding: 1rem;
+}
+
+.codex-header {
+  text-align: center;
+}
+.codex-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(1.2rem, 3vw, 2rem);
+  color: var(--gold);
+  text-shadow: 0 0 20px var(--gold-glow);
+  letter-spacing: 0.25em;
+  margin-bottom: 0.3rem;
+}
+.codex-instruction {
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem; letter-spacing: 0.2em;
+  color: var(--silver); opacity: 0.6;
+  text-transform: uppercase;
+}
+
+.codex-layout {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: clamp(1rem, 3vw, 2.5rem);
+  flex-wrap: wrap;
+}
+
+/* 3×3 grid */
+.codex-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.codex-cell {
+  width: clamp(54px, 9vw, 80px);
+  height: clamp(54px, 9vw, 80px);
+  border: 1px solid rgba(122,184,212,0.25);
+  background: rgba(10,18,40,0.7);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 2px;
+  font-size: clamp(1.3rem, 2.8vw, 2rem);
+  color: var(--gold-dim);
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+.codex-cell .seq-num {
+  position: absolute; top: 3px; left: 5px;
+  font-family: 'Cinzel', serif;
+  font-size: 0.45rem; letter-spacing: 0.05em;
+  color: rgba(122,184,212,0.3);
+}
+.codex-cell .cell-name {
+  font-family: 'Cinzel', serif;
+  font-size: 0.38rem; letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(200,168,74,0.4);
+}
+.codex-cell.filled {
+  border-color: var(--gold);
+  background: rgba(200,168,74,0.12);
+  color: var(--gold);
+  box-shadow: 0 0 12px rgba(200,168,74,0.2);
+}
+.codex-cell.filled .cell-name { color: rgba(200,168,74,0.7); }
+.codex-cell.correct {
+  border-color: var(--unlock);
+  background: rgba(168,216,144,0.12);
+  color: var(--unlock);
+  box-shadow: 0 0 16px rgba(168,216,144,0.25);
+  animation: correctpulse 0.6s ease;
+}
+@keyframes correctpulse {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+.codex-cell.wrong {
+  border-color: var(--danger);
+  animation: wrongshake 0.4s ease;
+}
+@keyframes wrongshake {
+  0%, 100% { transform: translateX(0); }
+  25%  { transform: translateX(-4px); }
+  75%  { transform: translateX(4px); }
+}
+
+/* Rune tray */
+.rune-tray {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.tray-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.6rem; letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--silver); opacity: 0.5;
+  text-align: center;
+}
+.rune-tray-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+}
+.rune-tile {
+  width: clamp(42px, 7vw, 58px);
+  height: clamp(42px, 7vw, 58px);
+  background: rgba(15,25,50,0.8);
+  border: 1px solid rgba(74,122,170,0.3);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 2px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: clamp(1rem, 2vw, 1.4rem);
+  color: var(--silver);
+}
+.rune-tile .rune-name {
+  font-family: 'Cinzel', serif;
+  font-size: 0.38rem; letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+}
+.rune-tile:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: rgba(200,168,74,0.1);
+}
+.rune-tile.active {
+  border-color: var(--air-cyan);
+  color: var(--air-cyan);
+  background: rgba(122,184,212,0.1);
+  box-shadow: 0 0 10px rgba(122,184,212,0.2);
+}
+
+/* Codex clue panel */
+.codex-clue {
+  font-size: 0.82rem;
+  line-height: 1.8; max-width: 520px;
+  color: var(--silver); opacity: 0.65;
+  font-style: italic;
+  text-align: center;
+}
+
+.codex-feedback {
+  font-family: 'Cinzel', serif;
+  font-size: 0.7rem; letter-spacing: 0.15em;
+  min-height: 1.2rem; text-align: center;
+  transition: all 0.3s;
+}
+.codex-feedback.wrong { color: var(--danger); }
+.codex-feedback.right { color: var(--unlock); }
+
+/* Progress indicator */
+.codex-progress {
+  display: flex; gap: 4px; justify-content: center;
+}
+.prog-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  border: 1px solid rgba(200,168,74,0.3);
+  background: transparent;
+  transition: all 0.3s;
+}
+.prog-dot.filled { background: var(--gold); border-color: var(--gold); }
+.prog-dot.correct { background: var(--unlock); border-color: var(--unlock); }
+
+/* ── ROOM 3 — SCRIBE'S DESK ── */
+#room-desk {
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.desk-header { text-align: center; }
+.desk-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(1.2rem, 3vw, 1.8rem);
+  color: var(--gold);
+  letter-spacing: 0.25em;
+  text-shadow: 0 0 20px var(--gold-glow);
+  margin-bottom: 0.2rem;
+}
+.desk-instruction {
+  font-family: 'Cinzel', serif;
+  font-size: 0.62rem; letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--silver); opacity: 0.55;
+}
+
+.desk-scene {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+/* CSS 3D desk surface */
+.desk-3d {
+  perspective: 600px;
+  perspective-origin: 50% 20%;
+}
+
+.desk-surface {
+  width: clamp(300px, 55vw, 520px);
+  height: clamp(140px, 22vh, 200px);
+  background: linear-gradient(160deg, #5a4025 0%, var(--desk-top) 40%, #3a2812 100%);
+  border: 2px solid #6a4a28;
+  border-radius: 4px 4px 0 0;
+  transform: rotateX(28deg);
+  transform-origin: bottom center;
+  position: relative;
+  box-shadow:
+    0 20px 40px rgba(0,0,0,0.6),
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    inset 0 -2px 8px rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 1rem 1.5rem;
+}
+
+/* Desk grain */
+.desk-surface::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0px,
+    transparent 18px,
+    rgba(0,0,0,0.05) 18px,
+    rgba(0,0,0,0.05) 19px
+  );
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* Desk slots — where you drop objects */
+.desk-slot {
+  width: clamp(55px, 9vw, 80px);
+  height: clamp(55px, 9vw, 80px);
+  border: 1.5px dashed rgba(200,168,74,0.25);
+  border-radius: 4px;
+  background: rgba(0,0,0,0.25);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 4px;
+  transition: all 0.25s;
+  position: relative;
+  cursor: pointer;
+}
+.desk-slot .slot-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.38rem; letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(200,168,74,0.3);
+  position: absolute; bottom: 3px;
+}
+.desk-slot.highlight {
+  border-color: var(--air-cyan);
+  background: rgba(122,184,212,0.08);
+  box-shadow: 0 0 12px rgba(122,184,212,0.2);
+}
+.desk-slot.filled {
+  border-color: var(--gold);
+  background: rgba(200,168,74,0.1);
+  border-style: solid;
+}
+.desk-slot.correct-pos {
+  border-color: var(--unlock);
+  background: rgba(168,216,144,0.12);
+  box-shadow: 0 0 14px rgba(168,216,144,0.25);
+}
+.desk-slot .slot-obj {
+  font-size: clamp(1.4rem, 2.5vw, 2rem);
+  pointer-events: none;
+}
+
+/* Object shelf — where you pick up items */
+.object-shelf {
+  display: flex;
+  gap: clamp(0.8rem, 2vw, 1.5rem);
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.shelf-object {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 0.4rem;
+  cursor: grab;
+  transition: all 0.25s;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid rgba(74,122,170,0.2);
+  background: rgba(10,18,40,0.6);
+  border-radius: 3px;
+}
+.shelf-object:hover {
+  border-color: var(--gold);
+  background: rgba(200,168,74,0.08);
+  transform: translateY(-3px);
+}
+.shelf-object.selected {
+  border-color: var(--air-cyan);
+  background: rgba(122,184,212,0.1);
+  box-shadow: 0 0 14px rgba(122,184,212,0.25);
+  transform: translateY(-4px);
+  cursor: grabbing;
+}
+.shelf-object.placed {
+  opacity: 0.3;
+  cursor: not-allowed;
+  transform: none;
+}
+.shelf-object .obj-icon { font-size: clamp(1.6rem, 3vw, 2.4rem); }
+.shelf-object .obj-name {
+  font-family: 'Cinzel', serif;
+  font-size: 0.5rem; letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+}
+
+/* Desk clue */
+.desk-clue {
+  font-size: 0.85rem; line-height: 1.8;
+  max-width: 480px; text-align: center;
+  color: var(--silver); opacity: 0.65;
+  font-style: italic;
+}
+
+.desk-feedback {
+  font-family: 'Cinzel', serif;
+  font-size: 0.7rem; letter-spacing: 0.15em;
+  min-height: 1.2rem; text-align: center;
+  transition: all 0.3s;
+}
+.desk-feedback.wrong { color: var(--danger); }
+.desk-feedback.right { color: var(--unlock); }
+
+.desk-actions {
+  display: flex; gap: 0.8rem; justify-content: center;
+}
+.desk-btn {
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem; letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 0.5rem 1.4rem;
+  border: 1px solid rgba(74,122,170,0.4);
+  background: transparent; color: var(--cerulean);
+  cursor: pointer; transition: all 0.25s;
+}
+.desk-btn:hover { border-color: var(--breath); color: var(--breath); }
+.desk-btn.primary { border-color: var(--gold); color: var(--gold); }
+.desk-btn.primary:hover { background: rgba(200,168,74,0.1); }
+
+/* ── ROOM 4 — EXIT PORTAL ── */
+#room-exit {
+  gap: 2rem;
+  text-align: center;
+  padding: 2rem;
+}
+
+.exit-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(1.5rem, 4vw, 3rem);
+  color: var(--breath);
+  letter-spacing: 0.3em;
+  text-shadow: 0 0 40px rgba(122,184,212,0.6), 0 0 80px rgba(122,184,212,0.3);
+}
+.exit-lore {
+  font-size: clamp(0.9rem, 1.5vw, 1rem);
+  line-height: 1.9; max-width: 440px;
+  color: var(--silver); opacity: 0.75;
+  font-style: italic;
+}
+
+.exit-portal {
+  width: clamp(100px, 16vw, 160px);
+  height: clamp(100px, 16vw, 160px);
+  border-radius: 50%;
+  border: 2px solid var(--air-cyan);
+  background: radial-gradient(circle, rgba(122,184,212,0.15) 0%, transparent 70%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3rem;
+  cursor: pointer;
+  position: relative;
+  box-shadow: 0 0 40px rgba(122,184,212,0.4), inset 0 0 30px rgba(122,184,212,0.1);
+  animation: portalopen 3s ease-in-out infinite;
+  transition: all 0.3s;
+}
+@keyframes portalopen {
+  0%, 100% { box-shadow: 0 0 30px rgba(122,184,212,0.3), inset 0 0 20px rgba(122,184,212,0.08); }
+  50%       { box-shadow: 0 0 60px rgba(122,184,212,0.6), inset 0 0 40px rgba(122,184,212,0.15); }
+}
+.exit-portal::after {
+  content: '';
+  position: absolute; inset: -4px;
+  border-radius: 50%;
+  border: 1px solid rgba(122,184,212,0.3);
+  animation: portalspin 8s linear infinite;
+}
+@keyframes portalspin { to { transform: rotate(360deg); } }
+.exit-portal:hover {
+  transform: scale(1.06);
+  box-shadow: 0 0 80px rgba(122,184,212,0.7);
+}
+.exit-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem; letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--air-cyan); opacity: 0.7;
+}
+
+/* ── BOTTOM NAV ── */
+#bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+  padding: 0.8rem 1.5rem 1.2rem;
+  display: flex; align-items: center; justify-content: space-between;
+  background: linear-gradient(0deg, rgba(7,8,15,0.9) 0%, transparent 100%);
+}
+.b-btn {
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem; letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 0.45rem 1rem;
+  border: 1px solid rgba(74,122,170,0.3);
+  background: transparent; color: var(--cerulean);
+  cursor: pointer; transition: all 0.25s;
+}
+.b-btn:hover { border-color: var(--silver); color: var(--breath); }
+#breadcrumb {
+  font-family: 'Cinzel', serif;
+  font-size: 0.55rem; letter-spacing: 0.2em;
+  color: var(--silver); opacity: 0.4;
+  text-transform: uppercase;
+}
+
+/* ── LOG ── */
+#log {
+  position: fixed; bottom: 3.5rem; left: 1rem; z-index: 40;
+  font-family: 'Cinzel', serif;
+  font-size: 0.55rem; letter-spacing: 0.08em;
+  color: var(--cerulean); opacity: 0.5;
+  line-height: 1.8; pointer-events: none;
+}
+#log div::before { content: '›  '; color: var(--gold-dim); }
+</style>
+</head>
+<body>
+
+<div id="sky"></div>
+
+<!-- Wind streaks -->
+<div class="wind-streak" style="top:18%; width:60vw; left:0; --dur:5s; --delay:0s;"></div>
+<div class="wind-streak" style="top:35%; width:80vw; left:0; --dur:7s; --delay:1.5s;"></div>
+<div class="wind-streak" style="top:52%; width:45vw; left:0; --dur:4.5s; --delay:3s;"></div>
+<div class="wind-streak" style="top:70%; width:70vw; left:0; --dur:6s; --delay:0.8s;"></div>
+<div class="wind-streak" style="top:82%; width:55vw; left:0; --dur:5.5s; --delay:2s;"></div>
+
+<div id="fade"></div>
+
+<!-- HUD -->
+<div id="hud">
+  <div id="hud-room">The Age of Air · Room I</div>
+  <div id="hud-glyphs">𐤀 𐤃 𐤆 𐤌 𐤉 𐤎 𐤕</div>
+  <div id="hud-progress">I · II · III · IV</div>
+</div>
+
+<!-- ══ ROOM 1 — THRESHOLD ══ -->
+<div class="room active" id="room-threshold">
+  <div class="tunnel-frame">
+    <!-- Depth rings -->
+    <div class="tunnel-ring" style="width:100%;height:100%;--tz:0px;opacity:0.6;border-radius:2px;"></div>
+    <div class="tunnel-ring" style="width:82%;height:82%;--tz:-60px;opacity:0.4;border-radius:3px;"></div>
+    <div class="tunnel-ring" style="width:64%;height:64%;--tz:-120px;opacity:0.25;border-radius:4px;"></div>
+    <div class="tunnel-ring" style="width:46%;height:46%;--tz:-180px;opacity:0.15;border-radius:5px;"></div>
+    <div class="tunnel-ring" style="width:28%;height:28%;--tz:-240px;opacity:0.08;border-radius:6px;"></div>
+
+    <div class="threshold-content">
+      <div class="room-title">The Threshold</div>
+      <div class="room-subtitle">The Age of Air · First Chamber</div>
+      <div class="room-lore">
+        The breath that names things entered here.<br>
+        Before words, there were marks. Before marks, there was wind.<br>
+        Study the wall before you advance.
+      </div>
+
+      <!-- Glyph clue: the codex answer is written here in plain sight -->
+      <div class="wall-clue" title="The breath is the key — read left to right, top to bottom">𐤀𐤃𐤆 · 𐤌𐤉𐤎 · 𐤀𐤃𐤕</div>
+      <div class="wall-clue-label">The Wall of Nine · Study it well</div>
+
+      <div class="passage-arch" onclick="Realm.goRoom(2)">
+        <span class="arch-label">Enter the Codex Chamber</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ROOM 2 — CODEX CHAMBER ══ -->
+<div class="room" id="room-codex">
+  <div class="codex-header">
+    <div class="codex-title">The Codex of Nine</div>
+    <div class="codex-instruction">Select a rune · Place it in sequence · Nine slots · The order was written on the wall</div>
+  </div>
+
+  <div class="codex-layout">
+    <!-- 3×3 grid -->
+    <div>
+      <div class="codex-grid" id="codex-grid">
+        <!-- 9 cells built by JS -->
+      </div>
+      <div class="codex-progress" id="codex-progress" style="margin-top:0.8rem;">
+        <!-- 9 dots -->
+      </div>
+    </div>
+
+    <!-- Rune tray -->
+    <div class="rune-tray">
+      <div class="tray-label">The Seven Glyphs</div>
+      <div class="rune-tray-grid" id="rune-tray-grid">
+        <!-- tiles built by JS -->
+      </div>
+      <div class="codex-feedback" id="codex-feedback"></div>
+    </div>
+  </div>
+
+  <div class="codex-clue">
+    "Nine marks, three rows — the breath sets the order.<br>
+    Strength opens. Door and cut follow. The deep comes next,<br>
+    with hand and pillar. The final row: strength returns, then door, then the mark of completion."
+  </div>
+</div>
+
+<!-- ══ ROOM 3 — SCRIBE'S DESK ══ -->
+<div class="room" id="room-desk">
+  <div class="desk-header">
+    <div class="desk-title">The Scribe's Desk</div>
+    <div class="desk-instruction">Place each object in the right ritual order · left to right · as the inscription demands</div>
+  </div>
+
+  <div class="desk-scene">
+    <!-- 3D desk -->
+    <div class="desk-3d">
+      <div class="desk-surface" id="desk-surface">
+        <!-- 3 slots built by JS -->
+      </div>
+    </div>
+
+    <!-- Object shelf -->
+    <div class="object-shelf" id="object-shelf">
+      <!-- built by JS -->
+    </div>
+
+    <div class="desk-clue" id="desk-clue">
+      "The candle is lit before the book is opened.<br>
+      The book is opened before the inkwell is unstoppered.<br>
+      Light · Word · Mark — in that order, the ritual is complete."
+    </div>
+
+    <div class="desk-feedback" id="desk-feedback"></div>
+
+    <div class="desk-actions">
+      <button class="desk-btn" onclick="Desk.clearDesk()">Clear</button>
+      <button class="desk-btn primary" onclick="Desk.checkRitual()">Speak the Ritual</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ROOM 4 — EXIT ══ -->
+<div class="room" id="room-exit">
+  <div class="exit-title">The Age of Air — Traversed</div>
+  <div class="exit-lore">
+    You have read the wall. You have spoken the nine.<br>
+    You have lit the candle, opened the book, and unstoppered the ink.<br>
+    The breath has passed through you and become language.<br>
+    Return to the Atrium — the other Ages call.
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:0.8rem;">
+    <div class="exit-portal" onclick="Realm.returnToAtrium()">𓂝</div>
+    <div class="exit-label">Return to the Atrium</div>
+  </div>
+</div>
+
+<!-- Bottom nav -->
+<div id="bottom-nav">
+  <button class="b-btn" onclick="Realm.goBack()">← Back</button>
+  <div id="breadcrumb">Atrium · Age of Air · Room I</div>
+  <button class="b-btn" onclick="Realm.returnToAtrium()">Atrium</button>
+</div>
+
+<!-- Log -->
+<div id="log" id="log-entries"></div>
+
+<script>
+// ══ DATA ════════════════════════════════════════════════════
+
+const GLYPHS = [
+  { g: '𐤀', name: 'Aleph',  meaning: 'Ox · Strength · Beginning' },
+  { g: '𐤃', name: 'Dalet',  meaning: 'Door · Passage · Threshold' },
+  { g: '𐤆', name: 'Zayin',  meaning: 'Weapon · Division · The Cut' },
+  { g: '𐤌', name: 'Mem',    meaning: 'Water · Chaos · The Deep' },
+  { g: '𐤉', name: 'Yod',    meaning: 'Hand · Action · Making' },
+  { g: '𐤎', name: 'Samek',  meaning: 'Pillar · Support · What Holds' },
+  { g: '𐤕', name: 'Taw',    meaning: 'Mark · Signature · Completion' },
+];
+
+// Codex solution: 9 glyph indices, left→right, top→bottom
+// Wall clue shows: 𐤀𐤃𐤆 · 𐤌𐤉𐤎 · 𐤀𐤃𐤕
+// Row 1: Aleph(0) Dalet(1) Zayin(2)
+// Row 2: Mem(3)   Yod(4)   Samek(5)
+// Row 3: Aleph(0) Dalet(1) Taw(6)
+const CODEX_SOLUTION = [0, 1, 2, 3, 4, 5, 0, 1, 6];
+
+// Desk ritual solution: [candle, book, inkwell] → positions [0,1,2]
+// Correct order: Light(candle) → Word(book) → Mark(inkwell)
+const DESK_OBJECTS = [
+  { id: 'candle',  icon: '🕯️', name: 'Candle',  desc: 'Light' },
+  { id: 'book',    icon: '📖', name: 'Book',    desc: 'Word' },
+  { id: 'inkwell', icon: '🖋️', name: 'Inkwell', desc: 'Mark' },
+];
+const DESK_SOLUTION = ['candle', 'book', 'inkwell']; // left→right
+
+// ══ STATE ════════════════════════════════════════════════════
+
+const S = {
+  currentRoom: 1,
+  // Codex
+  codexCells: Array(9).fill(null),   // glyph index or null
+  selectedRune: null,                // currently selected rune index
+  codexSolved: false,
+  // Desk
+  deskSlots: [null, null, null],     // object id or null
+  selectedObj: null,
+  deskSolved: false,
+
+  save() {
+    localStorage.setItem('adzmyst_air', JSON.stringify({
+      codexSolved: this.codexSolved,
+      deskSolved: this.deskSolved,
+      room: this.currentRoom,
+    }));
+  },
+  load() {
+    try {
+      const d = JSON.parse(localStorage.getItem('adzmyst_air') || '{}');
+      if (d.codexSolved) this.codexSolved = true;
+      if (d.deskSolved)  this.deskSolved  = true;
+      if (d.room && d.room > 1) this.currentRoom = d.room;
+    } catch(e) {}
+  },
+};
+
+// ══ LOGGING ══════════════════════════════════════════════════
+
+const logLines = [];
+function addLog(msg) {
+  logLines.unshift(msg);
+  if (logLines.length > 4) logLines.pop();
+  document.getElementById('log').innerHTML =
+    logLines.map(l => `<div>${l}</div>`).join('');
+}
+
+// ══ REALM NAV ════════════════════════════════════════════════
+
+const Realm = {
+  goRoom(n) {
+    fade(() => {
+      S.currentRoom = n;
+      document.querySelectorAll('.room').forEach(r => r.classList.remove('active'));
+      const ids = ['', 'room-threshold', 'room-codex', 'room-desk', 'room-exit'];
+      document.getElementById(ids[n]).classList.add('active');
+      updateHUD(n);
+      S.save();
+    });
+  },
+
+  goBack() {
+    if (S.currentRoom > 1) this.goRoom(S.currentRoom - 1);
+    else this.returnToAtrium();
+  },
+
+  returnToAtrium() {
+    fade(() => {
+      window.location.href = 'index.html';
+    });
+  },
+};
+
+function updateHUD(room) {
+  const names = ['', 'The Threshold', 'The Codex Chamber', "The Scribe's Desk", 'The Exit'];
+  const rooms = ['', 'I', 'II', 'III', 'IV'];
+  document.getElementById('hud-room').textContent =
+    `The Age of Air · Room ${rooms[room]}`;
+  document.getElementById('breadcrumb').textContent =
+    `Atrium · Age of Air · ${names[room]}`;
+
+  // Mark progress in HUD
+  const steps = ['I', 'II', 'III', 'IV'];
+  document.getElementById('hud-progress').innerHTML =
+    steps.map((s,i) => {
+      const done = i + 1 < room;
+      const cur  = i + 1 === room;
+      const col  = done ? 'var(--unlock)' : cur ? 'var(--gold)' : 'rgba(184,204,224,0.3)';
+      return `<span style="color:${col}">${s}</span>`;
+    }).join(' · ');
+}
+
+function fade(fn) {
+  const el = document.getElementById('fade');
+  el.classList.add('active');
+  setTimeout(() => { fn(); setTimeout(() => el.classList.remove('active'), 80); }, 500);
+}
+
+// ══ CODEX ENGINE ═════════════════════════════════════════════
+
+const Codex = {
+  init() {
+    this.buildGrid();
+    this.buildTray();
+    this.renderProgress();
+  },
+
+  buildGrid() {
+    const grid = document.getElementById('codex-grid');
+    grid.innerHTML = '';
+    for (let i = 0; i < 9; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'codex-cell';
+      cell.id = `cell-${i}`;
+      cell.innerHTML = `
+        <span class="seq-num">${i + 1}</span>
+        <span class="cell-glyph" style="font-size:inherit"></span>
+        <span class="cell-name"></span>
+      `;
+      cell.addEventListener('click', () => Codex.placeRune(i));
+      grid.appendChild(cell);
+    }
+    this.renderGrid();
+  },
+
+  buildTray() {
+    const tray = document.getElementById('rune-tray-grid');
+    tray.innerHTML = '';
+    GLYPHS.forEach((g, i) => {
+      const tile = document.createElement('div');
+      tile.className = 'rune-tile';
+      tile.id = `rtile-${i}`;
+      tile.innerHTML = `${g.g}<span class="rune-name">${g.name}</span>`;
+      tile.title = g.meaning;
+      tile.addEventListener('click', () => Codex.selectRune(i));
+      tray.appendChild(tile);
+    });
+  },
+
+  selectRune(idx) {
+    if (S.codexSolved) return;
+    S.selectedRune = (S.selectedRune === idx) ? null : idx;
+    document.querySelectorAll('.rune-tile').forEach((t, i) => {
+      t.classList.toggle('active', i === S.selectedRune);
+    });
+    const fb = document.getElementById('codex-feedback');
+    if (S.selectedRune !== null) {
+      const g = GLYPHS[S.selectedRune];
+      fb.textContent = `${g.g} ${g.name} · ${g.meaning}`;
+      fb.className = 'codex-feedback';
+    } else {
+      fb.textContent = '';
+    }
+  },
+
+  placeRune(cellIdx) {
+    if (S.codexSolved) return;
+    if (S.selectedRune === null) {
+      // If cell has a rune, clear it
+      if (S.codexCells[cellIdx] !== null) {
+        S.codexCells[cellIdx] = null;
+        this.renderGrid();
+        this.renderProgress();
+        addLog(`Cleared slot ${cellIdx + 1}`);
+      }
+      return;
+    }
+
+    S.codexCells[cellIdx] = S.selectedRune;
+    this.renderGrid();
+    this.renderProgress();
+
+    // Check if grid is full → auto-validate
+    if (S.codexCells.every(c => c !== null)) {
+      setTimeout(() => this.validate(), 300);
+    }
+  },
+
+  renderGrid() {
+    for (let i = 0; i < 9; i++) {
+      const cell  = document.getElementById(`cell-${i}`);
+      const glyph = document.querySelector(`#cell-${i} .cell-glyph`);
+      const name  = document.querySelector(`#cell-${i} .cell-name`);
+      if (S.codexCells[i] !== null) {
+        const g = GLYPHS[S.codexCells[i]];
+        glyph.textContent = g.g;
+        name.textContent  = g.name;
+        cell.classList.add('filled');
+        cell.classList.remove('correct', 'wrong');
+      } else {
+        glyph.textContent = '';
+        name.textContent  = '';
+        cell.classList.remove('filled', 'correct', 'wrong');
+      }
+    }
+  },
+
+  renderProgress() {
+    const prog = document.getElementById('codex-progress');
+    prog.innerHTML = S.codexCells.map((c, i) => {
+      const cls = c !== null
+        ? (S.codexSolved ? 'prog-dot correct' : 'prog-dot filled')
+        : 'prog-dot';
+      return `<div class="${cls}"></div>`;
+    }).join('');
+  },
+
+  validate() {
+    const correct = CODEX_SOLUTION.every((v, i) => v === S.codexCells[i]);
+    const fb = document.getElementById('codex-feedback');
+
+    if (correct) {
+      // Light up all cells
+      for (let i = 0; i < 9; i++) {
+        setTimeout(() => {
+          document.getElementById(`cell-${i}`).classList.add('correct');
+        }, i * 80);
+      }
+      fb.textContent = '𐤕 The nine are spoken true · The chamber opens';
+      fb.className = 'codex-feedback right';
+      S.codexSolved = true;
+      this.renderProgress();
+      S.save();
+      addLog('Codex solved — passage opens');
+      setTimeout(() => Realm.goRoom(3), 2000);
+    } else {
+      // Find wrong cells
+      for (let i = 0; i < 9; i++) {
+        if (S.codexCells[i] !== CODEX_SOLUTION[i]) {
+          document.getElementById(`cell-${i}`).classList.add('wrong');
+          setTimeout(() => document.getElementById(`cell-${i}`).classList.remove('wrong'), 600);
+        }
+      }
+      fb.textContent = '𐤆 The sequence is wrong · The wall holds';
+      fb.className = 'codex-feedback wrong';
+      addLog('Wrong codex — the wall holds');
+      // Clear wrong cells only
+      setTimeout(() => {
+        S.codexCells = Array(9).fill(null);
+        S.selectedRune = null;
+        this.renderGrid();
+        this.renderProgress();
+        document.querySelectorAll('.rune-tile').forEach(t => t.classList.remove('active'));
+        fb.textContent = 'Study the wall again · Begin anew';
+        fb.className = 'codex-feedback';
+      }, 1000);
+    }
+  },
+};
+
+// ══ DESK ENGINE ══════════════════════════════════════════════
+
+const Desk = {
+  init() {
+    this.buildSlots();
+    this.buildShelf();
+  },
+
+  buildSlots() {
+    const surface = document.getElementById('desk-surface');
+    const labels  = ['Left · First', 'Centre · Second', 'Right · Third'];
+    surface.innerHTML = '';
+    for (let i = 0; i < 3; i++) {
+      const slot = document.createElement('div');
+      slot.className = 'desk-slot';
+      slot.id = `dslot-${i}`;
+      slot.innerHTML = `
+        <span class="slot-obj"></span>
+        <span class="slot-label">${labels[i]}</span>
+      `;
+      slot.addEventListener('click', () => Desk.placeOnSlot(i));
+      surface.appendChild(slot);
+    }
+  },
+
+  buildShelf() {
+    const shelf = document.getElementById('object-shelf');
+    shelf.innerHTML = '';
+    DESK_OBJECTS.forEach(obj => {
+      const el = document.createElement('div');
+      el.className = 'shelf-object';
+      el.id = `sobj-${obj.id}`;
+      el.innerHTML = `
+        <span class="obj-icon">${obj.icon}</span>
+        <span class="obj-name">${obj.name}</span>
+      `;
+      el.title = obj.desc;
+      el.addEventListener('click', () => Desk.selectObject(obj.id));
+      shelf.appendChild(el);
+    });
+  },
+
+  selectObject(id) {
+    if (S.deskSolved) return;
+    // If already placed, ignore
+    if (S.deskSlots.includes(id)) return;
+    S.selectedObj = (S.selectedObj === id) ? null : id;
+    document.querySelectorAll('.shelf-object').forEach(el => {
+      const elId = el.id.replace('sobj-', '');
+      el.classList.toggle('selected', elId === S.selectedObj && !S.deskSlots.includes(elId));
+    });
+    const fb = document.getElementById('desk-feedback');
+    if (S.selectedObj) {
+      const obj = DESK_OBJECTS.find(o => o.id === S.selectedObj);
+      fb.textContent = `${obj.icon} ${obj.name} selected · Click a slot to place it`;
+      fb.className = 'desk-feedback';
+    } else {
+      fb.textContent = '';
+    }
+  },
+
+  placeOnSlot(slotIdx) {
+    if (S.deskSolved) return;
+    if (!S.selectedObj) {
+      // Clear slot if occupied
+      if (S.deskSlots[slotIdx]) {
+        const freed = S.deskSlots[slotIdx];
+        S.deskSlots[slotIdx] = null;
+        this.renderDesk();
+        addLog(`Removed ${freed} from slot ${slotIdx + 1}`);
+      }
+      return;
+    }
+    // Don't place if already in another slot
+    if (S.deskSlots.includes(S.selectedObj)) return;
+
+    S.deskSlots[slotIdx] = S.selectedObj;
+    S.selectedObj = null;
+    this.renderDesk();
+
+    if (S.deskSlots.every(s => s !== null)) {
+      setTimeout(() => this.checkRitual(), 300);
+    }
+  },
+
+  renderDesk() {
+    for (let i = 0; i < 3; i++) {
+      const slot = document.getElementById(`dslot-${i}`);
+      const obj  = DESK_OBJECTS.find(o => o.id === S.deskSlots[i]);
+      const iconEl = slot.querySelector('.slot-obj');
+      if (obj) {
+        iconEl.textContent = obj.icon;
+        slot.classList.add('filled');
+        slot.classList.remove('correct-pos', 'highlight');
+      } else {
+        iconEl.textContent = '';
+        slot.classList.remove('filled', 'correct-pos');
+        slot.classList.add('highlight');
+      }
+    }
+    // Shelf
+    DESK_OBJECTS.forEach(obj => {
+      const el = document.getElementById(`sobj-${obj.id}`);
+      if (S.deskSlots.includes(obj.id)) {
+        el.classList.add('placed');
+        el.classList.remove('selected');
+      } else {
+        el.classList.remove('placed');
+      }
+    });
+    // Deselect
+    document.querySelectorAll('.shelf-object').forEach(el => {
+      if (!el.classList.contains('placed')) el.classList.remove('selected');
+    });
+  },
+
+  clearDesk() {
+    S.deskSlots = [null, null, null];
+    S.selectedObj = null;
+    S.deskSolved  = false;
+    this.renderDesk();
+    document.getElementById('desk-feedback').textContent = '';
+    addLog('Desk cleared');
+  },
+
+  checkRitual() {
+    const correct = DESK_SOLUTION.every((id, i) => id === S.deskSlots[i]);
+    const fb = document.getElementById('desk-feedback');
+
+    if (correct) {
+      for (let i = 0; i < 3; i++) {
+        setTimeout(() => {
+          document.getElementById(`dslot-${i}`).classList.add('correct-pos');
+        }, i * 150);
+      }
+      fb.textContent = '𐤕 Light · Word · Mark — the ritual is complete · The way opens';
+      fb.className = 'desk-feedback right';
+      S.deskSolved = true;
+      S.save();
+      addLog('Ritual complete — the exit opens');
+      setTimeout(() => Realm.goRoom(4), 2200);
+    } else {
+      fb.textContent = '𐤆 The order is wrong · The breath is not complete';
+      fb.className = 'desk-feedback wrong';
+      addLog('Wrong ritual order — try again');
+      setTimeout(() => {
+        this.clearDesk();
+        fb.textContent = '"Light · Word · Mark — read the clue again"';
+        fb.className = 'desk-feedback';
+      }, 1200);
+    }
+  },
+};
+
+// ══ INIT ═════════════════════════════════════════════════════
+
+S.load();
+Codex.init();
+Desk.init();
+
+// Restore to correct room if returning
+if (S.currentRoom > 1) {
+  const ids = ['', 'room-threshold', 'room-codex', 'room-desk', 'room-exit'];
+  document.querySelectorAll('.room').forEach(r => r.classList.remove('active'));
+  document.getElementById(ids[S.currentRoom]).classList.add('active');
+  updateHUD(S.currentRoom);
+}
+
+// If codex was already solved, mark it
+if (S.codexSolved) {
+  CODEX_SOLUTION.forEach((v, i) => S.codexCells[i] = v);
+  Codex.renderGrid();
+  Codex.renderProgress();
+}
+if (S.deskSolved) {
+  DESK_SOLUTION.forEach((id, i) => S.deskSlots[i] = id);
+  Desk.renderDesk();
+}
+
+addLog('You stand at the Threshold of Air');
+addLog('Study the wall before you advance');
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') Realm.returnToAtrium();
+  if (e.key === 'Backspace') Realm.goBack();
+});
+</script>
+</body>
+</html>
