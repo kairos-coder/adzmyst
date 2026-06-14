@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADZMYST · Air · Threshold</title>
+<link rel="stylesheet" href="air-base.css">
+<style>
+  .tunnel-frame {
+    position: relative;
+    width: min(640px, 92vw);
+    height: min(480px, 70vh);
+    transform-style: preserve-3d;
+    margin-bottom: 1rem;
+  }
+  .tunnel-ring {
+    position: absolute;
+    border: 1px solid rgba(122,184,212,0.25);
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%) translateZ(var(--tz, 0px));
+    border-radius: 3px;
+  }
+</style>
+</head>
+<body>
+
+<div id="sky"></div>
+<div id="wind-streaks"></div>
+<div id="fade"></div>
+
+<div id="hud">
+  <div id="hud-room">Air · Threshold</div>
+  <div id="hud-glyphs"></div>
+  <div id="hud-progress">Puzzles: 0/6</div>
+</div>
+
+<button id="minimap-toggle" onclick="document.getElementById('minimap-container').classList.toggle('visible')">Map</button>
+<div id="minimap-container" class="visible">
+  <canvas id="minimap-canvas" width="92" height="92"></canvas>
+</div>
+
+<div id="viewport">
+  <div id="scene">
+    <div class="face face-north" id="face-north"></div>
+    <div class="face face-south" id="face-south"></div>
+    <div class="face face-east"  id="face-east"></div>
+    <div class="face face-west"  id="face-west"></div>
+    <div class="face face-floor" id="face-floor"></div>
+    <div class="face face-ceiling" id="face-ceiling"></div>
+  </div>
+</div>
+
+<div id="bottom-nav">
+  <button class="b-btn" onclick="returnToAtrium()">← Atrium</button>
+  <div id="breadcrumb">Atrium · Air · Threshold</div>
+  <button class="b-btn" disabled style="opacity:0.2;">→</button>
+</div>
+
+<div id="log"></div>
+
+<script>
+ROOM_ID = 1;
+ROOM_TEMPLATE = 'air-threshold';
+EXITS = { north: 'air_04.html', south: null, east: 'air_02.html', west: null };
+PUZZLE_TYPE = null;
+PUZZLE = null;
+</script>
+
+<script src="engine.js"></script>
+<script>
+buildRoom = function() {
+  const north = document.getElementById('face-north');
+  const template = ROOM_TEMPLATES.find(t => t.id === ROOM_TEMPLATE);
+  const roomData = template || { name: 'The Threshold', atmosphere: '' };
+  const sacredStr = sacredSeven.map(i => GLYPHS[i]?.symbol || '?').join(' ');
+
+  north.innerHTML = `
+    <div class="tunnel-frame">
+      <div class="tunnel-ring" style="width:100%;height:100%;--tz:0px;opacity:0.5;"></div>
+      <div class="tunnel-ring" style="width:82%;height:82%;--tz:-60px;opacity:0.35;"></div>
+      <div class="tunnel-ring" style="width:64%;height:64%;--tz:-120px;opacity:0.2;"></div>
+      <div class="tunnel-ring" style="width:46%;height:46%;--tz:-180px;opacity:0.12;"></div>
+      <div class="tunnel-ring" style="width:28%;height:28%;--tz:-240px;opacity:0.06;"></div>
+
+      <div class="room-content">
+        <div class="room-title">${roomData.name}</div>
+        <div class="room-subtitle">${AGE?.name || 'Air'} · Where the breath enters</div>
+        <div class="room-lore">${roomData.atmosphere || 'The breath that names things entered here. Before words, there were marks. Before marks, there was wind.'}</div>
+        <div class="room-glyph-wall">${sacredStr}</div>
+
+        <div class="exits-row">
+          <div class="exit-arch" onclick="navigate('east')">
+            <span class="exit-icon">►</span>
+            <span class="exit-label">Wind Gallery</span>
+          </div>
+          <div class="exit-arch" onclick="navigate('north')">
+            <span class="exit-icon">▲</span>
+            <span class="exit-label">Observatory</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+};
+
+initEngine();
+</script>
+</body>
+</html>
