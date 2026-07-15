@@ -24,8 +24,7 @@
     --unlock:      #a8d890;
     --danger:      #c85050;
     --locked-dim:  #4a3a2a;
-    --trans-panel: rgba(13, 18, 37, 0.72);
-    --trans-wall:  rgba(20, 35, 65, 0.55);
+    --trans-panel: rgba(13, 18, 37, 0.85);
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -54,94 +53,34 @@
   }
   @keyframes skyshift {
     0%   { filter: hue-rotate(0deg) brightness(1); }
-    33%  { filter: hue-rotate(15deg) brightness(1.1); }
-    66%  { filter: hue-rotate(-10deg) brightness(0.9); }
-    100% { filter: hue-rotate(8deg) brightness(1.05); }
+    50%  { filter: hue-rotate(10deg) brightness(1.08); }
+    100% { filter: hue-rotate(0deg) brightness(1); }
   }
 
   /* Cloud layers */
   .cloud-layer {
     position: fixed; inset: 0; z-index: 1;
-    pointer-events: none;
-    opacity: 0.18;
+    pointer-events: none; opacity: 0.15;
   }
   .cloud-layer::before, .cloud-layer::after {
     content: '';
-    position: absolute;
-    width: 200%; height: 100%;
+    position: absolute; width: 200%; height: 100%;
     background-image:
       radial-gradient(ellipse 120px 40px at 20% 30%, var(--breath) 0%, transparent 70%),
       radial-gradient(ellipse 80px 25px at 60% 20%, var(--silver) 0%, transparent 70%),
-      radial-gradient(ellipse 150px 50px at 80% 60%, var(--breath) 0%, transparent 70%),
-      radial-gradient(ellipse 60px 20px at 40% 70%, var(--silver) 0%, transparent 70%);
+      radial-gradient(ellipse 150px 50px at 80% 60%, var(--breath) 0%, transparent 70%);
   }
   .cloud-layer::before { animation: cloudmove 60s linear infinite; }
-  .cloud-layer::after  { animation: cloudmove 90s linear infinite reverse; opacity: 0.6; }
+  .cloud-layer::after  { animation: cloudmove 90s linear infinite reverse; opacity: 0.5; }
   @keyframes cloudmove { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
   /* Stars */
-  #stars {
+  canvas#stars {
     position: fixed; inset: 0; z-index: 1;
     pointer-events: none;
   }
 
-  /* ── GAME VIEWPORT ── */
-  #viewport {
-    position: fixed; inset: 0; z-index: 10;
-    perspective: 900px;
-    perspective-origin: 50% 50%;
-  }
-
-  /* ── SCENE CONTAINER ── */
-  #scene {
-    position: absolute;
-    width: 100%; height: 100%;
-    transform-style: preserve-3d;
-    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  /* ── ROOM FACES ── */
-  .face {
-    position: absolute;
-    width: 100vw; height: 100vh;
-    border: 1px solid rgba(74, 122, 170, 0.15);
-    backface-visibility: hidden;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .face-north {
-    background: var(--trans-wall);
-    transform: translateZ(-40vw);
-  }
-  .face-south {
-    background: var(--trans-wall);
-    transform: rotateY(180deg) translateZ(-40vw);
-  }
-  .face-east {
-    background: rgba(15, 25, 50, 0.5);
-    width: 80vw; height: 100vh;
-    transform: rotateY(-90deg) translateZ(-40vw);
-    left: 10vw;
-  }
-  .face-west {
-    background: rgba(15, 25, 50, 0.5);
-    width: 80vw; height: 100vh;
-    transform: rotateY(90deg) translateZ(-40vw);
-    left: 10vw;
-  }
-  .face-floor {
-    background: linear-gradient(180deg, transparent, rgba(10,15,35,0.7));
-    width: 80vw; height: 80vw;
-    top: calc(50% - 40vw); left: 10vw;
-    transform: rotateX(90deg) translateZ(calc(50vh - 40vw));
-  }
-  .face-ceiling {
-    background: linear-gradient(0deg, transparent, rgba(30,50,90,0.3));
-    width: 80vw; height: 80vw;
-    top: calc(50% - 40vw); left: 10vw;
-    transform: rotateX(-90deg) translateZ(calc(50vh - 40vw));
-  }
-
-  /* ── SCENE TRANSITION ── */
+  /* ── FADE OVERLAY ── */
   #fade {
     position: fixed; inset: 0; z-index: 50;
     background: var(--void);
@@ -171,55 +110,29 @@
     color: var(--glyph-gold);
     opacity: 0.7;
   }
-  #hud-compass {
-    font-family: 'Cinzel', serif;
-    font-size: 0.7rem;
-    letter-spacing: 0.15em;
-    color: var(--cerulean);
-    opacity: 0.8;
+
+  /* ── MAIN VIEWPORT (flat 2D scene) ── */
+  #viewport {
+    position: fixed; inset: 0; z-index: 10;
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: none; /* let children handle clicks */
   }
 
-  /* ── BOTTOM NAV ── */
-  #nav-bar {
-    position: fixed; bottom: 0; left: 0; right: 0; z-index: 30;
-    padding: 1rem 2rem 1.5rem;
-    display: flex; align-items: center; justify-content: center; gap: 2rem;
-    background: linear-gradient(0deg, rgba(7,8,15,0.9) 0%, transparent 100%);
+  /* ── ATRIUM SCENE ── */
+  #atrium-scene {
+    position: relative;
+    width: 100%; height: 100%;
+    pointer-events: none;
   }
-  .nav-btn {
-    font-family: 'Cinzel', serif;
-    font-size: 0.7rem;
-    letter-spacing: 0.2em;
-    color: var(--cerulean);
-    background: transparent;
-    border: 1px solid rgba(74,122,170,0.3);
-    padding: 0.5rem 1.2rem;
-    cursor: pointer;
-    text-transform: uppercase;
-    transition: all 0.3s;
-  }
-  .nav-btn:hover {
-    border-color: var(--silver);
-    color: var(--breath);
-    background: rgba(74,122,170,0.1);
-  }
-  .nav-btn:disabled {
-    opacity: 0.2; cursor: default;
-    border-color: transparent;
-  }
-  #nav-look-back {
-    font-size: 1.2rem; border: none; padding: 0.5rem;
-    color: var(--glyph-dim);
-  }
-  #nav-look-back:hover { color: var(--glyph-gold); background: transparent; }
 
-  /* ── ATRIUM ── */
+  /* ── ATRIUM TITLE ── */
   .atrium-title {
     position: absolute;
     top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -60%);
     text-align: center;
     pointer-events: none;
+    z-index: 2;
   }
   .atrium-title h1 {
     font-family: 'Cinzel Decorative', serif;
@@ -256,6 +169,8 @@
     display: flex; flex-direction: column;
     align-items: center; gap: 0.8rem;
     cursor: pointer;
+    pointer-events: auto;
+    z-index: 15;
     transition: transform 0.3s;
   }
   .portal-ring:hover { transform: scale(1.05); }
@@ -268,7 +183,7 @@
     height: clamp(70px, 10vw, 120px);
     border-radius: 50%;
     border: 2px solid var(--pc, var(--cerulean));
-    background: radial-gradient(circle at center, rgba(var(--pcr),0.2) 0%, transparent 70%);
+    background: radial-gradient(circle at center, rgba(255,255,255,0.08) 0%, transparent 70%);
     display: flex; align-items: center; justify-content: center;
     font-size: clamp(1.5rem, 3vw, 2.5rem);
     box-shadow: 0 0 20px var(--pc), inset 0 0 20px rgba(0,0,0,0.5);
@@ -286,16 +201,8 @@
   }
   @keyframes portalspin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-  .portal-locked .portal-circle::before {
-    content: '𐤎';
-    position: absolute;
-    font-size: 0.8em;
-    color: var(--glyph-dim);
-    opacity: 0.8;
-    z-index: 2;
-  }
-  .portal-locked .portal-circle > span { opacity: 0.3; }
-  .portal-locked { cursor: pointer; }
+  .portal-locked .portal-circle { cursor: pointer; }
+  .portal-locked .portal-circle > span { opacity: 0.5; }
 
   .portal-label {
     font-family: 'Cinzel', serif;
@@ -306,7 +213,6 @@
     opacity: 0.8;
   }
 
-  /* Status badge */
   .portal-status {
     font-family: 'Cinzel', serif;
     font-size: 0.55rem;
@@ -315,14 +221,8 @@
     padding: 0.2rem 0.6rem;
     border-radius: 3px;
   }
-  .portal-status.unlocked {
-    color: var(--unlock);
-    border: 1px solid rgba(168,216,144,0.4);
-  }
-  .portal-status.locked {
-    color: var(--locked-dim);
-    border: 1px solid rgba(74,58,42,0.4);
-  }
+  .portal-status.unlocked { color: var(--unlock); border: 1px solid rgba(168,216,144,0.4); }
+  .portal-status.locked   { color: var(--locked-dim); border: 1px solid rgba(74,58,42,0.4); }
 
   .portal-glyph-key {
     font-size: clamp(0.8rem, 1.5vw, 1.1rem);
@@ -331,13 +231,12 @@
   }
   .portal-unlocked .portal-glyph-key { color: var(--unlock); }
 
-  /* Portal positions in atrium */
-  #portal-air   { --pc: var(--portal-air);   --pcr: 122,184,212; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-  #portal-fire  { --pc: var(--portal-fire);  --pcr: 212,120,74;  top: 20%;  right: 8%; }
-  #portal-earth { --pc: var(--portal-earth); --pcr: 106,148,100; bottom: 20%; left: 8%; }
-  #portal-water { --pc: var(--portal-water); --pcr: 74,122,184;  bottom: 20%; right: 8%; }
+  /* Fixed portal positions in the atrium */
+  #portal-air   { --pc: var(--portal-air);   top: 18%; left: 50%; transform: translateX(-50%); }
+  #portal-fire  { --pc: var(--portal-fire);  top: 50%; right: 10%; transform: translateY(-50%); }
+  #portal-earth { --pc: var(--portal-earth); bottom: 18%; left: 10%; }
+  #portal-water { --pc: var(--portal-water); bottom: 18%; right: 10%; }
 
-  /* Enter button on unlocked portal */
   .portal-enter {
     font-family: 'Cinzel', serif;
     font-size: 0.55rem;
@@ -348,20 +247,22 @@
     border: 1px solid rgba(168,216,144,0.5);
     color: var(--unlock);
     cursor: pointer;
+    pointer-events: auto;
     transition: all 0.3s;
     margin-top: 0.2rem;
+    z-index: 16;
   }
   .portal-enter:hover {
-    background: rgba(168,216,144,0.1);
+    background: rgba(168,216,144,0.15);
     border-color: var(--unlock);
   }
 
   /* ── GLYPH PANEL ── */
   #glyph-panel {
-    position: fixed; inset: 0; z-index: 40;
+    position: fixed; inset: 0; z-index: 60;
     display: none;
     align-items: center; justify-content: center;
-    background: rgba(7,8,15,0.92);
+    background: rgba(7,8,15,0.94);
     backdrop-filter: blur(8px);
   }
   #glyph-panel.open { display: flex; }
@@ -463,18 +364,15 @@
 
   .triad-display {
     display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-    margin-bottom: 1.2rem;
-    min-height: 3.5rem;
+    margin-bottom: 1.2rem; min-height: 3.5rem;
   }
   .triad-slot {
     width: 52px; height: 52px;
     border: 1px solid rgba(200,168,74,0.3);
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.6rem;
-    color: var(--glyph-dim);
+    font-size: 1.6rem; color: var(--glyph-dim);
     background: rgba(10,15,35,0.5);
-    transition: all 0.2s;
-    cursor: pointer;
+    transition: all 0.2s; cursor: pointer;
   }
   .triad-slot.filled {
     border-color: var(--glyph-gold);
@@ -483,8 +381,7 @@
   }
   .triad-sep {
     color: var(--glyph-dim);
-    font-size: 0.8rem;
-    opacity: 0.5;
+    font-size: 0.8rem; opacity: 0.5;
   }
 
   .panel-actions {
@@ -492,14 +389,12 @@
   }
   .panel-btn {
     font-family: 'Cinzel', serif;
-    font-size: 0.65rem;
-    letter-spacing: 0.2em;
+    font-size: 0.65rem; letter-spacing: 0.2em;
     text-transform: uppercase;
     padding: 0.6rem 1.5rem;
     border: 1px solid rgba(74,122,170,0.4);
     background: transparent;
-    color: var(--cerulean);
-    cursor: pointer;
+    color: var(--cerulean); cursor: pointer;
     transition: all 0.25s;
   }
   .panel-btn:hover { border-color: var(--breath); color: var(--breath); }
@@ -507,17 +402,13 @@
     border-color: var(--glyph-gold);
     color: var(--glyph-gold);
   }
-  .panel-btn.primary:hover {
-    background: rgba(200,168,74,0.15);
-  }
+  .panel-btn.primary:hover { background: rgba(200,168,74,0.15); }
 
   .panel-feedback {
     text-align: center;
     font-family: 'Cinzel', serif;
-    font-size: 0.7rem;
-    letter-spacing: 0.15em;
-    min-height: 1.2rem;
-    margin-top: 0.8rem;
+    font-size: 0.7rem; letter-spacing: 0.15em;
+    min-height: 1.2rem; margin-top: 0.8rem;
     transition: all 0.3s;
   }
   .panel-feedback.wrong { color: var(--danger); }
@@ -525,31 +416,48 @@
 
   /* ── TOOLTIP ── */
   #tooltip {
-    position: fixed;
-    z-index: 35;
+    position: fixed; z-index: 55;
     padding: 0.4rem 0.8rem;
-    background: rgba(7,8,15,0.9);
+    background: rgba(7,8,15,0.95);
     border: 1px solid rgba(200,168,74,0.3);
     font-family: 'Cinzel', serif;
-    font-size: 0.65rem;
-    letter-spacing: 0.15em;
+    font-size: 0.65rem; letter-spacing: 0.15em;
     color: var(--silver);
-    pointer-events: none;
-    opacity: 0;
+    pointer-events: none; opacity: 0;
     transition: opacity 0.2s;
-    max-width: 200px;
-    text-align: center;
+    max-width: 200px; text-align: center;
     text-transform: uppercase;
   }
   #tooltip.show { opacity: 1; }
 
-  /* ── INTRO SCREEN ── */
+  /* ── JOURNAL ── */
+  #journal {
+    position: fixed; bottom: 1.5rem; left: 1.5rem; z-index: 30;
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem; letter-spacing: 0.1em;
+    color: var(--cerulean); opacity: 0.5;
+    max-width: 200px; line-height: 1.7;
+    pointer-events: none;
+  }
+  #journal .log-entry { margin-bottom: 0.2rem; }
+  #journal .log-entry::before { content: '› '; color: var(--glyph-dim); }
+
+  /* ── DASHBOARD ── */
+  #dashboard-stats {
+    position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 30;
+    font-family: 'Cinzel', serif;
+    font-size: 0.55rem; letter-spacing: 0.15em;
+    color: var(--silver);
+    opacity: 0.6; text-align: right;
+    pointer-events: none; line-height: 1.8;
+  }
+
+  /* ── INTRO ── */
   #intro {
-    position: fixed; inset: 0; z-index: 60;
+    position: fixed; inset: 0; z-index: 70;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    background: var(--void);
-    text-align: center;
+    background: var(--void); text-align: center;
     padding: 2rem;
     transition: opacity 1s ease;
   }
@@ -558,8 +466,7 @@
   #intro h1 {
     font-family: 'Cinzel Decorative', serif;
     font-size: clamp(2.5rem, 7vw, 5.5rem);
-    font-weight: 400;
-    letter-spacing: 0.4em;
+    font-weight: 400; letter-spacing: 0.4em;
     color: var(--breath);
     text-shadow: 0 0 60px rgba(74,122,170,0.5);
     margin-bottom: 0.5rem;
@@ -567,16 +474,13 @@
   #intro .subtitle {
     font-family: 'Cinzel', serif;
     font-size: clamp(0.65rem, 1.5vw, 0.85rem);
-    letter-spacing: 0.5em;
-    color: var(--silver);
-    opacity: 0.6;
-    text-transform: uppercase;
+    letter-spacing: 0.5em; color: var(--silver);
+    opacity: 0.6; text-transform: uppercase;
     margin-bottom: 3rem;
   }
   #intro .glyphs-large {
     font-size: clamp(2rem, 5vw, 3.5rem);
-    color: var(--glyph-gold);
-    letter-spacing: 0.4em;
+    color: var(--glyph-gold); letter-spacing: 0.4em;
     opacity: 0;
     animation: fadeInGlyphs 2s ease 0.8s forwards;
     margin-bottom: 3rem;
@@ -587,23 +491,18 @@
   }
   #intro .lore {
     font-size: clamp(0.85rem, 1.5vw, 1rem);
-    line-height: 1.9;
-    max-width: 480px;
-    color: var(--silver);
-    opacity: 0.7;
-    font-style: italic;
-    margin-bottom: 3rem;
+    line-height: 1.9; max-width: 480px;
+    color: var(--silver); opacity: 0.7;
+    font-style: italic; margin-bottom: 3rem;
   }
   #enter-btn {
     font-family: 'Cinzel', serif;
-    font-size: 0.8rem;
-    letter-spacing: 0.4em;
+    font-size: 0.8rem; letter-spacing: 0.4em;
     text-transform: uppercase;
     padding: 1rem 3rem;
     border: 1px solid rgba(200,168,74,0.5);
     background: transparent;
-    color: var(--glyph-gold);
-    cursor: pointer;
+    color: var(--glyph-gold); cursor: pointer;
     transition: all 0.3s;
     opacity: 0;
     animation: fadeInBtn 1s ease 2s forwards;
@@ -617,39 +516,11 @@
     box-shadow: 0 0 30px rgba(200,168,74,0.2);
   }
 
-  /* ── JOURNAL / LOG ── */
-  #journal {
-    position: fixed; bottom: 4rem; left: 1.5rem; z-index: 30;
-    font-family: 'Cinzel', serif;
-    font-size: 0.6rem;
-    letter-spacing: 0.1em;
-    color: var(--cerulean);
-    opacity: 0.5;
-    max-width: 200px;
-    line-height: 1.7;
-    pointer-events: none;
-  }
-  #journal .log-entry { margin-bottom: 0.2rem; }
-  #journal .log-entry::before { content: '› '; color: var(--glyph-dim); }
-
-  /* ── DASHBOARD STATS ── */
-  #dashboard-stats {
-    position: fixed; bottom: 4rem; right: 1.5rem; z-index: 30;
-    font-family: 'Cinzel', serif;
-    font-size: 0.55rem;
-    letter-spacing: 0.15em;
-    color: var(--silver-dark);
-    opacity: 0.6;
-    text-align: right;
-    pointer-events: none;
-    line-height: 1.8;
-  }
-
-  /* ── RESPONSIVE ── */
+  /* Responsive */
   @media (max-width: 600px) {
-    #portal-fire  { top: 10%; right: 5%; }
-    #portal-earth { bottom: 12%; left: 5%; }
-    #portal-water { bottom: 12%; right: 5%; }
+    #portal-fire  { right: 5%; }
+    #portal-earth { left: 5%; bottom: 12%; }
+    #portal-water { right: 5%; bottom: 12%; }
     .glyph-grid   { grid-template-columns: repeat(7, 1fr); gap: 0.25rem; }
     .glyph-btn    { font-size: 1rem; }
     .glyph-btn span.name { display: none; }
@@ -665,7 +536,7 @@
 <div class="cloud-layer"></div>
 <canvas id="stars"></canvas>
 
-<!-- Fade overlay for scene transitions -->
+<!-- Fade overlay -->
 <div id="fade"></div>
 
 <!-- Intro screen -->
@@ -679,34 +550,26 @@
     Four Ages wait beyond the Atrium.<br>
     Only the one who reads the Breath may open them.
   </p>
-  <button id="enter-btn" onclick="Game.enter()">Enter the Atrium</button>
+  <button id="enter-btn">Enter the Atrium</button>
 </div>
 
 <!-- HUD -->
 <div id="hud">
   <div id="hud-location">The Atrium</div>
-  <div id="hud-glyphs">𐤀 𐤃 𐤆 𐤌 𐤉 𐤎 𐤕</div>
-  <div id="hud-compass">FACING NORTH</div>
+  <div id="hud-glyphs"></div>
+  <div style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.2em;color:var(--cerulean);opacity:0.6;">BREATH · AIR</div>
 </div>
 
-<!-- Game viewport -->
+<!-- FLAT VIEWPORT with portals -->
 <div id="viewport">
-  <div id="scene">
-    <div class="face face-north" id="face-north"></div>
-    <div class="face face-south" id="face-south"></div>
-    <div class="face face-east"  id="face-east"></div>
-    <div class="face face-west"  id="face-west"></div>
-    <div class="face face-floor" id="face-floor"></div>
-    <div class="face face-ceiling" id="face-ceiling"></div>
+  <div id="atrium-scene">
+    <div class="atrium-title">
+      <h1>ADZMYST</h1>
+      <p>The Breath · The Atrium · Four Ages</p>
+      <div class="atrium-glyphs"></div>
+    </div>
+    <!-- Portals injected by JS -->
   </div>
-</div>
-
-<!-- Navigation bar -->
-<div id="nav-bar">
-  <button class="nav-btn" id="nav-left"  onclick="Game.turnLeft()">◁ West</button>
-  <button class="nav-btn" id="nav-look-back" onclick="Game.turnAround()" title="Turn around">↺</button>
-  <button class="nav-btn" id="nav-forward" onclick="Game.moveForward()" disabled>Forward</button>
-  <button class="nav-btn" id="nav-right" onclick="Game.turnRight()">East ▷</button>
 </div>
 
 <!-- Glyph puzzle panel -->
@@ -718,18 +581,18 @@
     <div class="panel-riddle" id="panel-riddle"></div>
 
     <div class="triad-display">
-      <div class="triad-slot" id="triad-0" onclick="Game.clearTriadSlot(0)">·</div>
+      <div class="triad-slot" id="triad-0">·</div>
       <span class="triad-sep">·</span>
-      <div class="triad-slot" id="triad-1" onclick="Game.clearTriadSlot(1)">·</div>
+      <div class="triad-slot" id="triad-1">·</div>
       <span class="triad-sep">·</span>
-      <div class="triad-slot" id="triad-2" onclick="Game.clearTriadSlot(2)">·</div>
+      <div class="triad-slot" id="triad-2">·</div>
     </div>
 
     <div class="glyph-grid" id="glyph-grid"></div>
 
     <div class="panel-actions">
-      <button class="panel-btn" onclick="Game.closePanel()">Close</button>
-      <button class="panel-btn primary" onclick="Game.submitTriad()">Speak the Breath</button>
+      <button class="panel-btn" id="panel-close-btn">Close</button>
+      <button class="panel-btn primary" id="panel-submit-btn">Speak the Breath</button>
     </div>
     <div class="panel-feedback" id="panel-feedback"></div>
   </div>
@@ -738,79 +601,41 @@
 <!-- Tooltip -->
 <div id="tooltip"></div>
 
-<!-- Journal log -->
+<!-- Journal -->
 <div id="journal"><div id="journal-entries"></div></div>
 
-<!-- Dashboard stats -->
+<!-- Dashboard -->
 <div id="dashboard-stats">
-  <div id="stat-ages">Ages Open: 1 / 4</div>
+  <div id="stat-ages">Ages Open: 0 / 4</div>
   <div id="stat-glyphs">Glyphs Known: 7</div>
 </div>
 
 <script>
 // ═══════════════════════════════════════════════════════════════
-// ADZMYST ATRIUM — DASHBOARD
-// Loads JSON canon, renders portals, manages glyph puzzles
+// ADZMYST ATRIUM — FIXED INTERACTIVE VERSION
+// Flat 2D scene, clickable portals, glyph puzzle panel
 // ═══════════════════════════════════════════════════════════════
 
-// ── GLOBAL DATA (loaded from JSON) ────────────────────────────
-let GLYPHS = [];        // Full 22-glyph array
-let AGES = {};          // { air: {...}, fire: {...}, ... }
-let sacredSeven = [];   // Indices of the 7 sacred glyphs
+// ── DATA ──────────────────────────────────────────────────────
+const GLYPHS = [
+  { id:0, symbol:'𐤀', name:'Aleph', letter:'A', meaning:'Ox · Strength · Beginning' },
+  { id:1, symbol:'𐤃', name:'Dalet', letter:'D', meaning:'Door · Passage · Threshold' },
+  { id:2, symbol:'𐤆', name:'Zayin', letter:'Z', meaning:'Weapon · Division · The Cut' },
+  { id:3, symbol:'𐤌', name:'Mem',   letter:'M', meaning:'Water · Chaos · The Deep' },
+  { id:4, symbol:'𐤉', name:'Yod',   letter:'Y', meaning:'Hand · Action · Making' },
+  { id:5, symbol:'𐤎', name:'Samek', letter:'S', meaning:'Pillar · Support · What Holds' },
+  { id:6, symbol:'𐤕', name:'Taw',   letter:'T', meaning:'Mark · Signature · Completion' },
+];
 
-// ── DATA LOADER ───────────────────────────────────────────────
-async function loadJSON(path) {
-  const res = await fetch(path);
-  if (!res.ok) throw new Error(`Failed to load ${path}: ${res.status}`);
-  return res.json();
-}
-
-async function loadCanon() {
-  try {
-    const glyphsData = await loadJSON('json/glyphs.json');
-    const agesData   = await loadJSON('json/ages.json');
-
-    GLYPHS = glyphsData.glyphs;
-    sacredSeven = glyphsData.meta.sacredSeven;
-
-    // Convert ages array to object keyed by id
-    AGES = {};
-    agesData.ages.forEach(age => { AGES[age.id] = age; });
-
-    console.log(`[Atrium] Canon loaded: ${GLYPHS.length} glyphs, ${Object.keys(AGES).length} ages`);
-    return true;
-  } catch (err) {
-    console.error('[Atrium] Failed to load canon:', err);
-    // Fallback to minimal embedded data so the page doesn't break
-    loadFallbackData();
-    return false;
-  }
-}
-
-function loadFallbackData() {
-  // Minimal fallback — the original 7 glyphs + 4 ages
-  GLYPHS = [
-    { id:0, symbol:'𐤀', name:'Aleph', letter:'A', meaning:'Ox · Strength · Beginning', sacred:true },
-    { id:1, symbol:'𐤃', name:'Dalet', letter:'D', meaning:'Door · Passage · Threshold', sacred:true },
-    { id:2, symbol:'𐤆', name:'Zayin', letter:'Z', meaning:'Weapon · Division · The Cut', sacred:true },
-    { id:3, symbol:'𐤌', name:'Mem',   letter:'M', meaning:'Water · Chaos · The Deep', sacred:true },
-    { id:4, symbol:'𐤉', name:'Yod',   letter:'Y', meaning:'Hand · Action · Making', sacred:true },
-    { id:5, symbol:'𐤎', name:'Samek', letter:'S', meaning:'Pillar · Support · What Holds', sacred:true },
-    { id:6, symbol:'𐤕', name:'Taw',   letter:'T', meaning:'Mark · Signature · Completion', sacred:true },
-  ];
-  sacredSeven = [0,1,2,3,4,5,6];
-  AGES = {
-    air:   { id:'air',   name:'The Age of Air',   subtitle:'Adzmyst · Breath · Home',  color:'#7ab8d4', glyph:'𐤀', icon:'𓂝', inscription:'𐤀 𐤃 𐤆', solution:[0,1,2], riddle:'The ox finds the door...', lore:'Wind made visible.', unlocked:true,  page:'air.html' },
-    fire:  { id:'fire',  name:'The Age of Fire',  subtitle:'Apollo · Prophecy · Forge',color:'#d4784a', glyph:'𐤕', icon:'𓇋', inscription:'𐤕 𐤉 𐤀', solution:[6,4,0], riddle:'The mark precedes...',     lore:'Here the gods forge.', unlocked:false, page:'fire.html' },
-    earth: { id:'earth', name:'The Age of Earth', subtitle:'Gaia · Root · The Bone',  color:'#6a9464', glyph:'𐤎', icon:'𓌹', inscription:'𐤎 𐤌 𐤃', solution:[5,3,1], riddle:'The pillar stands...',    lore:'Stone that breathes.', unlocked:false, page:'earth.html' },
-    water: { id:'water', name:'The Age of Water', subtitle:'Divination · The Deep',   color:'#4a7ab8', glyph:'𐤌', icon:'𓏏', inscription:'𐤌 𐤉 𐤕', solution:[3,4,6], riddle:'The deep does not speak...',lore:'Every card drawn.',    unlocked:false, page:'water.html' },
-  };
-}
+const AGES = {
+  air:   { id:'air',   name:'The Age of Air',   subtitle:'Adzmyst · Breath · Home',  color:'#7ab8d4', icon:'𓂝', inscription:'𐤀 𐤃 𐤆', solution:[0,1,2], riddle:'The ox finds the door, and the cut follows. What is the first triad?', lore:'Wind made visible. The language is born here.', unlocked:true,  page:'ages/air/index.html' },
+  fire:  { id:'fire',  name:'The Age of Fire',  subtitle:'Apollo · Prophecy · Forge',color:'#d4784a', icon:'𓇋', inscription:'𐤕 𐤉 𐤀', solution:[6,4,0], riddle:'The mark is made by the hand, from the beginning. Speak the forge triad.', lore:'Here the gods forge prophecy.', unlocked:false, page:'ages/fire/index.html' },
+  earth: { id:'earth', name:'The Age of Earth', subtitle:'Gaia · Root · The Bone',  color:'#6a9464', icon:'𓌹', inscription:'𐤎 𐤌 𐤃', solution:[5,3,1], riddle:'The pillar stands in the deep, at the door. Name the stone triad.', lore:'Stone that breathes. The root holds.', unlocked:false, page:'ages/earth/index.html' },
+  water: { id:'water', name:'The Age of Water', subtitle:'Divination · The Deep',   color:'#4a7ab8', icon:'𓏏', inscription:'𐤌 𐤉 𐤕', solution:[3,4,6], riddle:'The deep acts, and the mark remains. Speak the water triad.', lore:'Every card drawn from the deep.', unlocked:false, page:'ages/water/index.html' },
+};
 
 // ── STATE ────────────────────────────────────────────────────
 const State = {
-  scene: 'atrium',
-  facing: 0,
   panelAge: null,
   triad: [null, null, null],
   log: [],
@@ -821,22 +646,21 @@ const State = {
       unlocked: { ...this.agesUnlocked },
       log: this.log.slice(0, 10)
     };
-    localStorage.setItem('adzmyst_atrium', JSON.stringify(data));
+    localStorage.setItem('adzmyst_atrium_save', JSON.stringify(data));
   },
 
   load() {
     try {
-      const raw = localStorage.getItem('adzmyst_atrium');
+      const raw = localStorage.getItem('adzmyst_atrium_save');
       if (!raw) return;
       const data = JSON.parse(raw);
       this.agesUnlocked = data.unlocked || {};
       this.log = data.log || [];
-      // Apply to AGES
       for (const k in this.agesUnlocked) {
         if (AGES[k]) AGES[k].unlocked = this.agesUnlocked[k];
       }
     } catch(e) {
-      console.warn('[Atrium] Could not load save state:', e);
+      console.warn('[Atrium] Could not load save:', e);
     }
   },
 
@@ -851,17 +675,17 @@ const State = {
     const unlocked = Object.values(AGES).filter(a => a.unlocked).length;
     const total = Object.values(AGES).length;
     document.getElementById('stat-ages').textContent = `Ages Open: ${unlocked} / ${total}`;
-    document.getElementById('stat-glyphs').textContent = `Glyphs Known: ${GLYPHS.length}`;
   }
 };
 
-// ── STARS CANVAS ─────────────────────────────────────────────
+// ── STARS ────────────────────────────────────────────────────
 function initStars() {
   const canvas = document.getElementById('stars');
   const ctx = canvas.getContext('2d');
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-  const stars = Array.from({ length: 180 }, () => ({
+
+  const stars = Array.from({ length: 150 }, () => ({
     x: Math.random() * canvas.width,
     y: Math.random() * canvas.height * 0.7,
     r: Math.random() * 1.2 + 0.2,
@@ -869,6 +693,7 @@ function initStars() {
     speed: Math.random() * 0.003 + 0.001,
     phase: Math.random() * Math.PI * 2,
   }));
+
   function draw(t) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     stars.forEach(s => {
@@ -881,27 +706,91 @@ function initStars() {
     requestAnimationFrame(draw);
   }
   requestAnimationFrame(draw);
+
   window.addEventListener('resize', () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
   });
 }
 
-// ── GLYPH GRID (for puzzle panel) ────────────────────────────
-function buildGlyphGrid() {
-  const grid = document.getElementById('glyph-grid');
-  grid.innerHTML = '';
-  // Show all 22 glyphs (or just sacred 7 if panel is for a sacred lock)
-  const pool = GLYPHS; // Full pool — the puzzle determines which are valid
-  pool.forEach((g, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'glyph-btn';
-    btn.id = `gbtn-${i}`;
-    btn.innerHTML = `${g.symbol}<span class="name">${g.name}</span>`;
-    btn.title = g.meaning;
-    btn.onclick = () => Game.selectGlyph(i);
-    grid.appendChild(btn);
+// ── BUILD ATRIUM ─────────────────────────────────────────────
+function buildAtrium() {
+  const scene = document.getElementById('atrium-scene');
+
+  // Update the glyph display in the title
+  const sacredGlyphs = GLYPHS.map(g => g.symbol).join(' ');
+  document.querySelector('.atrium-glyphs').textContent = sacredGlyphs;
+  document.getElementById('hud-glyphs').textContent = sacredGlyphs;
+
+  // Build portals
+  Object.values(AGES).forEach(age => {
+    const portal = createPortalElement(age);
+    scene.appendChild(portal);
   });
+}
+
+function createPortalElement(age) {
+  const locked = !age.unlocked ? 'portal-locked' : 'portal-unlocked';
+  const statusLabel = age.unlocked ? 'OPEN' : 'LOCKED';
+  const statusClass = age.unlocked ? 'unlocked' : 'locked';
+
+  const ring = document.createElement('div');
+  ring.className = `portal-ring ${locked}`;
+  ring.id = `portal-${age.id}`;
+  ring.style.setProperty('--pc', age.color);
+  ring.innerHTML = `
+    <div class="portal-circle" style="--pc:${age.color}">
+      <span>${age.icon}</span>
+    </div>
+    <div class="portal-label">${age.name}</div>
+    <div class="portal-status ${statusClass}">${statusLabel}</div>
+    <div class="portal-glyph-key">${age.inscription}</div>
+    ${age.unlocked ? '<button class="portal-enter">Enter Age</button>' : ''}
+  `;
+
+  // CLICK HANDLER — the whole ring is clickable
+  ring.addEventListener('click', function(e) {
+    e.stopPropagation();
+    console.log(`[Atrium] Portal clicked: ${age.id}, unlocked: ${age.unlocked}`);
+    if (age.unlocked) {
+      travelToAge(age.id);
+    } else {
+      openPanel(age.id);
+    }
+  });
+
+  // Hover tooltip
+  ring.addEventListener('mouseenter', () => showTooltip(ring, age.unlocked ? `${age.name} — Open` : 'Locked · Click to speak the triad'));
+  ring.addEventListener('mouseleave', hideTooltip);
+
+  // Enter button (if unlocked) — separate handler to avoid double-fire
+  const enterBtn = ring.querySelector('.portal-enter');
+  if (enterBtn) {
+    enterBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      console.log(`[Atrium] Enter button clicked: ${age.id}`);
+      travelToAge(age.id);
+    });
+    enterBtn.addEventListener('mouseenter', (e) => {
+      e.stopPropagation();
+      showTooltip(enterBtn, `Enter ${age.name}`);
+    });
+    enterBtn.addEventListener('mouseleave', (e) => {
+      e.stopPropagation();
+      hideTooltip();
+    });
+  }
+
+  return ring;
+}
+
+function refreshPortal(ageId) {
+  const age = AGES[ageId];
+  const oldPortal = document.getElementById(`portal-${ageId}`);
+  if (oldPortal) oldPortal.remove();
+
+  const newPortal = createPortalElement(age);
+  document.getElementById('atrium-scene').appendChild(newPortal);
 }
 
 // ── TOOLTIP ──────────────────────────────────────────────────
@@ -922,299 +811,192 @@ function addLog(msg) {
   State.log.unshift(msg);
   if (State.log.length > 10) State.log.pop();
   const el = document.getElementById('journal-entries');
-  el.innerHTML = State.log.map(l => `<div class="log-entry">${l}</div>`).join('');
+  if (el) el.innerHTML = State.log.map(l => `<div class="log-entry">${l}</div>`).join('');
   State.save();
 }
 
-// ── BUILD ATRIUM ─────────────────────────────────────────────
-function buildAtrium() {
-  const north = document.getElementById('face-north');
-
-  // Build the sacred glyph string for display
-  const sacredGlyphs = sacredSeven.map(i => GLYPHS[i].symbol).join(' ');
-
-  north.innerHTML = `
-    <div class="atrium-title">
-      <h1>ADZMYST</h1>
-      <p>The Breath · The Atrium · Four Ages</p>
-      <div class="atrium-glyphs">${sacredGlyphs}</div>
-    </div>
-
-    <div class="wall-inscription top-left">${sacredGlyphs.substring(0, 5)}</div>
-    <div class="wall-inscription top-right">${sacredGlyphs.substring(6)}</div>
-    <div class="wall-inscription bottom" style="opacity:0.2;font-size:1rem;letter-spacing:0.5em;">THE BREATH CARVES MEANING FROM SILENCE</div>
-
-    ${Object.values(AGES).map(age => buildPortalHTML(age)).join('')}
-  `;
-
-  // Attach events after DOM insert
-  Object.values(AGES).forEach(age => {
-    const el = document.getElementById(`portal-${age.id}`);
-    if (!el) return;
-
-    // Clicking a locked portal opens the puzzle
-    // Clicking an unlocked portal... we add an enter button instead
-    el.addEventListener('click', () => {
-      if (!age.unlocked) {
-        Game.activatePortal(age.id);
-      }
-    });
-
-    el.addEventListener('mouseenter', () =>
-      showTooltip(el, age.unlocked ? `${age.name} — Open` : `Locked · Speak the triad to enter`)
-    );
-    el.addEventListener('mouseleave', hideTooltip);
-
-    // Enter button for unlocked portals
-    const enterBtn = el.querySelector('.portal-enter');
-    if (enterBtn) {
-      enterBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        Game.travelToAge(age.id);
-      });
-      enterBtn.addEventListener('mouseenter', (e) => {
-        e.stopPropagation();
-        showTooltip(enterBtn, `Enter ${age.name}`);
-      });
-      enterBtn.addEventListener('mouseleave', hideTooltip);
-    }
+// ── GLYPH PANEL ──────────────────────────────────────────────
+function buildGlyphGrid() {
+  const grid = document.getElementById('glyph-grid');
+  grid.innerHTML = '';
+  GLYPHS.forEach((g, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'glyph-btn';
+    btn.id = `gbtn-${i}`;
+    btn.innerHTML = `${g.symbol}<span class="name">${g.name}</span>`;
+    btn.title = g.meaning;
+    btn.addEventListener('click', () => selectGlyph(i));
+    grid.appendChild(btn);
   });
 }
 
-function buildPortalHTML(age) {
-  const locked = !age.unlocked ? 'portal-locked' : 'portal-unlocked';
-  const statusLabel = age.unlocked ? 'OPEN' : 'LOCKED';
-  const statusClass = age.unlocked ? 'unlocked' : 'locked';
-
-  return `
-    <div class="portal-ring ${locked}" id="portal-${age.id}" style="--pc:${age.color}">
-      <div class="portal-circle" style="--pc:${age.color}">
-        <span>${age.icon}</span>
-      </div>
-      <div class="portal-label">${age.name}</div>
-      <div class="portal-status ${statusClass}">${statusLabel}</div>
-      <div class="portal-glyph-key">${age.inscription}</div>
-      ${age.unlocked ? `<button class="portal-enter">Enter Dungeon</button>` : ''}
-    </div>
-  `;
-}
-
-function refreshPortal(ageId) {
+function openPanel(ageId) {
   const age = AGES[ageId];
-  const el = document.getElementById(`portal-${ageId}`);
-  if (!el) return;
+  State.panelAge = ageId;
+  State.triad = [null, null, null];
 
-  // Rebuild the portal HTML
-  el.outerHTML = buildPortalHTML(age);
+  document.getElementById('panel-title').textContent = `PORTAL OF ${age.name.toUpperCase()}`;
+  document.getElementById('panel-subtitle').textContent = 'Read the breath · Select the triad · Speak it true';
+  document.getElementById('panel-inscription').textContent = age.inscription;
+  document.getElementById('panel-riddle').textContent = age.riddle;
+  document.getElementById('panel-feedback').textContent = '';
+  document.getElementById('panel-feedback').className = 'panel-feedback';
 
-  // Re-attach events
-  const newEl = document.getElementById(`portal-${ageId}`);
-  newEl.addEventListener('click', () => {
-    if (!age.unlocked) Game.activatePortal(age.id);
-  });
-  newEl.addEventListener('mouseenter', () =>
-    showTooltip(newEl, age.unlocked ? `${age.name} — Open` : `Locked · Speak the triad`)
-  );
-  newEl.addEventListener('mouseleave', hideTooltip);
+  renderTriad();
+  renderGlyphBtns();
+  document.getElementById('glyph-panel').classList.add('open');
+  addLog(`You study the ${age.name} inscription`);
+}
 
-  const enterBtn = newEl.querySelector('.portal-enter');
-  if (enterBtn) {
-    enterBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      Game.travelToAge(age.id);
-    });
-    enterBtn.addEventListener('mouseenter', (e) => {
-      e.stopPropagation();
-      showTooltip(enterBtn, `Enter ${age.name}`);
-    });
-    enterBtn.addEventListener('mouseleave', hideTooltip);
+function closePanel() {
+  document.getElementById('glyph-panel').classList.remove('open');
+  State.panelAge = null;
+  State.triad = [null, null, null];
+}
+
+function selectGlyph(idx) {
+  const slot = State.triad.findIndex(s => s === null);
+  if (slot === -1) return; // full
+  State.triad[slot] = idx;
+  renderTriad();
+  renderGlyphBtns();
+}
+
+function clearTriadSlot(slot) {
+  if (State.triad[slot] === null) return;
+  State.triad[slot] = null;
+  renderTriad();
+  renderGlyphBtns();
+}
+
+function renderTriad() {
+  for (let i = 0; i < 3; i++) {
+    const el = document.getElementById(`triad-${i}`);
+    if (!el) continue;
+    if (State.triad[i] !== null) {
+      el.textContent = GLYPHS[State.triad[i]].symbol;
+      el.classList.add('filled');
+    } else {
+      el.textContent = '·';
+      el.classList.remove('filled');
+    }
   }
 }
 
-// ── MAIN GAME CONTROLLER ─────────────────────────────────────
-const Game = {
-  enter() {
-    const intro = document.getElementById('intro');
-    intro.classList.add('hide');
-    setTimeout(() => { intro.style.display = 'none'; }, 1000);
-    addLog('You enter the Atrium');
-    addLog('Four Ages await beyond the portals');
-  },
+function renderGlyphBtns() {
+  GLYPHS.forEach((g, i) => {
+    const btn = document.getElementById(`gbtn-${i}`);
+    if (!btn) return;
+    btn.classList.toggle('selected', State.triad.includes(i));
+  });
+}
 
-  turn(degrees) {
-    State.facing = (State.facing + degrees + 360) % 360;
-    document.getElementById('scene').style.transform =
-      `rotateY(${State.facing}deg)`;
-    const dirs = ['NORTH', 'EAST', 'SOUTH', 'WEST'];
-    document.getElementById('hud-compass').textContent =
-      'FACING ' + dirs[Math.round(State.facing / 90) % 4];
-  },
+function submitTriad() {
+  if (!State.panelAge) return;
+  const age = AGES[State.panelAge];
+  const fb  = document.getElementById('panel-feedback');
 
-  turnLeft()    { this.turn(-90); },
-  turnRight()   { this.turn(90);  },
-  turnAround()  { this.turn(180); },
-
-  moveForward() {
-    addLog('Use the portal buttons to enter an Age');
-  },
-
-  // ── PORTAL ACTIVATION ────────────────────────────────────
-  activatePortal(ageId) {
-    const age = AGES[ageId];
-    if (age.unlocked) {
-      this.travelToAge(ageId);
-    } else {
-      this.openPanel(ageId);
-    }
-  },
-
-  travelToAge(ageId) {
-    const age = AGES[ageId];
-    if (!age.unlocked) {
-      this.openPanel(ageId);
-      return;
-    }
-    // Navigate to the Age dungeon page
-    this.fadeTransition(() => {
-      window.location.href = age.page;
-    });
-  },
-
-  fadeTransition(fn) {
-    const fade = document.getElementById('fade');
-    fade.classList.add('active');
-    setTimeout(() => {
-      fn();
-      setTimeout(() => fade.classList.remove('active'), 50);
-    }, 500);
-  },
-
-  // ── GLYPH PANEL ─────────────────────────────────────────
-  openPanel(ageId) {
-    const age = AGES[ageId];
-    State.panelAge = ageId;
-    State.triad = [null, null, null];
-
-    document.getElementById('panel-title').textContent = `PORTAL OF ${age.name.toUpperCase()}`;
-    document.getElementById('panel-subtitle').textContent = 'Read the breath · Select the triad · Speak it true';
-    document.getElementById('panel-inscription').textContent = age.inscription;
-    document.getElementById('panel-riddle').textContent = age.riddle;
-    document.getElementById('panel-feedback').textContent = '';
-    document.getElementById('panel-feedback').className = 'panel-feedback';
-
-    this.renderTriad();
-    this.renderGlyphBtns();
-    document.getElementById('glyph-panel').classList.add('open');
-    addLog(`You study the ${age.name} inscription`);
-  },
-
-  closePanel() {
-    document.getElementById('glyph-panel').classList.remove('open');
-    State.panelAge = null;
-    State.triad = [null, null, null];
-  },
-
-  selectGlyph(idx) {
-    const slot = State.triad.findIndex(s => s === null);
-    if (slot === -1) return;
-    State.triad[slot] = idx;
-    this.renderTriad();
-    this.renderGlyphBtns();
-  },
-
-  clearTriadSlot(slot) {
-    if (State.triad[slot] === null) return;
-    State.triad[slot] = null;
-    this.renderTriad();
-    this.renderGlyphBtns();
-  },
-
-  renderTriad() {
-    for (let i = 0; i < 3; i++) {
-      const el = document.getElementById(`triad-${i}`);
-      if (State.triad[i] !== null) {
-        el.textContent = GLYPHS[State.triad[i]].symbol;
-        el.classList.add('filled');
-      } else {
-        el.textContent = '·';
-        el.classList.remove('filled');
-      }
-    }
-  },
-
-  renderGlyphBtns() {
-    GLYPHS.forEach((g, i) => {
-      const btn = document.getElementById(`gbtn-${i}`);
-      if (!btn) return;
-      btn.classList.toggle('selected', State.triad.includes(i));
-    });
-  },
-
-  submitTriad() {
-    const age = AGES[State.panelAge];
-    const fb  = document.getElementById('panel-feedback');
-
-    if (State.triad.includes(null)) {
-      fb.textContent = 'The triad is incomplete · Three glyphs must be spoken';
-      fb.className = 'panel-feedback wrong';
-      return;
-    }
-
-    // Compare against the age's solution (array of glyph IDs)
-    const correct = age.solution.every((glyphId, i) => glyphId === State.triad[i]);
-
-    if (correct) {
-      fb.textContent = '𐤕 The breath is true · The portal opens';
-      fb.className = 'panel-feedback right';
-      State.markUnlocked(State.panelAge);
-      addLog(`${age.name} — portal opened`);
-
-      setTimeout(() => {
-        this.closePanel();
-        refreshPortal(State.panelAge);
-        setTimeout(() => this.travelToAge(State.panelAge), 600);
-      }, 1200);
-    } else {
-      fb.textContent = '𐤆 The breath is false · The portal holds';
-      fb.className = 'panel-feedback wrong';
-      State.triad = [null, null, null];
-      this.renderTriad();
-      this.renderGlyphBtns();
-      addLog('Wrong triad — the portal holds');
-    }
-  },
-};
-
-// ── KEYBOARD ─────────────────────────────────────────────────
-document.addEventListener('keydown', e => {
-  if (document.getElementById('glyph-panel').classList.contains('open')) {
-    if (e.key === 'Escape') Game.closePanel();
+  if (State.triad.includes(null)) {
+    fb.textContent = 'The triad is incomplete · Three glyphs must be spoken';
+    fb.className = 'panel-feedback wrong';
     return;
   }
-  if (e.key === 'ArrowLeft'  || e.key === 'a') Game.turnLeft();
-  if (e.key === 'ArrowRight' || e.key === 'd') Game.turnRight();
-  if (e.key === 'ArrowDown'  || e.key === 's') Game.turnAround();
-});
+
+  const correct = age.solution.every((glyphId, i) => glyphId === State.triad[i]);
+
+  if (correct) {
+    fb.textContent = '𐤕 The breath is true · The portal opens';
+    fb.className = 'panel-feedback right';
+    State.markUnlocked(State.panelAge);
+    addLog(`${age.name} — portal opened`);
+
+    setTimeout(() => {
+      closePanel();
+      refreshPortal(State.panelAge);
+      setTimeout(() => travelToAge(State.panelAge), 800);
+    }, 1200);
+  } else {
+    fb.textContent = '𐤆 The breath is false · The portal holds';
+    fb.className = 'panel-feedback wrong';
+    State.triad = [null, null, null];
+    renderTriad();
+    renderGlyphBtns();
+    addLog('Wrong triad — the portal holds');
+  }
+}
+
+// ── TRAVEL ───────────────────────────────────────────────────
+function travelToAge(ageId) {
+  const age = AGES[ageId];
+  if (!age.unlocked) {
+    openPanel(ageId);
+    return;
+  }
+  // Fade and navigate
+  const fade = document.getElementById('fade');
+  fade.classList.add('active');
+  addLog(`Entering ${age.name}...`);
+  setTimeout(() => {
+    window.location.href = age.page;
+  }, 600);
+}
 
 // ── INIT ─────────────────────────────────────────────────────
-async function init() {
-  await loadCanon();
+function init() {
+  console.log('[Atrium] Initializing...');
+
   State.load();
   State.updateDashboard();
+
+  // Restore log
+  const logEl = document.getElementById('journal-entries');
+  if (State.log.length > 0) {
+    logEl.innerHTML = State.log.map(l => `<div class="log-entry">${l}</div>`).join('');
+  } else {
+    addLog('The Atrium holds four portals');
+    addLog('Only the triad opens the way');
+  }
+
   initStars();
   buildGlyphGrid();
   buildAtrium();
 
-  // Restore log display
-  const el = document.getElementById('journal-entries');
-  el.innerHTML = State.log.map(l => `<div class="log-entry">${l}</div>`).join('');
+  // ── EVENT BINDINGS ──────────────────────────────────────
+  // Intro button
+  document.getElementById('enter-btn').addEventListener('click', () => {
+    const intro = document.getElementById('intro');
+    intro.classList.add('hide');
+    setTimeout(() => { intro.style.display = 'none'; }, 1000);
+    addLog('You enter the Atrium');
+  });
 
-  if (State.log.length === 0) {
-    addLog('The Atrium holds four portals');
-    addLog('Only the triad opens the way');
-  }
+  // Panel buttons
+  document.getElementById('panel-close-btn').addEventListener('click', closePanel);
+  document.getElementById('panel-submit-btn').addEventListener('click', submitTriad);
+
+  // Triad slot click to clear
+  document.getElementById('triad-0').addEventListener('click', () => clearTriadSlot(0));
+  document.getElementById('triad-1').addEventListener('click', () => clearTriadSlot(1));
+  document.getElementById('triad-2').addEventListener('click', () => clearTriadSlot(2));
+
+  // Keyboard
+  document.addEventListener('keydown', (e) => {
+    if (document.getElementById('glyph-panel').classList.contains('open')) {
+      if (e.key === 'Escape') closePanel();
+      if (e.key === 'Enter')  submitTriad();
+      return;
+    }
+    // Number keys to quick-test portals
+    if (e.key === '1') document.getElementById('portal-air')?.click();
+    if (e.key === '2') document.getElementById('portal-fire')?.click();
+    if (e.key === '3') document.getElementById('portal-earth')?.click();
+    if (e.key === '4') document.getElementById('portal-water')?.click();
+  });
+
+  console.log('[Atrium] Ready. Portals:', document.querySelectorAll('.portal-ring').length);
 }
 
+// Start
 init();
 </script>
 </body>
