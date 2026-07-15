@@ -3,28 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ADZMYST · The Atrium · The Breath Between Ages</title>
+<title>The Labyrinth · Adzmyst</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Cinzel+Decorative:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
 <style>
-  /* ── TOKENS ── */
+  /* ═══════════════════════════════════════════════════════
+     ADZMYST GAME HUB — THE LABYRINTH ENTRY
+     Realm detection · Save state · Transitions
+     ═══════════════════════════════════════════════════════ */
+
   :root {
-    --void:        #07080f;
-    --deep-sky:    #0d1225;
-    --sky-mid:     #1a2a4a;
-    --cerulean:    #4a7aaa;
-    --silver:      #b8cce0;
-    --breath:      #e8f2ff;
-    --glyph-gold:  #c8a84a;
-    --glyph-dim:   #6a5830;
-    --portal-air:  #7ab8d4;
-    --portal-fire: #d4784a;
-    --portal-earth:#6a9464;
-    --portal-water:#4a7ab8;
-    --unlock:      #a8d890;
-    --danger:      #c85050;
-    --locked-dim:  #4a3a2a;
-    --trans-panel: rgba(13, 18, 37, 0.85);
+    --void:       #07080f;
+    --deep:       #0a1528;
+    --mid:        #1a3050;
+    --silver:     #b8cce0;
+    --breath:     #e8f2ff;
+    --gold:       #c8a84a;
+    --gold-dim:   #6a5830;
+
+    --realm-air:   #5ab8b0;
+    --realm-fire:  #d4784a;
+    --realm-earth: #6a9464;
+    --realm-water: #4a7ab8;
+
+    --transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -38,51 +40,51 @@
     font-size: 16px;
   }
 
-  /* ── LIVING SKY BACKDROP ── */
-  #sky {
+  /* ── AMBIENT BACKGROUND ── */
+  #ambient {
     position: fixed; inset: 0; z-index: 0;
-    background: linear-gradient(
-      180deg,
-      #03050e 0%,
-      #0a1428 20%,
-      #1a2a50 50%,
-      #2a4070 75%,
-      #1a2a50 100%
-    );
-    animation: skyshift 30s ease-in-out infinite alternate;
+    background:
+      radial-gradient(ellipse 60% 40% at 50% 40%, rgba(200,168,74,0.04) 0%, transparent 60%),
+      linear-gradient(180deg, #03050e 0%, var(--deep) 40%, var(--mid) 100%);
+    transition: background var(--transition);
   }
-  @keyframes skyshift {
-    0%   { filter: hue-rotate(0deg) brightness(1); }
-    50%  { filter: hue-rotate(10deg) brightness(1.08); }
-    100% { filter: hue-rotate(0deg) brightness(1); }
+  #ambient.realm-air   { background: radial-gradient(ellipse 60% 40% at 50% 40%, rgba(90,184,176,0.06) 0%, transparent 60%), linear-gradient(180deg, #03050e 0%, #0a1828 40%, #1a3050 100%); }
+  #ambient.realm-fire  { background: radial-gradient(ellipse 60% 40% at 50% 40%, rgba(212,120,74,0.06) 0%, transparent 60%), linear-gradient(180deg, #03050e 0%, #1a1020 40%, #2a1a30 100%); }
+  #ambient.realm-earth { background: radial-gradient(ellipse 60% 40% at 50% 40%, rgba(106,148,100,0.06) 0%, transparent 60%), linear-gradient(180deg, #03050e 0%, #101a10 40%, #1a2a18 100%); }
+  #ambient.realm-water { background: radial-gradient(ellipse 60% 40% at 50% 40%, rgba(74,122,184,0.06) 0%, transparent 60%), linear-gradient(180deg, #03050e 0%, #0a1428 40%, #102040 100%); }
+
+  /* ── LOADING VEIL ── */
+  #loading-veil {
+    position: fixed; inset: 0; z-index: 100;
+    background: var(--void);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 20px;
+    transition: opacity 0.5s ease;
+  }
+  #loading-veil.hide { opacity: 0; pointer-events: none; }
+
+  #loading-glyph {
+    font-size: 3rem;
+    color: var(--gold);
+    animation: loadPulse 1.5s ease-in-out infinite;
+  }
+  @keyframes loadPulse {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.08); }
+  }
+  #loading-text {
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--silver);
+    opacity: 0.5;
   }
 
-  /* Cloud layers */
-  .cloud-layer {
-    position: fixed; inset: 0; z-index: 1;
-    pointer-events: none; opacity: 0.15;
-  }
-  .cloud-layer::before, .cloud-layer::after {
-    content: '';
-    position: absolute; width: 200%; height: 100%;
-    background-image:
-      radial-gradient(ellipse 120px 40px at 20% 30%, var(--breath) 0%, transparent 70%),
-      radial-gradient(ellipse 80px 25px at 60% 20%, var(--silver) 0%, transparent 70%),
-      radial-gradient(ellipse 150px 50px at 80% 60%, var(--breath) 0%, transparent 70%);
-  }
-  .cloud-layer::before { animation: cloudmove 60s linear infinite; }
-  .cloud-layer::after  { animation: cloudmove 90s linear infinite reverse; opacity: 0.5; }
-  @keyframes cloudmove { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-
-  /* Stars */
-  canvas#stars {
-    position: fixed; inset: 0; z-index: 1;
-    pointer-events: none;
-  }
-
-  /* ── FADE OVERLAY ── */
+  /* ── FADE TRANSITION ── */
   #fade {
-    position: fixed; inset: 0; z-index: 50;
+    position: fixed; inset: 0; z-index: 90;
     background: var(--void);
     opacity: 0; pointer-events: none;
     transition: opacity 0.5s ease;
@@ -92,912 +94,436 @@
   /* ── HUD ── */
   #hud {
     position: fixed; top: 0; left: 0; right: 0; z-index: 30;
-    padding: 1.2rem 2rem;
+    padding: 14px 20px;
     display: flex; align-items: center; justify-content: space-between;
     background: linear-gradient(180deg, rgba(7,8,15,0.85) 0%, transparent 100%);
     pointer-events: none;
   }
   #hud-location {
     font-family: 'Cinzel', serif;
-    font-size: 0.75rem;
-    letter-spacing: 0.25em;
-    color: var(--silver);
-    text-transform: uppercase;
+    font-size: 10px; letter-spacing: 3px;
+    color: var(--silver); text-transform: uppercase;
   }
-  #hud-glyphs {
-    font-size: 1.4rem;
-    letter-spacing: 0.2em;
-    color: var(--glyph-gold);
-    opacity: 0.7;
-  }
-
-  /* ── MAIN VIEWPORT (flat 2D scene) ── */
-  #viewport {
-    position: fixed; inset: 0; z-index: 10;
-    display: flex; align-items: center; justify-content: center;
-    pointer-events: none; /* let children handle clicks */
-  }
-
-  /* ── ATRIUM SCENE ── */
-  #atrium-scene {
-    position: relative;
-    width: 100%; height: 100%;
-    pointer-events: none;
-  }
-
-  /* ── ATRIUM TITLE ── */
-  .atrium-title {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -60%);
-    text-align: center;
-    pointer-events: none;
-    z-index: 2;
-  }
-  .atrium-title h1 {
-    font-family: 'Cinzel Decorative', serif;
-    font-size: clamp(2rem, 5vw, 4rem);
-    font-weight: 400;
-    color: var(--breath);
-    letter-spacing: 0.3em;
-    text-shadow: 0 0 40px rgba(74,122,170,0.6), 0 0 80px rgba(74,122,170,0.3);
-    margin-bottom: 0.5rem;
-  }
-  .atrium-title p {
-    font-size: clamp(0.7rem, 1.5vw, 0.9rem);
-    letter-spacing: 0.4em;
-    color: var(--silver);
-    text-transform: uppercase;
-    opacity: 0.7;
-  }
-  .atrium-glyphs {
-    font-size: clamp(1.5rem, 3vw, 2.5rem);
-    color: var(--glyph-gold);
-    letter-spacing: 0.3em;
-    margin-top: 1rem;
-    opacity: 0.6;
-    animation: glyphpulse 4s ease-in-out infinite;
-  }
-  @keyframes glyphpulse {
-    0%, 100% { opacity: 0.4; text-shadow: none; }
-    50% { opacity: 0.9; text-shadow: 0 0 20px var(--glyph-gold); }
-  }
-
-  /* ── PORTALS ── */
-  .portal-ring {
-    position: absolute;
-    display: flex; flex-direction: column;
-    align-items: center; gap: 0.8rem;
-    cursor: pointer;
-    pointer-events: auto;
-    z-index: 15;
-    transition: transform 0.3s;
-  }
-  .portal-ring:hover { transform: scale(1.05); }
-  .portal-ring:hover .portal-circle {
-    box-shadow: 0 0 40px var(--pc), 0 0 80px rgba(255,255,255,0.1);
-  }
-
-  .portal-circle {
-    width: clamp(70px, 10vw, 120px);
-    height: clamp(70px, 10vw, 120px);
-    border-radius: 50%;
-    border: 2px solid var(--pc, var(--cerulean));
-    background: radial-gradient(circle at center, rgba(255,255,255,0.08) 0%, transparent 70%);
-    display: flex; align-items: center; justify-content: center;
-    font-size: clamp(1.5rem, 3vw, 2.5rem);
-    box-shadow: 0 0 20px var(--pc), inset 0 0 20px rgba(0,0,0,0.5);
-    transition: box-shadow 0.3s;
-    position: relative;
-    overflow: hidden;
-  }
-  .portal-circle::after {
-    content: '';
-    position: absolute; inset: -50%;
-    border-radius: 50%;
-    background: conic-gradient(transparent 0deg, var(--pc) 30deg, transparent 60deg);
-    animation: portalspin 6s linear infinite;
-    opacity: 0.3;
-  }
-  @keyframes portalspin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-  .portal-locked .portal-circle { cursor: pointer; }
-  .portal-locked .portal-circle > span { opacity: 0.5; }
-
-  .portal-label {
+  #hud-realm-indicator {
     font-family: 'Cinzel', serif;
-    font-size: clamp(0.55rem, 1vw, 0.75rem);
-    letter-spacing: 0.25em;
+    font-size: 8px; letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border: 1px solid rgba(184,204,224,0.2);
+    border-radius: 12px;
+    color: var(--silver);
+    opacity: 0.6;
+  }
+
+  /* ── REALM IFRAME ── */
+  #realm-frame {
+    position: fixed; inset: 0; z-index: 10;
+    width: 100%; height: 100%;
+    border: none;
+    background: transparent;
+  }
+
+  /* ── RETURN BUTTON ── */
+  #return-btn {
+    position: fixed; top: 16px; left: 16px; z-index: 45;
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem; letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--silver);
+    opacity: 0.4;
+    background: rgba(7,8,15,0.7);
+    border: 1px solid rgba(184,204,224,0.15);
+    border-radius: 16px;
+    padding: 6px 14px;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    transition: all 0.3s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  #return-btn:hover {
+    opacity: 1;
+    border-color: var(--gold);
+    color: var(--breath);
+  }
+  #return-btn .ret-glyph {
+    font-size: 1rem;
+  }
+
+  /* ── REALM NAV (bottom) ── */
+  #realm-nav {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
+    padding: 1rem 1.5rem 1.5rem;
+    display: flex; align-items: center; justify-content: center; gap: 1.5rem;
+    background: linear-gradient(0deg, rgba(7,8,15,0.92) 0%, transparent 100%);
+  }
+  .realm-nav-btn {
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem; letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 0.5rem 1rem;
+    border: 1px solid rgba(184,204,224,0.15);
+    background: transparent;
+    color: var(--silver);
+    cursor: pointer;
+    transition: all 0.3s;
+    border-radius: 20px;
+    display: flex; align-items: center; gap: 0.4rem;
+    opacity: 0.5;
+  }
+  .realm-nav-btn:hover {
+    border-color: var(--silver);
     opacity: 0.8;
   }
-
-  .portal-status {
-    font-family: 'Cinzel', serif;
-    font-size: 0.55rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    padding: 0.2rem 0.6rem;
-    border-radius: 3px;
-  }
-  .portal-status.unlocked { color: var(--unlock); border: 1px solid rgba(168,216,144,0.4); }
-  .portal-status.locked   { color: var(--locked-dim); border: 1px solid rgba(74,58,42,0.4); }
-
-  .portal-glyph-key {
-    font-size: clamp(0.8rem, 1.5vw, 1.1rem);
-    color: var(--glyph-dim);
-    letter-spacing: 0.1em;
-  }
-  .portal-unlocked .portal-glyph-key { color: var(--unlock); }
-
-  /* Fixed portal positions in the atrium */
-  #portal-air   { --pc: var(--portal-air);   top: 18%; left: 50%; transform: translateX(-50%); }
-  #portal-fire  { --pc: var(--portal-fire);  top: 50%; right: 10%; transform: translateY(-50%); }
-  #portal-earth { --pc: var(--portal-earth); bottom: 18%; left: 10%; }
-  #portal-water { --pc: var(--portal-water); bottom: 18%; right: 10%; }
-
-  .portal-enter {
-    font-family: 'Cinzel', serif;
-    font-size: 0.55rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    padding: 0.3rem 0.8rem;
-    background: transparent;
-    border: 1px solid rgba(168,216,144,0.5);
-    color: var(--unlock);
-    cursor: pointer;
-    pointer-events: auto;
-    transition: all 0.3s;
-    margin-top: 0.2rem;
-    z-index: 16;
-  }
-  .portal-enter:hover {
-    background: rgba(168,216,144,0.15);
-    border-color: var(--unlock);
-  }
-
-  /* ── GLYPH PANEL ── */
-  #glyph-panel {
-    position: fixed; inset: 0; z-index: 60;
-    display: none;
-    align-items: center; justify-content: center;
-    background: rgba(7,8,15,0.94);
-    backdrop-filter: blur(8px);
-  }
-  #glyph-panel.open { display: flex; }
-
-  .glyph-panel-inner {
-    width: min(520px, 92vw);
-    border: 1px solid rgba(200,168,74,0.3);
-    background: var(--trans-panel);
-    padding: 2.5rem;
-    position: relative;
-  }
-  .glyph-panel-inner::before {
-    content: '';
-    position: absolute; inset: -1px;
-    border: 1px solid transparent;
-    background: linear-gradient(135deg, var(--glyph-gold), transparent, var(--cerulean)) border-box;
-    -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: destination-out;
-    mask-composite: exclude;
-    pointer-events: none;
-  }
-
-  .panel-title {
-    font-family: 'Cinzel Decorative', serif;
-    font-size: 0.85rem;
-    letter-spacing: 0.3em;
-    color: var(--glyph-gold);
-    text-align: center;
-    margin-bottom: 0.4rem;
-  }
-  .panel-subtitle {
-    font-family: 'Cinzel', serif;
-    font-size: 0.65rem;
-    letter-spacing: 0.25em;
-    color: var(--silver);
-    text-align: center;
-    margin-bottom: 0.5rem;
-    opacity: 0.6;
-    text-transform: uppercase;
-  }
-  .panel-inscription {
-    font-size: 1.8rem;
-    text-align: center;
-    letter-spacing: 0.2em;
-    color: var(--glyph-gold);
-    margin: 1.2rem 0;
-    min-height: 2.5rem;
-    text-shadow: 0 0 12px rgba(200,168,74,0.4);
-  }
-  .panel-riddle {
-    font-size: 0.9rem;
-    line-height: 1.7;
-    color: var(--silver);
-    text-align: center;
-    font-style: italic;
-    margin-bottom: 1.5rem;
-    opacity: 0.85;
-    min-height: 3rem;
-  }
-
-  .glyph-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 0.4rem;
-    margin-bottom: 1.5rem;
-  }
-  .glyph-btn {
-    aspect-ratio: 1;
-    background: rgba(20,35,65,0.6);
-    border: 1px solid rgba(74,122,170,0.25);
-    color: var(--silver);
-    font-size: clamp(1rem, 2.5vw, 1.4rem);
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex; align-items: center; justify-content: center;
-    flex-direction: column;
-    gap: 0.1rem;
-    position: relative;
-  }
-  .glyph-btn span.name {
-    font-family: 'Cinzel', serif;
-    font-size: 0.42rem;
-    letter-spacing: 0.05em;
-    color: var(--glyph-dim);
-    text-transform: uppercase;
-  }
-  .glyph-btn:hover {
-    border-color: var(--glyph-gold);
-    color: var(--glyph-gold);
-    background: rgba(200,168,74,0.1);
-    box-shadow: 0 0 12px rgba(200,168,74,0.2);
-  }
-  .glyph-btn.selected {
-    border-color: var(--glyph-gold);
-    background: rgba(200,168,74,0.2);
-    color: var(--glyph-gold);
-    box-shadow: 0 0 16px rgba(200,168,74,0.3);
-  }
-
-  .triad-display {
-    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-    margin-bottom: 1.2rem; min-height: 3.5rem;
-  }
-  .triad-slot {
-    width: 52px; height: 52px;
-    border: 1px solid rgba(200,168,74,0.3);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.6rem; color: var(--glyph-dim);
-    background: rgba(10,15,35,0.5);
-    transition: all 0.2s; cursor: pointer;
-  }
-  .triad-slot.filled {
-    border-color: var(--glyph-gold);
-    color: var(--glyph-gold);
-    background: rgba(200,168,74,0.1);
-  }
-  .triad-sep {
-    color: var(--glyph-dim);
-    font-size: 0.8rem; opacity: 0.5;
-  }
-
-  .panel-actions {
-    display: flex; gap: 0.8rem; justify-content: center;
-  }
-  .panel-btn {
-    font-family: 'Cinzel', serif;
-    font-size: 0.65rem; letter-spacing: 0.2em;
-    text-transform: uppercase;
-    padding: 0.6rem 1.5rem;
-    border: 1px solid rgba(74,122,170,0.4);
-    background: transparent;
-    color: var(--cerulean); cursor: pointer;
-    transition: all 0.25s;
-  }
-  .panel-btn:hover { border-color: var(--breath); color: var(--breath); }
-  .panel-btn.primary {
-    border-color: var(--glyph-gold);
-    color: var(--glyph-gold);
-  }
-  .panel-btn.primary:hover { background: rgba(200,168,74,0.15); }
-
-  .panel-feedback {
-    text-align: center;
-    font-family: 'Cinzel', serif;
-    font-size: 0.7rem; letter-spacing: 0.15em;
-    min-height: 1.2rem; margin-top: 0.8rem;
-    transition: all 0.3s;
-  }
-  .panel-feedback.wrong { color: var(--danger); }
-  .panel-feedback.right { color: var(--unlock); }
-
-  /* ── TOOLTIP ── */
-  #tooltip {
-    position: fixed; z-index: 55;
-    padding: 0.4rem 0.8rem;
-    background: rgba(7,8,15,0.95);
-    border: 1px solid rgba(200,168,74,0.3);
-    font-family: 'Cinzel', serif;
-    font-size: 0.65rem; letter-spacing: 0.15em;
-    color: var(--silver);
-    pointer-events: none; opacity: 0;
-    transition: opacity 0.2s;
-    max-width: 200px; text-align: center;
-    text-transform: uppercase;
-  }
-  #tooltip.show { opacity: 1; }
-
-  /* ── JOURNAL ── */
-  #journal {
-    position: fixed; bottom: 1.5rem; left: 1.5rem; z-index: 30;
-    font-family: 'Cinzel', serif;
-    font-size: 0.6rem; letter-spacing: 0.1em;
-    color: var(--cerulean); opacity: 0.5;
-    max-width: 200px; line-height: 1.7;
-    pointer-events: none;
-  }
-  #journal .log-entry { margin-bottom: 0.2rem; }
-  #journal .log-entry::before { content: '› '; color: var(--glyph-dim); }
-
-  /* ── DASHBOARD ── */
-  #dashboard-stats {
-    position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 30;
-    font-family: 'Cinzel', serif;
-    font-size: 0.55rem; letter-spacing: 0.15em;
-    color: var(--silver);
-    opacity: 0.6; text-align: right;
-    pointer-events: none; line-height: 1.8;
-  }
-
-  /* ── INTRO ── */
-  #intro {
-    position: fixed; inset: 0; z-index: 70;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    background: var(--void); text-align: center;
-    padding: 2rem;
-    transition: opacity 1s ease;
-  }
-  #intro.hide { opacity: 0; pointer-events: none; }
-
-  #intro h1 {
-    font-family: 'Cinzel Decorative', serif;
-    font-size: clamp(2.5rem, 7vw, 5.5rem);
-    font-weight: 400; letter-spacing: 0.4em;
+  .realm-nav-btn.active {
+    opacity: 1;
     color: var(--breath);
-    text-shadow: 0 0 60px rgba(74,122,170,0.5);
-    margin-bottom: 0.5rem;
   }
-  #intro .subtitle {
-    font-family: 'Cinzel', serif;
-    font-size: clamp(0.65rem, 1.5vw, 0.85rem);
-    letter-spacing: 0.5em; color: var(--silver);
-    opacity: 0.6; text-transform: uppercase;
-    margin-bottom: 3rem;
+  .realm-nav-btn.active.air   { border-color: var(--realm-air);   color: var(--realm-air); }
+  .realm-nav-btn.active.fire  { border-color: var(--realm-fire);  color: var(--realm-fire); }
+  .realm-nav-btn.active.earth { border-color: var(--realm-earth); color: var(--realm-earth); }
+  .realm-nav-btn.active.water { border-color: var(--realm-water); color: var(--realm-water); }
+  .realm-nav-btn .nav-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: currentColor;
+    opacity: 0.5;
   }
-  #intro .glyphs-large {
-    font-size: clamp(2rem, 5vw, 3.5rem);
-    color: var(--glyph-gold); letter-spacing: 0.4em;
-    opacity: 0;
-    animation: fadeInGlyphs 2s ease 0.8s forwards;
-    margin-bottom: 3rem;
-  }
-  @keyframes fadeInGlyphs {
-    from { opacity: 0; transform: translateY(10px); }
-    to   { opacity: 0.7; transform: translateY(0); }
-  }
-  #intro .lore {
-    font-size: clamp(0.85rem, 1.5vw, 1rem);
-    line-height: 1.9; max-width: 480px;
-    color: var(--silver); opacity: 0.7;
-    font-style: italic; margin-bottom: 3rem;
-  }
-  #enter-btn {
-    font-family: 'Cinzel', serif;
-    font-size: 0.8rem; letter-spacing: 0.4em;
-    text-transform: uppercase;
-    padding: 1rem 3rem;
-    border: 1px solid rgba(200,168,74,0.5);
-    background: transparent;
-    color: var(--glyph-gold); cursor: pointer;
-    transition: all 0.3s;
-    opacity: 0;
-    animation: fadeInBtn 1s ease 2s forwards;
-  }
-  @keyframes fadeInBtn {
-    from { opacity: 0; } to { opacity: 1; }
-  }
-  #enter-btn:hover {
-    background: rgba(200,168,74,0.1);
-    border-color: var(--glyph-gold);
-    box-shadow: 0 0 30px rgba(200,168,74,0.2);
+  .realm-nav-btn .nav-glyph {
+    font-size: 1rem;
   }
 
-  /* Responsive */
+  /* ── SAVE INDICATOR ── */
+  #save-dot {
+    position: fixed; top: 20px; right: 20px; z-index: 45;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--gold);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  #save-dot.pulse {
+    opacity: 1;
+    animation: saveFlash 0.5s ease;
+  }
+  @keyframes saveFlash {
+    0% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(2); }
+  }
+
+  /* ── RESPONSIVE ── */
   @media (max-width: 600px) {
-    #portal-fire  { right: 5%; }
-    #portal-earth { left: 5%; bottom: 12%; }
-    #portal-water { right: 5%; bottom: 12%; }
-    .glyph-grid   { grid-template-columns: repeat(7, 1fr); gap: 0.25rem; }
-    .glyph-btn    { font-size: 1rem; }
-    .glyph-btn span.name { display: none; }
-    .triad-slot   { width: 42px; height: 42px; font-size: 1.3rem; }
-    #dashboard-stats { display: none; }
+    #realm-nav { gap: 0.6rem; padding: 0.8rem 0.6rem 1.2rem; }
+    .realm-nav-btn { font-size: 0.5rem; padding: 0.4rem 0.6rem; letter-spacing: 0.1em; }
+    .realm-nav-btn .nav-glyph { font-size: 0.8rem; }
+    #return-btn { top: 10px; left: 8px; font-size: 0.5rem; padding: 4px 10px; }
   }
 </style>
 </head>
 <body>
 
-<!-- Living sky -->
-<div id="sky"></div>
-<div class="cloud-layer"></div>
-<canvas id="stars"></canvas>
+<!-- Ambient background -->
+<div id="ambient"></div>
+
+<!-- Loading veil -->
+<div id="loading-veil">
+  <div id="loading-glyph">𐤀</div>
+  <div id="loading-text">The breath opens the way</div>
+</div>
 
 <!-- Fade overlay -->
 <div id="fade"></div>
 
-<!-- Intro screen -->
-<div id="intro">
-  <h1>ADZMYST</h1>
-  <p class="subtitle">The Breath · The Fourth Pillar · The Language Beneath</p>
-  <div class="glyphs-large">𐤀 𐤃 𐤆 𐤌 𐤉 𐤎 𐤕</div>
-  <p class="lore">
-    Before the gods spoke, there was breath.<br>
-    Before breath, there was the mark — the adze that carved meaning from silence.<br>
-    Four Ages wait beyond the Atrium.<br>
-    Only the one who reads the Breath may open them.
-  </p>
-  <button id="enter-btn">Enter the Atrium</button>
-</div>
-
 <!-- HUD -->
 <div id="hud">
-  <div id="hud-location">The Atrium</div>
-  <div id="hud-glyphs"></div>
-  <div style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.2em;color:var(--cerulean);opacity:0.6;">BREATH · AIR</div>
+  <div id="hud-location">The Labyrinth</div>
+  <div id="hud-realm-indicator">Loading...</div>
 </div>
 
-<!-- FLAT VIEWPORT with portals -->
-<div id="viewport">
-  <div id="atrium-scene">
-    <div class="atrium-title">
-      <h1>ADZMYST</h1>
-      <p>The Breath · The Atrium · Four Ages</p>
-      <div class="atrium-glyphs"></div>
-    </div>
-    <!-- Portals injected by JS -->
-  </div>
-</div>
+<!-- Return button -->
+<button id="return-btn">
+  <span class="ret-glyph">𐤃</span>
+  Return to Atrium
+</button>
 
-<!-- Glyph puzzle panel -->
-<div id="glyph-panel">
-  <div class="glyph-panel-inner">
-    <div class="panel-title" id="panel-title">PORTAL INSCRIPTION</div>
-    <div class="panel-subtitle" id="panel-subtitle">Read the breath · Select the triad</div>
-    <div class="panel-inscription" id="panel-inscription"></div>
-    <div class="panel-riddle" id="panel-riddle"></div>
+<!-- Save indicator -->
+<div id="save-dot"></div>
 
-    <div class="triad-display">
-      <div class="triad-slot" id="triad-0">·</div>
-      <span class="triad-sep">·</span>
-      <div class="triad-slot" id="triad-1">·</div>
-      <span class="triad-sep">·</span>
-      <div class="triad-slot" id="triad-2">·</div>
-    </div>
+<!-- Realm iframe -->
+<iframe id="realm-frame" src="" allow="autoplay"></iframe>
 
-    <div class="glyph-grid" id="glyph-grid"></div>
-
-    <div class="panel-actions">
-      <button class="panel-btn" id="panel-close-btn">Close</button>
-      <button class="panel-btn primary" id="panel-submit-btn">Speak the Breath</button>
-    </div>
-    <div class="panel-feedback" id="panel-feedback"></div>
-  </div>
-</div>
-
-<!-- Tooltip -->
-<div id="tooltip"></div>
-
-<!-- Journal -->
-<div id="journal"><div id="journal-entries"></div></div>
-
-<!-- Dashboard -->
-<div id="dashboard-stats">
-  <div id="stat-ages">Ages Open: 0 / 4</div>
-  <div id="stat-glyphs">Glyphs Known: 7</div>
-</div>
+<!-- Realm navigation -->
+<nav id="realm-nav">
+  <button class="realm-nav-btn air" data-realm="air">
+    <span class="nav-dot"></span>
+    <span class="nav-glyph">𓂝</span>
+    Air
+  </button>
+  <button class="realm-nav-btn fire" data-realm="fire">
+    <span class="nav-dot"></span>
+    <span class="nav-glyph">𓇋</span>
+    Fire
+  </button>
+  <button class="realm-nav-btn earth" data-realm="earth">
+    <span class="nav-dot"></span>
+    <span class="nav-glyph">𓌹</span>
+    Earth
+  </button>
+  <button class="realm-nav-btn water" data-realm="water">
+    <span class="nav-dot"></span>
+    <span class="nav-glyph">𓏏</span>
+    Water
+  </button>
+</nav>
 
 <script>
-// ═══════════════════════════════════════════════════════════════
-// ADZMYST ATRIUM — FIXED INTERACTIVE VERSION
-// Flat 2D scene, clickable portals, glyph puzzle panel
-// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+// ADZMYST GAME HUB — REALM MANAGER
+// Detects realm from URL param, loads iframe, manages state
+// ═══════════════════════════════════════════════════════════
 
-// ── DATA ──────────────────────────────────────────────────────
-const GLYPHS = [
-  { id:0, symbol:'𐤀', name:'Aleph', letter:'A', meaning:'Ox · Strength · Beginning' },
-  { id:1, symbol:'𐤃', name:'Dalet', letter:'D', meaning:'Door · Passage · Threshold' },
-  { id:2, symbol:'𐤆', name:'Zayin', letter:'Z', meaning:'Weapon · Division · The Cut' },
-  { id:3, symbol:'𐤌', name:'Mem',   letter:'M', meaning:'Water · Chaos · The Deep' },
-  { id:4, symbol:'𐤉', name:'Yod',   letter:'Y', meaning:'Hand · Action · Making' },
-  { id:5, symbol:'𐤎', name:'Samek', letter:'S', meaning:'Pillar · Support · What Holds' },
-  { id:6, symbol:'𐤕', name:'Taw',   letter:'T', meaning:'Mark · Signature · Completion' },
-];
-
-const AGES = {
-  air:   { id:'air',   name:'The Age of Air',   subtitle:'Adzmyst · Breath · Home',  color:'#7ab8d4', icon:'𓂝', inscription:'𐤀 𐤃 𐤆', solution:[0,1,2], riddle:'The ox finds the door, and the cut follows. What is the first triad?', lore:'Wind made visible. The language is born here.', unlocked:true,  page:'ages/air/index.html' },
-  fire:  { id:'fire',  name:'The Age of Fire',  subtitle:'Apollo · Prophecy · Forge',color:'#d4784a', icon:'𓇋', inscription:'𐤕 𐤉 𐤀', solution:[6,4,0], riddle:'The mark is made by the hand, from the beginning. Speak the forge triad.', lore:'Here the gods forge prophecy.', unlocked:false, page:'ages/fire/index.html' },
-  earth: { id:'earth', name:'The Age of Earth', subtitle:'Gaia · Root · The Bone',  color:'#6a9464', icon:'𓌹', inscription:'𐤎 𐤌 𐤃', solution:[5,3,1], riddle:'The pillar stands in the deep, at the door. Name the stone triad.', lore:'Stone that breathes. The root holds.', unlocked:false, page:'ages/earth/index.html' },
-  water: { id:'water', name:'The Age of Water', subtitle:'Divination · The Deep',   color:'#4a7ab8', icon:'𓏏', inscription:'𐤌 𐤉 𐤕', solution:[3,4,6], riddle:'The deep acts, and the mark remains. Speak the water triad.', lore:'Every card drawn from the deep.', unlocked:false, page:'ages/water/index.html' },
+const REALMS = {
+  air:   { id: 'air',   name: 'Air Realm',   path: 'air/index.html',   icon: '𓂝', glyph: '𐤀', color: '#5ab8b0' },
+  fire:  { id: 'fire',  name: 'Fire Realm',  path: 'fire/index.html',  icon: '𓇋', glyph: '𐤕', color: '#d4784a' },
+  earth: { id: 'earth', name: 'Earth Realm', path: 'earth/index.html', icon: '𓌹', glyph: '𐤎', color: '#6a9464' },
+  water: { id: 'water', name: 'Water Realm', path: 'water/index.html', icon: '𓏏', glyph: '𐤌', color: '#4a7ab8' },
 };
 
-// ── STATE ────────────────────────────────────────────────────
-const State = {
-  panelAge: null,
-  triad: [null, null, null],
-  log: [],
-  agesUnlocked: {},
+const GameHub = {
+  currentRealm: null,
+  unlockedRealms: ['air'],
 
-  save() {
-    const data = {
-      unlocked: { ...this.agesUnlocked },
-      log: this.log.slice(0, 10)
-    };
-    localStorage.setItem('adzmyst_atrium_save', JSON.stringify(data));
+  init() {
+    this.loadState();
+    this.detectRealm();
+    this.bindEvents();
+    this.updateNavButtons();
+
+    // Hide loading veil after realm loads
+    setTimeout(() => {
+      document.getElementById('loading-veil').classList.add('hide');
+      setTimeout(() => {
+        const veil = document.getElementById('loading-veil');
+        if (veil) veil.style.display = 'none';
+      }, 500);
+    }, 1200);
+
+    console.log('[Game Hub] Initialized. Realm:', this.currentRealm);
   },
 
-  load() {
+  loadState() {
     try {
-      const raw = localStorage.getItem('adzmyst_atrium_save');
-      if (!raw) return;
-      const data = JSON.parse(raw);
-      this.agesUnlocked = data.unlocked || {};
-      this.log = data.log || [];
-      for (const k in this.agesUnlocked) {
-        if (AGES[k]) AGES[k].unlocked = this.agesUnlocked[k];
+      // Load from atrium save
+      const atriumRaw = localStorage.getItem('adzmyst_atrium_save');
+      if (atriumRaw) {
+        const data = JSON.parse(atriumRaw);
+        if (data.unlocked) {
+          // Map atrium unlock keys to realms
+          Object.keys(data.unlocked).forEach(key => {
+            if (REALMS[key] && data.unlocked[key]) {
+              if (!this.unlockedRealms.includes(key)) {
+                this.unlockedRealms.push(key);
+              }
+            }
+          });
+        }
       }
     } catch(e) {
-      console.warn('[Atrium] Could not load save:', e);
+      console.warn('[Game Hub] Could not load state:', e);
     }
   },
 
-  markUnlocked(ageId) {
-    this.agesUnlocked[ageId] = true;
-    AGES[ageId].unlocked = true;
-    this.save();
-    this.updateDashboard();
+  saveState() {
+    const data = {
+      unlockedRealms: this.unlockedRealms,
+      currentRealm: this.currentRealm,
+      savedAt: Date.now()
+    };
+    localStorage.setItem('adzmyst_game_hub', JSON.stringify(data));
+
+    // Sync back to atrium
+    try {
+      const atriumRaw = localStorage.getItem('adzmyst_atrium_save');
+      if (atriumRaw) {
+        const atriumData = JSON.parse(atriumRaw);
+        atriumData.unlocked = atriumData.unlocked || {};
+        this.unlockedRealms.forEach(realm => {
+          atriumData.unlocked[realm] = true;
+        });
+        localStorage.setItem('adzmyst_atrium_save', JSON.stringify(atriumData));
+      }
+    } catch(e) {}
+
+    // Pulse save indicator
+    const dot = document.getElementById('save-dot');
+    dot.classList.remove('pulse');
+    void dot.offsetWidth;
+    dot.classList.add('pulse');
   },
 
-  updateDashboard() {
-    const unlocked = Object.values(AGES).filter(a => a.unlocked).length;
-    const total = Object.values(AGES).length;
-    document.getElementById('stat-ages').textContent = `Ages Open: ${unlocked} / ${total}`;
+  detectRealm() {
+    // Check URL parameter: ?realm=air
+    const params = new URLSearchParams(window.location.search);
+    const realmParam = params.get('realm');
+
+    if (realmParam && REALMS[realmParam]) {
+      this.currentRealm = realmParam;
+    } else {
+      // Default to first unlocked realm
+      this.currentRealm = this.unlockedRealms[0] || 'air';
+    }
+
+    this.loadRealm(this.currentRealm);
+  },
+
+  loadRealm(realmId) {
+    const realm = REALMS[realmId];
+    if (!realm) return;
+
+    // Only load if unlocked
+    if (!this.unlockedRealms.includes(realmId)) {
+      console.warn(`[Game Hub] Realm locked: ${realmId}`);
+      // Redirect to first unlocked realm
+      this.loadRealm(this.unlockedRealms[0]);
+      return;
+    }
+
+    this.currentRealm = realmId;
+
+    // Update ambient
+    const ambient = document.getElementById('ambient');
+    ambient.className = `realm-${realmId}`;
+
+    // Update HUD
+    document.getElementById('hud-location').textContent = `The Labyrinth · ${realm.name}`;
+    document.getElementById('hud-realm-indicator').textContent = `${realm.icon} ${realm.name}`;
+
+    // Load realm in iframe
+    const frame = document.getElementById('realm-frame');
+    frame.src = realm.path;
+
+    // Update nav
+    this.updateNavButtons();
+
+    // Update URL without reload
+    const url = new URL(window.location);
+    url.searchParams.set('realm', realmId);
+    window.history.replaceState({}, '', url);
+
+    this.saveState();
+
+    console.log(`[Game Hub] Loaded realm: ${realmId} → ${realm.path}`);
+  },
+
+  navigateToRealm(realmId) {
+    if (!this.unlockedRealms.includes(realmId)) {
+      console.log(`[Game Hub] Realm ${realmId} is locked.`);
+      return;
+    }
+
+    // Fade transition
+    const fade = document.getElementById('fade');
+    fade.classList.add('active');
+
+    setTimeout(() => {
+      this.loadRealm(realmId);
+      setTimeout(() => fade.classList.remove('active'), 300);
+    }, 400);
+  },
+
+  unlockRealm(realmId) {
+    if (!this.unlockedRealms.includes(realmId)) {
+      this.unlockedRealms.push(realmId);
+      this.updateNavButtons();
+      this.saveState();
+      console.log(`[Game Hub] Realm unlocked: ${realmId}`);
+    }
+  },
+
+  updateNavButtons() {
+    document.querySelectorAll('.realm-nav-btn').forEach(btn => {
+      const realm = btn.dataset.realm;
+      btn.classList.toggle('active', realm === this.currentRealm);
+
+      if (this.unlockedRealms.includes(realm)) {
+        btn.disabled = false;
+        btn.style.opacity = '';
+      } else {
+        btn.disabled = true;
+        btn.style.opacity = '0.25';
+      }
+    });
+  },
+
+  returnToAtrium() {
+    const fade = document.getElementById('fade');
+    fade.classList.add('active');
+    setTimeout(() => {
+      window.location.href = '../index.html';
+    }, 400);
+  },
+
+  bindEvents() {
+    // Realm nav buttons
+    document.querySelectorAll('.realm-nav-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const realm = btn.dataset.realm;
+        this.navigateToRealm(realm);
+      });
+    });
+
+    // Return button
+    document.getElementById('return-btn').addEventListener('click', () => {
+      this.returnToAtrium();
+    });
+
+    // Listen for messages from realm iframes
+    window.addEventListener('message', (event) => {
+      if (event.origin !== window.location.origin) return;
+
+      const { type, realm, data } = event.data || {};
+
+      switch(type) {
+        case 'REALM_COMPLETE':
+          console.log(`[Game Hub] Realm complete: ${realm}`);
+          // Unlock next realm in sequence
+          const order = ['air', 'fire', 'earth', 'water'];
+          const idx = order.indexOf(realm);
+          if (idx >= 0 && idx < order.length - 1) {
+            this.unlockRealm(order[idx + 1]);
+          }
+          this.saveState();
+          break;
+
+        case 'REQUEST_HUB_STATE':
+          const frame = document.getElementById('realm-frame');
+          if (frame && frame.contentWindow) {
+            frame.contentWindow.postMessage({
+              type: 'HUB_STATE',
+              currentRealm: this.currentRealm,
+              unlockedRealms: this.unlockedRealms,
+            }, '*');
+          }
+          break;
+
+        case 'NAVIGATE_TO':
+          if (data && data.realm) {
+            this.navigateToRealm(data.realm);
+          }
+          break;
+      }
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') this.returnToAtrium();
+      if (e.key === '1' && this.unlockedRealms.includes('air'))   this.navigateToRealm('air');
+      if (e.key === '2' && this.unlockedRealms.includes('fire'))  this.navigateToRealm('fire');
+      if (e.key === '3' && this.unlockedRealms.includes('earth')) this.navigateToRealm('earth');
+      if (e.key === '4' && this.unlockedRealms.includes('water')) this.navigateToRealm('water');
+    });
   }
 };
 
-// ── STARS ────────────────────────────────────────────────────
-function initStars() {
-  const canvas = document.getElementById('stars');
-  const ctx = canvas.getContext('2d');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-
-  const stars = Array.from({ length: 150 }, () => ({
-    x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height * 0.7,
-    r: Math.random() * 1.2 + 0.2,
-    a: Math.random(),
-    speed: Math.random() * 0.003 + 0.001,
-    phase: Math.random() * Math.PI * 2,
-  }));
-
-  function draw(t) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    stars.forEach(s => {
-      const alpha = s.a * (0.5 + 0.5 * Math.sin(t * s.speed + s.phase));
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(232, 242, 255, ${alpha})`;
-      ctx.fill();
-    });
-    requestAnimationFrame(draw);
-  }
-  requestAnimationFrame(draw);
-
-  window.addEventListener('resize', () => {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  });
-}
-
-// ── BUILD ATRIUM ─────────────────────────────────────────────
-function buildAtrium() {
-  const scene = document.getElementById('atrium-scene');
-
-  // Update the glyph display in the title
-  const sacredGlyphs = GLYPHS.map(g => g.symbol).join(' ');
-  document.querySelector('.atrium-glyphs').textContent = sacredGlyphs;
-  document.getElementById('hud-glyphs').textContent = sacredGlyphs;
-
-  // Build portals
-  Object.values(AGES).forEach(age => {
-    const portal = createPortalElement(age);
-    scene.appendChild(portal);
-  });
-}
-
-function createPortalElement(age) {
-  const locked = !age.unlocked ? 'portal-locked' : 'portal-unlocked';
-  const statusLabel = age.unlocked ? 'OPEN' : 'LOCKED';
-  const statusClass = age.unlocked ? 'unlocked' : 'locked';
-
-  const ring = document.createElement('div');
-  ring.className = `portal-ring ${locked}`;
-  ring.id = `portal-${age.id}`;
-  ring.style.setProperty('--pc', age.color);
-  ring.innerHTML = `
-    <div class="portal-circle" style="--pc:${age.color}">
-      <span>${age.icon}</span>
-    </div>
-    <div class="portal-label">${age.name}</div>
-    <div class="portal-status ${statusClass}">${statusLabel}</div>
-    <div class="portal-glyph-key">${age.inscription}</div>
-    ${age.unlocked ? '<button class="portal-enter">Enter Age</button>' : ''}
-  `;
-
-  // CLICK HANDLER — the whole ring is clickable
-  ring.addEventListener('click', function(e) {
-    e.stopPropagation();
-    console.log(`[Atrium] Portal clicked: ${age.id}, unlocked: ${age.unlocked}`);
-    if (age.unlocked) {
-      travelToAge(age.id);
-    } else {
-      openPanel(age.id);
-    }
-  });
-
-  // Hover tooltip
-  ring.addEventListener('mouseenter', () => showTooltip(ring, age.unlocked ? `${age.name} — Open` : 'Locked · Click to speak the triad'));
-  ring.addEventListener('mouseleave', hideTooltip);
-
-  // Enter button (if unlocked) — separate handler to avoid double-fire
-  const enterBtn = ring.querySelector('.portal-enter');
-  if (enterBtn) {
-    enterBtn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      console.log(`[Atrium] Enter button clicked: ${age.id}`);
-      travelToAge(age.id);
-    });
-    enterBtn.addEventListener('mouseenter', (e) => {
-      e.stopPropagation();
-      showTooltip(enterBtn, `Enter ${age.name}`);
-    });
-    enterBtn.addEventListener('mouseleave', (e) => {
-      e.stopPropagation();
-      hideTooltip();
-    });
-  }
-
-  return ring;
-}
-
-function refreshPortal(ageId) {
-  const age = AGES[ageId];
-  const oldPortal = document.getElementById(`portal-${ageId}`);
-  if (oldPortal) oldPortal.remove();
-
-  const newPortal = createPortalElement(age);
-  document.getElementById('atrium-scene').appendChild(newPortal);
-}
-
-// ── TOOLTIP ──────────────────────────────────────────────────
-function showTooltip(el, text) {
-  const tt = document.getElementById('tooltip');
-  const rect = el.getBoundingClientRect();
-  tt.textContent = text;
-  tt.style.left = (rect.left + rect.width / 2 - 100) + 'px';
-  tt.style.top  = (rect.top - 44) + 'px';
-  tt.classList.add('show');
-}
-function hideTooltip() {
-  document.getElementById('tooltip').classList.remove('show');
-}
-
-// ── LOG ──────────────────────────────────────────────────────
-function addLog(msg) {
-  State.log.unshift(msg);
-  if (State.log.length > 10) State.log.pop();
-  const el = document.getElementById('journal-entries');
-  if (el) el.innerHTML = State.log.map(l => `<div class="log-entry">${l}</div>`).join('');
-  State.save();
-}
-
-// ── GLYPH PANEL ──────────────────────────────────────────────
-function buildGlyphGrid() {
-  const grid = document.getElementById('glyph-grid');
-  grid.innerHTML = '';
-  GLYPHS.forEach((g, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'glyph-btn';
-    btn.id = `gbtn-${i}`;
-    btn.innerHTML = `${g.symbol}<span class="name">${g.name}</span>`;
-    btn.title = g.meaning;
-    btn.addEventListener('click', () => selectGlyph(i));
-    grid.appendChild(btn);
-  });
-}
-
-function openPanel(ageId) {
-  const age = AGES[ageId];
-  State.panelAge = ageId;
-  State.triad = [null, null, null];
-
-  document.getElementById('panel-title').textContent = `PORTAL OF ${age.name.toUpperCase()}`;
-  document.getElementById('panel-subtitle').textContent = 'Read the breath · Select the triad · Speak it true';
-  document.getElementById('panel-inscription').textContent = age.inscription;
-  document.getElementById('panel-riddle').textContent = age.riddle;
-  document.getElementById('panel-feedback').textContent = '';
-  document.getElementById('panel-feedback').className = 'panel-feedback';
-
-  renderTriad();
-  renderGlyphBtns();
-  document.getElementById('glyph-panel').classList.add('open');
-  addLog(`You study the ${age.name} inscription`);
-}
-
-function closePanel() {
-  document.getElementById('glyph-panel').classList.remove('open');
-  State.panelAge = null;
-  State.triad = [null, null, null];
-}
-
-function selectGlyph(idx) {
-  const slot = State.triad.findIndex(s => s === null);
-  if (slot === -1) return; // full
-  State.triad[slot] = idx;
-  renderTriad();
-  renderGlyphBtns();
-}
-
-function clearTriadSlot(slot) {
-  if (State.triad[slot] === null) return;
-  State.triad[slot] = null;
-  renderTriad();
-  renderGlyphBtns();
-}
-
-function renderTriad() {
-  for (let i = 0; i < 3; i++) {
-    const el = document.getElementById(`triad-${i}`);
-    if (!el) continue;
-    if (State.triad[i] !== null) {
-      el.textContent = GLYPHS[State.triad[i]].symbol;
-      el.classList.add('filled');
-    } else {
-      el.textContent = '·';
-      el.classList.remove('filled');
-    }
-  }
-}
-
-function renderGlyphBtns() {
-  GLYPHS.forEach((g, i) => {
-    const btn = document.getElementById(`gbtn-${i}`);
-    if (!btn) return;
-    btn.classList.toggle('selected', State.triad.includes(i));
-  });
-}
-
-function submitTriad() {
-  if (!State.panelAge) return;
-  const age = AGES[State.panelAge];
-  const fb  = document.getElementById('panel-feedback');
-
-  if (State.triad.includes(null)) {
-    fb.textContent = 'The triad is incomplete · Three glyphs must be spoken';
-    fb.className = 'panel-feedback wrong';
-    return;
-  }
-
-  const correct = age.solution.every((glyphId, i) => glyphId === State.triad[i]);
-
-  if (correct) {
-    fb.textContent = '𐤕 The breath is true · The portal opens';
-    fb.className = 'panel-feedback right';
-    State.markUnlocked(State.panelAge);
-    addLog(`${age.name} — portal opened`);
-
-    setTimeout(() => {
-      closePanel();
-      refreshPortal(State.panelAge);
-      setTimeout(() => travelToAge(State.panelAge), 800);
-    }, 1200);
-  } else {
-    fb.textContent = '𐤆 The breath is false · The portal holds';
-    fb.className = 'panel-feedback wrong';
-    State.triad = [null, null, null];
-    renderTriad();
-    renderGlyphBtns();
-    addLog('Wrong triad — the portal holds');
-  }
-}
-
-// ── TRAVEL ───────────────────────────────────────────────────
-function travelToAge(ageId) {
-  const age = AGES[ageId];
-  if (!age.unlocked) {
-    openPanel(ageId);
-    return;
-  }
-  // Fade and navigate
-  const fade = document.getElementById('fade');
-  fade.classList.add('active');
-  addLog(`Entering ${age.name}...`);
-  setTimeout(() => {
-    window.location.href = age.page;
-  }, 600);
-}
-
-// ── INIT ─────────────────────────────────────────────────────
-function init() {
-  console.log('[Atrium] Initializing...');
-
-  State.load();
-  State.updateDashboard();
-
-  // Restore log
-  const logEl = document.getElementById('journal-entries');
-  if (State.log.length > 0) {
-    logEl.innerHTML = State.log.map(l => `<div class="log-entry">${l}</div>`).join('');
-  } else {
-    addLog('The Atrium holds four portals');
-    addLog('Only the triad opens the way');
-  }
-
-  initStars();
-  buildGlyphGrid();
-  buildAtrium();
-
-  // ── EVENT BINDINGS ──────────────────────────────────────
-  // Intro button
-  document.getElementById('enter-btn').addEventListener('click', () => {
-    const intro = document.getElementById('intro');
-    intro.classList.add('hide');
-    setTimeout(() => { intro.style.display = 'none'; }, 1000);
-    addLog('You enter the Atrium');
-  });
-
-  // Panel buttons
-  document.getElementById('panel-close-btn').addEventListener('click', closePanel);
-  document.getElementById('panel-submit-btn').addEventListener('click', submitTriad);
-
-  // Triad slot click to clear
-  document.getElementById('triad-0').addEventListener('click', () => clearTriadSlot(0));
-  document.getElementById('triad-1').addEventListener('click', () => clearTriadSlot(1));
-  document.getElementById('triad-2').addEventListener('click', () => clearTriadSlot(2));
-
-  // Keyboard
-  document.addEventListener('keydown', (e) => {
-    if (document.getElementById('glyph-panel').classList.contains('open')) {
-      if (e.key === 'Escape') closePanel();
-      if (e.key === 'Enter')  submitTriad();
-      return;
-    }
-    // Number keys to quick-test portals
-    if (e.key === '1') document.getElementById('portal-air')?.click();
-    if (e.key === '2') document.getElementById('portal-fire')?.click();
-    if (e.key === '3') document.getElementById('portal-earth')?.click();
-    if (e.key === '4') document.getElementById('portal-water')?.click();
-  });
-
-  console.log('[Atrium] Ready. Portals:', document.querySelectorAll('.portal-ring').length);
-}
-
-// Start
-init();
+// ── INIT ──
+GameHub.init();
 </script>
 </body>
 </html>
