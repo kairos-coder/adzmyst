@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Labyrinth Map · Adzmyst</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Cinzel+Decorative:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  /* ═══════════════════════════════════════════════════════
+     ADZMYST MAP — THE LABYRINTH CARTOGRAPHY
+     Visual realm map · Room connections · Fast travel
+     ═══════════════════════════════════════════════════════ */
+
+  :root {
+    --void:       #07080f;
+    --deep:       #0d1225;
+    --mid:        #1a2a4a;
+    --silver:     #b8cce0;
+    --breath:     #e8f2ff;
+    --gold:       #c8a84a;
+    --gold-dim:   #6a5830;
+    --glyph-dim:  #4a3a2a;
+
+    --air:        #5ab8b0;
+    --air-dim:    #2a5854;
+    --fire:       #d4784a;
+    --fire-dim:    #6a3c25;
+    --earth:      #6a9464;
+    --earth-dim:  #354a32;
+    --water:      #4a7ab8;
+    --water-dim:  #253d5c;
+
+    --unlock:     #8ad8a0;
+    --locked:     #3a2a1a;
+    --completed:  #c8a84a;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow-x: hidden; overflow-y: auto;
+    background: var(--void);
+    color: var(--breath);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+  }
+
+  /* ── AMBIENT ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 60% 30% at 50% 0%, rgba(200,168,74,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 20% 80%, rgba(90,184,176,0.03) 0%, transparent 50%),
+      radial-gradient(ellipse 40% 40% at 80% 80%, rgba(74,122,184,0.03) 0%, transparent 50%),
+      linear-gradient(180deg, var(--void) 0%, var(--deep) 100%);
+    pointer-events: none;
+  }
+
+  /* ── HEADER ── */
+  #map-header {
+    position: relative; z-index: 10;
+    text-align: center;
+    padding: 40px 20px 20px;
+  }
+  #map-header h1 {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 400;
+    letter-spacing: 6px;
+    color: var(--breath);
+    text-shadow: 0 0 30px rgba(200,168,74,0.3);
+    margin-bottom: 4px;
+  }
+  #map-header .subtitle {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--silver);
+    opacity: 0.5;
+  }
+
+  /* ── LEGEND ── */
+  #legend {
+    position: relative; z-index: 10;
+    display: flex; justify-content: center; gap: 24px;
+    padding: 10px 20px 20px;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Cinzel', serif;
+    font-size: 8px; letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--silver);
+    opacity: 0.6;
+  }
+  .legend-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+  }
+  .legend-dot.unlocked  { background: var(--unlock); box-shadow: 0 0 8px rgba(138,216,160,0.4); }
+  .legend-dot.locked    { background: var(--locked); }
+  .legend-dot.completed { background: var(--completed); box-shadow: 0 0 8px rgba(200,168,74,0.4); }
+
+  /* ── MAP GRID ── */
+  #map-grid {
+    position: relative; z-index: 10;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 24px;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px 24px 40px;
+    min-height: 60vh;
+  }
+
+  @media (max-width: 700px) {
+    #map-grid {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto;
+    }
+  }
+
+  /* ── REALM CARD ── */
+  .realm-card {
+    background: rgba(13, 18, 37, 0.7);
+    border: 1px solid rgba(184,204,224,0.1);
+    border-radius: 20px;
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(4px);
+  }
+  .realm-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(184,204,224,0.25);
+  }
+  .realm-card.locked {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .realm-card.locked:hover {
+    transform: none;
+    border-color: rgba(184,204,224,0.1);
+  }
+  .realm-card.completed {
+    border-color: rgba(200,168,74,0.3);
+  }
+
+  /* Realm accent border */
+  .realm-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    border-radius: 20px 20px 0 0;
+    opacity: 0.6;
+  }
+  .realm-card.air::before   { background: var(--air); }
+  .realm-card.fire::before  { background: var(--fire); }
+  .realm-card.earth::before { background: var(--earth); }
+  .realm-card.water::before { background: var(--water); }
+  .realm-card.locked::before { opacity: 0.2; }
+
+  /* Realm header */
+  .realm-card-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 12px;
+  }
+  .realm-icon {
+    font-size: 2rem;
+    width: 48px; height: 48px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    border: 1px solid rgba(184,204,224,0.15);
+  }
+  .realm-card.air .realm-icon   { color: var(--air); }
+  .realm-card.fire .realm-icon  { color: var(--fire); }
+  .realm-card.earth .realm-icon { color: var(--earth); }
+  .realm-card.water .realm-icon { color: var(--water); }
+
+  .realm-info h3 {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: 3px;
+    color: var(--breath);
+    margin-bottom: 2px;
+  }
+  .realm-info .realm-subtitle {
+    font-family: 'Cinzel', serif;
+    font-size: 7px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    opacity: 0.5;
+  }
+
+  /* Realm glyphs */
+  .realm-glyphs {
+    font-size: 1.2rem;
+    letter-spacing: 4px;
+    margin-bottom: 12px;
+    opacity: 0.6;
+  }
+  .realm-card.air .realm-glyphs   { color: var(--air); }
+  .realm-card.fire .realm-glyphs  { color: var(--fire); }
+  .realm-card.earth .realm-glyphs { color: var(--earth); }
+  .realm-card.water .realm-glyphs { color: var(--water); }
+
+  /* Room list */
+  .room-list {
+    display: flex; flex-direction: column; gap: 8px;
+    margin-bottom: 16px;
+  }
+  .room-item {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 0.85rem;
+    color: var(--silver);
+    opacity: 0.5;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    transition: all 0.3s;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .room-item:hover {
+    opacity: 0.9;
+    border-color: rgba(184,204,224,0.15);
+    background: rgba(184,204,224,0.03);
+  }
+  .room-item .room-glyph {
+    font-size: 1rem;
+    width: 24px; text-align: center;
+  }
+  .room-item .room-name {
+    flex: 1;
+  }
+  .room-item .room-status {
+    font-family: 'Cinzel', serif;
+    font-size: 7px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .room-status.complete {
+    color: var(--completed);
+    border: 1px solid rgba(200,168,74,0.3);
+  }
+  .room-status.locked {
+    color: var(--locked);
+    border: 1px solid rgba(58,42,26,0.4);
+  }
+
+  /* Progress bar */
+  .realm-progress {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .progress-bar {
+    flex: 1; height: 3px;
+    background: rgba(184,204,224,0.1);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.6s ease;
+  }
+  .realm-card.air .progress-fill   { background: var(--air); }
+  .realm-card.fire .progress-fill  { background: var(--fire); }
+  .realm-card.earth .progress-fill { background: var(--earth); }
+  .realm-card.water .progress-fill { background: var(--water); }
+  .progress-label {
+    font-family: 'Cinzel', serif;
+    font-size: 7px; letter-spacing: 2px;
+    text-transform: uppercase;
+    opacity: 0.4;
+    min-width: 24px;
+    text-align: right;
+  }
+
+  /* Status badge */
+  .realm-badge {
+    position: absolute; top: 16px; right: 16px;
+    font-family: 'Cinzel', serif;
+    font-size: 7px; letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 12px;
+  }
+  .realm-badge.open      { color: var(--unlock); border: 1px solid rgba(138,216,160,0.3); }
+  .realm-badge.locked    { color: var(--locked); border: 1px solid rgba(58,42,26,0.4); }
+  .realm-badge.completed { color: var(--completed); border: 1px solid rgba(200,168,74,0.3); }
+
+  /* ── CENTER COMPASS ── */
+  #center-compass {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+    pointer-events: none;
+    opacity: 0.06;
+    font-size: 12rem;
+    color: var(--gold);
+    animation: compassRotate 60s linear infinite;
+  }
+  @keyframes compassRotate {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to   { transform: translate(-50%, -50%) rotate(360deg); }
+  }
+
+  /* ── RETURN ── */
+  #return-bar {
+    position: relative; z-index: 10;
+    text-align: center;
+    padding: 20px 20px 40px;
+  }
+  #return-btn {
+    font-family: 'Cinzel', serif;
+    font-size: 9px; letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 10px 24px;
+    border: 1px solid rgba(200,168,74,0.3);
+    background: transparent;
+    color: var(--gold);
+    cursor: pointer;
+    transition: all 0.3s;
+    border-radius: 20px;
+  }
+  #return-btn:hover {
+    background: rgba(200,168,74,0.08);
+    border-color: var(--gold);
+    box-shadow: 0 0 20px rgba(200,168,74,0.15);
+  }
+
+  /* ── TOOLTIP ── */
+  #tooltip {
+    position: fixed; z-index: 50;
+    padding: 6px 12px;
+    background: rgba(7,8,15,0.95);
+    border: 1px solid rgba(200,168,74,0.3);
+    font-family: 'Cinzel', serif;
+    font-size: 8px; letter-spacing: 2px;
+    color: var(--silver);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    text-transform: uppercase;
+    border-radius: 4px;
+  }
+  #tooltip.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- Center compass rose -->
+<div id="center-compass">𐤀</div>
+
+<!-- Header -->
+<div id="map-header">
+  <h1>The Labyrinth Map</h1>
+  <div class="subtitle">Cartography of the Breath · Four Realms</div>
+</div>
+
+<!-- Legend -->
+<div id="legend">
+  <div class="legend-item"><span class="legend-dot unlocked"></span> Unlocked</div>
+  <div class="legend-item"><span class="legend-dot completed"></span> Completed</div>
+  <div class="legend-item"><span class="legend-dot locked"></span> Locked</div>
+</div>
+
+<!-- Map Grid -->
+<div id="map-grid">
+  <!-- Populated by JavaScript -->
+</div>
+
+<!-- Tooltip -->
+<div id="tooltip"></div>
+
+<!-- Return bar -->
+<div id="return-bar">
+  <button id="return-btn">𐤃 Return to Atrium</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// ADZMYST MAP — LABYRINTH CARTOGRAPHY
+// Reads realm JSONs · Renders map · Fast travel
+// ═══════════════════════════════════════════════════════════
+
+// ── REALM DEFINITIONS (will be replaced by JSON fetches) ──
+const REALM_DEFS = {
+  air: {
+    id: 'air',
+    name: 'Air Realm',
+    subtitle: 'Adzmyst · Breath · Home',
+    icon: '𓂝',
+    glyph: '𐤀',
+    glyphs: '𐤀 𐤃 𐤆',
+    color: '#5ab8b0',
+    rooms: [
+      { id: 'air_01', name: 'The Threshold', glyph: '𐤀' },
+      { id: 'air_02', name: 'Wind Gallery', glyph: '𐤃' },
+      { id: 'air_03', name: 'Codex Chamber', glyph: '𐤆' },
+    ],
+    page: 'air/index.html'
+  },
+  fire: {
+    id: 'fire',
+    name: 'Fire Realm',
+    subtitle: 'Apollo · Prophecy · Forge',
+    icon: '𓇋',
+    glyph: '𐤕',
+    glyphs: '𐤕 𐤉 𐤀',
+    color: '#d4784a',
+    rooms: [
+      { id: 'fire_01', name: 'The Forge Gate', glyph: '𐤕' },
+      { id: 'fire_02', name: 'Ember Hall', glyph: '𐤉' },
+      { id: 'fire_03', name: 'Prophecy Flame', glyph: '𐤀' },
+    ],
+    page: 'fire/index.html'
+  },
+  earth: {
+    id: 'earth',
+    name: 'Earth Realm',
+    subtitle: 'Gaia · Root · The Bone',
+    icon: '𓌹',
+    glyph: '𐤎',
+    glyphs: '𐤎 𐤌 𐤃',
+    color: '#6a9464',
+    rooms: [
+      { id: 'earth_01', name: 'Root Entrance', glyph: '𐤎' },
+      { id: 'earth_02', name: 'Stone Hollow', glyph: '𐤌' },
+      { id: 'earth_03', name: 'Bone Cathedral', glyph: '𐤃' },
+    ],
+    page: 'earth/index.html'
+  },
+  water: {
+    id: 'water',
+    name: 'Water Realm',
+    subtitle: 'Divination · The Deep',
+    icon: '𓏏',
+    glyph: '𐤌',
+    glyphs: '𐤌 𐤉 𐤕',
+    color: '#4a7ab8',
+    rooms: [
+      { id: 'water_01', name: 'The Shore', glyph: '𐤌' },
+      { id: 'water_02', name: 'The Reflection Pool', glyph: '𐤉' },
+      { id: 'water_03', name: 'The Deep Draw', glyph: '𐤕' },
+    ],
+    page: 'water/index.html'
+  }
+};
+
+// ── STATE ──────────────────────────────────────────────────
+const MapState = {
+  unlockedRealms: ['air'],
+  completedRealms: [],
+  completedRooms: {},
+  realmProgress: {},
+
+  load() {
+    try {
+      // Load from game hub save
+      const hubRaw = localStorage.getItem('adzmyst_game_hub');
+      if (hubRaw) {
+        const data = JSON.parse(hubRaw);
+        this.unlockedRealms = data.unlockedRealms || ['air'];
+      }
+
+      // Load from atrium save
+      const atriumRaw = localStorage.getItem('adzmyst_atrium_save');
+      if (atriumRaw) {
+        const data = JSON.parse(atriumRaw);
+        if (data.unlocked) {
+          Object.keys(data.unlocked).forEach(key => {
+            if (REALM_DEFS[key] && data.unlocked[key] && !this.unlockedRealms.includes(key)) {
+              this.unlockedRealms.push(key);
+            }
+          });
+        }
+      }
+
+      // Load per-realm saves
+      Object.keys(REALM_DEFS).forEach(realmId => {
+        try {
+          const realmRaw = localStorage.getItem(`adzmyst_${realmId}_save`);
+          if (realmRaw) {
+            const data = JSON.parse(realmRaw);
+            this.completedRooms[realmId] = data.completedRooms || [];
+            if (data.airComplete || data.realmComplete) {
+              this.completedRealms.push(realmId);
+            }
+          }
+        } catch(e) {}
+      });
+
+      // Calculate progress
+      Object.keys(REALM_DEFS).forEach(realmId => {
+        const total = REALM_DEFS[realmId].rooms.length;
+        const completed = (this.completedRooms[realmId] || []).length;
+        this.realmProgress[realmId] = total > 0 ? Math.round((completed / total) * 100) : 0;
+        // If all rooms complete, mark realm complete
+        if (completed >= total && !this.completedRealms.includes(realmId)) {
+          this.completedRealms.push(realmId);
+        }
+      });
+
+    } catch(e) {
+      console.warn('[Map] Could not load state:', e);
+    }
+  }
+};
+
+// ── RENDER ─────────────────────────────────────────────────
+function renderMap() {
+  const grid = document.getElementById('map-grid');
+  grid.innerHTML = '';
+
+  Object.values(REALM_DEFS).forEach(realm => {
+    const isUnlocked = MapState.unlockedRealms.includes(realm.id);
+    const isCompleted = MapState.completedRealms.includes(realm.id);
+    const progress = MapState.realmProgress[realm.id] || 0;
+
+    const card = document.createElement('div');
+    card.className = `realm-card ${realm.id}`;
+    if (!isUnlocked) card.classList.add('locked');
+    if (isCompleted) card.classList.add('completed');
+
+    // Badge
+    let badgeText = 'LOCKED';
+    let badgeClass = 'locked';
+    if (isCompleted) {
+      badgeText = 'COMPLETED';
+      badgeClass = 'completed';
+    } else if (isUnlocked) {
+      badgeText = 'OPEN';
+      badgeClass = 'open';
+    }
+
+    card.innerHTML = `
+      <div class="realm-badge ${badgeClass}">${badgeText}</div>
+      
+      <div class="realm-card-header">
+        <div class="realm-icon">${realm.icon}</div>
+        <div class="realm-info">
+          <h3>${realm.name}</h3>
+          <div class="realm-subtitle">${realm.subtitle}</div>
+        </div>
+      </div>
+      
+      <div class="realm-glyphs">${realm.glyphs}</div>
+      
+      <div class="room-list">
+        ${realm.rooms.map(room => {
+          const roomCompleted = (MapState.completedRooms[realm.id] || []).includes(room.id);
+          const roomLocked = !isUnlocked;
+          return `
+            <div class="room-item" data-realm="${realm.id}" data-room="${room.id}">
+              <span class="room-glyph">${room.glyph}</span>
+              <span class="room-name">${room.name}</span>
+              <span class="room-status ${roomCompleted ? 'complete' : (roomLocked ? 'locked' : '')}">
+                ${roomCompleted ? 'DONE' : (roomLocked ? 'LOCKED' : '')}
+              </span>
+            </div>
+          `;
+        }).join('')}
+      </div>
+
+      <div class="realm-progress">
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:${progress}%"></div>
+        </div>
+        <div class="progress-label">${progress}%</div>
+      </div>
+    `;
+
+    // Click on card to enter realm
+    if (isUnlocked) {
+      card.addEventListener('click', (e) => {
+        // Don't navigate if clicking a specific room
+        if (e.target.closest('.room-item')) return;
+        navigateToRealm(realm.id);
+      });
+    }
+
+    // Room item clicks
+    card.querySelectorAll('.room-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const roomId = item.dataset.room;
+        navigateToRoom(realm.id, roomId);
+      });
+
+      item.addEventListener('mouseenter', (e) => {
+        const tooltip = document.getElementById('tooltip');
+        const rect = item.getBoundingClientRect();
+        const isRoomComplete = (MapState.completedRooms[realm.id] || []).includes(item.dataset.room);
+        tooltip.textContent = isRoomComplete ? 'Room Complete' : (isUnlocked ? 'Click to enter' : 'Locked');
+        tooltip.style.left = (rect.left + rect.width / 2 - 50) + 'px';
+        tooltip.style.top = (rect.top - 32) + 'px';
+        tooltip.classList.add('show');
+      });
+
+      item.addEventListener('mouseleave', () => {
+        document.getElementById('tooltip').classList.remove('show');
+      });
+    });
+
+    grid.appendChild(card);
+  });
+}
+
+// ── NAVIGATION ─────────────────────────────────────────────
+function navigateToRealm(realmId) {
+  const realm = REALM_DEFS[realmId];
+  if (!MapState.unlockedRealms.includes(realmId)) return;
+  
+  // Go to game hub with realm parameter
+  window.location.href = `index.html?realm=${realmId}`;
+}
+
+function navigateToRoom(realmId, roomId) {
+  if (!MapState.unlockedRealms.includes(realmId)) return;
+  
+  // Navigate to game hub with realm and room
+  window.location.href = `index.html?realm=${realmId}&room=${roomId}`;
+}
+
+// ── INIT ───────────────────────────────────────────────────
+function init() {
+  MapState.load();
+  renderMap();
+
+  // Return button
+  document.getElementById('return-btn').addEventListener('click', () => {
+    window.location.href = '../index.html';
+  });
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') window.location.href = '../index.html';
+  });
+
+  console.log('[Map] Labyrinth cartography ready.');
+  console.log(`[Map] Unlocked: ${MapState.unlockedRealms.join(', ')}`);
+  console.log(`[Map] Completed: ${MapState.completedRealms.join(', ') || 'none'}`);
+}
+
+init();
+</script>
+</body>
+</html>
