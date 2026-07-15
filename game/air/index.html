@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Age of Air · Adzmyst</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Cinzel+Decorative:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  /* ═══════════════════════════════════════════════════════
+     AGE OF AIR — ADZMYST DUNGEON
+     Breath mechanic · Glyph collection · Triad altar
+     ═══════════════════════════════════════════════════════ */
+
+  :root {
+    --void:       #07080f;
+    --sky-deep:   #0a1528;
+    --sky-mid:    #1a3050;
+    --sky-pale:   #2a4a70;
+    --cloud:      #6a8aaa;
+    --breath:     #c0d8f0;
+    --silver:     #b8cce0;
+    --gold:       #c8a84a;
+    --gold-dim:   #6a5830;
+    --unlock:     #8ad8a0;
+    --danger:     #c85050;
+    --air-teal:   #5ab8b0;
+    --panel-bg:   rgba(10, 20, 40, 0.92);
+    --transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--void);
+    color: var(--breath);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+  }
+
+  /* ── AMBIENT SKY ── */
+  #ambient-sky {
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 80% 40% at 50% 30%, rgba(90,184,176,0.08) 0%, transparent 60%),
+      linear-gradient(180deg, #03050e 0%, #0a1828 30%, #1a3050 60%, #2a4a70 100%);
+    animation: skyshift 20s ease-in-out infinite alternate;
+  }
+  @keyframes skyshift {
+    0%   { filter: brightness(1) hue-rotate(0deg); }
+    100% { filter: brightness(1.1) hue-rotate(5deg); }
+  }
+
+  /* ── WIND PARTICLES ── */
+  #wind-layer {
+    position: fixed; inset: 0; z-index: 1;
+    pointer-events: none; overflow: hidden;
+  }
+  .wind-particle {
+    position: absolute;
+    font-size: 18px;
+    opacity: 0;
+    animation: windFloat 8s linear infinite;
+    color: var(--cloud);
+  }
+  @keyframes windFloat {
+    0%   { transform: translateX(-50px) translateY(0); opacity: 0; }
+    20%  { opacity: 0.4; }
+    80%  { opacity: 0.3; }
+    100% { transform: translateX(calc(100vw + 50px)) translateY(-40px); opacity: 0; }
+  }
+
+  /* ── BREATH INDICATOR ── */
+  #breath-indicator {
+    position: fixed; top: 20px; right: 20px; z-index: 40;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  #breath-ring {
+    width: 44px; height: 44px;
+    border: 2px solid var(--cloud);
+    border-radius: 50%;
+    transition: transform 0.2s ease, border-color 0.3s;
+    opacity: 0.6;
+  }
+  #breath-ring.inhale { border-color: var(--air-teal); }
+  #breath-ring.hold   { border-color: var(--gold); }
+  #breath-ring.exhale { border-color: var(--cloud); }
+  #breath-phase-label {
+    font-family: 'Cinzel', serif;
+    font-size: 7px; letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--silver); opacity: 0.7;
+  }
+
+  /* ── HUD ── */
+  #hud {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 30;
+    padding: 14px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: linear-gradient(180deg, rgba(7,8,15,0.8) 0%, transparent 100%);
+    pointer-events: none;
+  }
+  #hud-location {
+    font-family: 'Cinzel', serif;
+    font-size: 11px; letter-spacing: 3px;
+    color: var(--silver); text-transform: uppercase;
+  }
+  #hud-glyphs {
+    font-size: 20px; letter-spacing: 4px;
+    color: var(--gold); opacity: 0.6;
+  }
+
+  /* ── INVENTORY ── */
+  #inventory {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    z-index: 30; display: flex; align-items: center; gap: 10px;
+    background: rgba(10,20,40,0.8);
+    border: 1px solid rgba(200,168,74,0.25);
+    border-radius: 30px; padding: 8px 18px;
+    backdrop-filter: blur(6px);
+  }
+  #inventory-label {
+    font-family: 'Cinzel', serif;
+    font-size: 7px; letter-spacing: 2px;
+    color: var(--gold-dim); text-transform: uppercase;
+    opacity: 0.7;
+  }
+  .inventory-slot {
+    width: 32px; height: 32px;
+    border: 1px dashed rgba(200,168,74,0.3);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: var(--gold-dim);
+    transition: all 0.3s;
+  }
+  .inventory-slot.filled {
+    border-color: var(--gold);
+    color: var(--gold);
+    border-style: solid;
+    animation: glyphGlow 2s ease-in-out infinite;
+  }
+  @keyframes glyphGlow {
+    0%, 100% { box-shadow: 0 0 6px rgba(200,168,74,0.3); }
+    50% { box-shadow: 0 0 16px rgba(200,168,74,0.6); }
+  }
+
+  /* ── MAIN SCENE ── */
+  #scene {
+    position: fixed; inset: 0; z-index: 10;
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: none;
+  }
+  #room-container {
+    position: relative;
+    width: 100%; height: 100%;
+    pointer-events: none;
+  }
+
+  /* ── ROOM TITLE ── */
+  .room-title {
+    position: absolute;
+    top: 18%; left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    pointer-events: none;
+  }
+  .room-title h2 {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    font-weight: 400;
+    color: var(--breath);
+    letter-spacing: 4px;
+    text-shadow: 0 0 20px rgba(90,184,176,0.4);
+    margin-bottom: 4px;
+  }
+  .room-title .room-sub {
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--cloud);
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+
+  /* ── INTERACTIVE GLYPH STONES ── */
+  .glyph-stone {
+    position: absolute;
+    pointer-events: auto;
+    cursor: pointer;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 10px;
+    transition: transform var(--transition);
+  }
+  .glyph-stone:hover { transform: scale(1.08); }
+  .glyph-stone.collected {
+    pointer-events: none;
+    opacity: 0.4;
+    transform: scale(0.9);
+  }
+
+  .stone-circle {
+    width: clamp(80px, 12vw, 130px);
+    height: clamp(80px, 12vw, 130px);
+    border-radius: 50%;
+    border: 2px solid var(--cloud);
+    background: radial-gradient(circle at 40% 40%, rgba(90,184,176,0.15) 0%, transparent 70%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: clamp(2rem, 4vw, 3rem);
+    color: var(--gold);
+    transition: all var(--transition);
+    position: relative;
+  }
+  .stone-circle::after {
+    content: '';
+    position: absolute; inset: -6px;
+    border-radius: 50%;
+    border: 1px solid rgba(90,184,176,0.2);
+    animation: stonePulse 3s ease-in-out infinite;
+  }
+  @keyframes stonePulse {
+    0%, 100% { transform: scale(1); opacity: 0.3; }
+    50% { transform: scale(1.06); opacity: 0.7; }
+  }
+
+  .stone-circle.ready {
+    border-color: var(--air-teal);
+    box-shadow: 0 0 30px rgba(90,184,176,0.4);
+  }
+  .stone-circle.ready::after {
+    border-color: var(--air-teal);
+    animation: stonePulseReady 1s ease-in-out infinite;
+  }
+  @keyframes stonePulseReady {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.12); opacity: 1; }
+  }
+
+  .stone-label {
+    font-family: 'Cinzel', serif;
+    font-size: 9px; letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--cloud);
+    opacity: 0.7;
+  }
+
+  /* Stone positions */
+  #stone-aleph { top: 50%; left: 15%; transform: translateY(-50%); }
+  #stone-dalet { top: 55%; left: 50%; transform: translate(-50%, -50%); }
+  #stone-zayin { top: 50%; right: 15%; transform: translateY(-50%); }
+  #stone-aleph:hover, #stone-dalet:hover, #stone-zayin:hover { transform: translateY(calc(-50% - 4px)) scale(1.08); }
+
+  /* ── ALTAR ── */
+  #altar {
+    position: absolute;
+    bottom: 22%; left: 50%;
+    transform: translateX(-50%);
+    pointer-events: auto;
+    cursor: pointer;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 8px;
+    transition: all var(--transition);
+  }
+  #altar:hover { transform: translateX(-50%) scale(1.05); }
+  #altar.inactive {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  #altar.active {
+    opacity: 1;
+    cursor: pointer;
+  }
+  #altar.active .altar-circle {
+    border-color: var(--gold);
+    box-shadow: 0 0 40px rgba(200,168,74,0.5);
+    animation: altarGlow 2s ease-in-out infinite;
+  }
+  @keyframes altarGlow {
+    0%, 100% { box-shadow: 0 0 20px rgba(200,168,74,0.3); }
+    50% { box-shadow: 0 0 50px rgba(200,168,74,0.7); }
+  }
+
+  .altar-circle {
+    width: clamp(100px, 14vw, 160px);
+    height: clamp(100px, 14vw, 160px);
+    border-radius: 50%;
+    border: 2px solid var(--gold-dim);
+    background: radial-gradient(circle at center, rgba(200,168,74,0.08) 0%, transparent 60%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: clamp(1.5rem, 3vw, 2.2rem);
+    color: var(--gold-dim);
+    letter-spacing: 6px;
+    transition: all var(--transition);
+  }
+  .altar-label {
+    font-family: 'Cinzel', serif;
+    font-size: 9px; letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    opacity: 0.7;
+  }
+
+  /* ── MESSAGE PANEL ── */
+  #message-panel {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 50;
+    pointer-events: none;
+    text-align: center;
+    transition: opacity 0.4s;
+    opacity: 0;
+  }
+  #message-panel.show {
+    opacity: 1;
+    animation: messageFade 3s ease forwards;
+  }
+  @keyframes messageFade {
+    0%   { opacity: 0; transform: translate(-50%, -50%) translateY(10px); }
+    15%  { opacity: 1; transform: translate(-50%, -50%) translateY(0); }
+    85%  { opacity: 1; }
+    100% { opacity: 0; transform: translate(-50%, -50%) translateY(-10px); }
+  }
+
+  .message-text {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(1rem, 2.5vw, 1.6rem);
+    color: var(--breath);
+    letter-spacing: 4px;
+    text-shadow: 0 0 20px rgba(90,184,176,0.5);
+    background: rgba(10,20,40,0.85);
+    padding: 16px 32px;
+    border: 1px solid rgba(90,184,176,0.3);
+    border-radius: 8px;
+  }
+
+  /* ── RETURN PORTAL ── */
+  #return-portal {
+    position: fixed; bottom: 90px; left: 20px; z-index: 30;
+    pointer-events: auto;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Cinzel', serif;
+    font-size: 8px; letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--cloud);
+    opacity: 0.5;
+    transition: opacity 0.3s;
+    background: transparent; border: none;
+    padding: 8px 12px;
+    border: 1px solid rgba(90,184,176,0.2);
+    border-radius: 20px;
+  }
+  #return-portal:hover {
+    opacity: 1;
+    border-color: var(--air-teal);
+  }
+  #return-portal .return-glyph {
+    font-size: 18px;
+  }
+
+  /* ── COMPLETION OVERLAY ── */
+  #completion-overlay {
+    position: fixed; inset: 0; z-index: 60;
+    display: none;
+    align-items: center; justify-content: center;
+    background: rgba(7,8,15,0.9);
+    flex-direction: column; gap: 24px;
+  }
+  #completion-overlay.show { display: flex; }
+
+  #completion-glyph {
+    font-size: clamp(4rem, 8vw, 7rem);
+    color: var(--gold);
+    animation: glyphPulseComplete 2s ease-in-out infinite;
+  }
+  @keyframes glyphPulseComplete {
+    0%, 100% { transform: scale(1); text-shadow: 0 0 30px rgba(200,168,74,0.4); }
+    50% { transform: scale(1.08); text-shadow: 0 0 60px rgba(200,168,74,0.8); }
+  }
+  #completion-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+    letter-spacing: 6px;
+    color: var(--breath);
+    text-align: center;
+  }
+  #completion-text {
+    font-style: italic;
+    color: var(--silver);
+    opacity: 0.7;
+    max-width: 400px;
+    text-align: center;
+    line-height: 1.8;
+  }
+  #completion-return {
+    font-family: 'Cinzel', serif;
+    font-size: 10px; letter-spacing: 4px;
+    text-transform: uppercase;
+    padding: 12px 32px;
+    border: 1px solid var(--gold);
+    background: transparent;
+    color: var(--gold);
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  #completion-return:hover {
+    background: rgba(200,168,74,0.1);
+    box-shadow: 0 0 20px rgba(200,168,74,0.3);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    #stone-aleph { top: 38%; left: 8%; }
+    #stone-dalet { top: 48%; left: 50%; }
+    #stone-zayin { top: 38%; right: 8%; }
+    #altar { bottom: 16%; }
+    #return-portal { bottom: 80px; left: 10px; font-size: 7px; }
+    .stone-circle { width: 70px; height: 70px; font-size: 1.6rem; }
+    .altar-circle { width: 90px; height: 90px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Ambient sky -->
+<div id="ambient-sky"></div>
+<div id="wind-layer"></div>
+
+<!-- Breath indicator -->
+<div id="breath-indicator">
+  <div id="breath-ring"></div>
+  <div id="breath-phase-label">inhale</div>
+</div>
+
+<!-- HUD -->
+<div id="hud">
+  <div id="hud-location">The Age of Air · Chamber of Breath</div>
+  <div id="hud-glyphs">𐤀 𐤃 𐤆</div>
+</div>
+
+<!-- Inventory -->
+<div id="inventory">
+  <div id="inventory-label">Breath Fragments</div>
+  <div class="inventory-slot" id="inv-slot-0">·</div>
+  <div class="inventory-slot" id="inv-slot-1">·</div>
+  <div class="inventory-slot" id="inv-slot-2">·</div>
+</div>
+
+<!-- Main scene -->
+<div id="scene">
+  <div id="room-container">
+    <!-- Room title -->
+    <div class="room-title">
+      <h2>The Chamber of Breath</h2>
+      <div class="room-sub">Collect the three glyphs · Breathe with them</div>
+    </div>
+
+    <!-- Glyph stones -->
+    <div class="glyph-stone" id="stone-aleph">
+      <div class="stone-circle">𐤀</div>
+      <div class="stone-label">Aleph</div>
+    </div>
+    <div class="glyph-stone" id="stone-dalet">
+      <div class="stone-circle">𐤃</div>
+      <div class="stone-label">Dalet</div>
+    </div>
+    <div class="glyph-stone" id="stone-zayin">
+      <div class="stone-circle">𐤆</div>
+      <div class="stone-label">Zayin</div>
+    </div>
+
+    <!-- Altar -->
+    <div id="altar" class="inactive">
+      <div class="altar-circle">·  ·  ·</div>
+      <div class="altar-label">Speak the Triad</div>
+    </div>
+  </div>
+</div>
+
+<!-- Message panel -->
+<div id="message-panel">
+  <div class="message-text" id="message-text"></div>
+</div>
+
+<!-- Return portal -->
+<button id="return-portal" title="Return to Atrium">
+  <span class="return-glyph">𐤃</span>
+  <span>Return to Atrium</span>
+</button>
+
+<!-- Completion overlay -->
+<div id="completion-overlay">
+  <div id="completion-glyph">𓂝</div>
+  <div id="completion-title">The Breath Is Complete</div>
+  <div id="completion-text">
+    You have gathered the first triad — Aleph, Dalet, Zayin.<br>
+    The Age of Air opens its wisdom.<br>
+    The language begins.
+  </div>
+  <button id="completion-return">Return to the Atrium</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// AGE OF AIR — DUNGEON ENGINE
+// Breath mechanic · Glyph collection · Altar activation
+// ═══════════════════════════════════════════════════════════
+
+// ── BREATH ENGINE ──────────────────────────────────────────
+const Breath = {
+  phases: ['inhale', 'hold', 'exhale', 'rest'],
+  durations: { inhale: 4000, hold: 4000, exhale: 6000, rest: 2000 },
+  currentPhase: 0,
+  startTime: Date.now(),
+  intervalId: null,
+
+  init() {
+    this.startTime = Date.now();
+    this.tick();
+    this.intervalId = setInterval(() => this.tick(), 100);
+  },
+
+  totalDuration() {
+    return Object.values(this.durations).reduce((a, b) => a + b, 0);
+  },
+
+  tick() {
+    const elapsed = (Date.now() - this.startTime) % this.totalDuration();
+    let accumulated = 0;
+
+    for (let i = 0; i < this.phases.length; i++) {
+      accumulated += this.durations[this.phases[i]];
+      if (elapsed < accumulated) {
+        this.currentPhase = i;
+        break;
+      }
+    }
+
+    const phase = this.phases[this.currentPhase];
+    const phaseStart = this.getPhaseStart();
+    const phaseElapsed = elapsed - phaseStart;
+    const progress = phaseElapsed / this.durations[phase];
+
+    this.updateUI(phase, progress);
+  },
+
+  getPhaseStart() {
+    let start = 0;
+    for (let i = 0; i < this.currentPhase; i++) {
+      start += this.durations[this.phases[i]];
+    }
+    return start;
+  },
+
+  updateUI(phase, progress) {
+    const ring = document.getElementById('breath-ring');
+    const label = document.getElementById('breath-phase-label');
+
+    // Update ring size
+    let scale;
+    switch (phase) {
+      case 'inhale': scale = 0.7 + progress * 0.6; break;
+      case 'hold':   scale = 1.3; break;
+      case 'exhale': scale = 1.3 - progress * 0.6; break;
+      default:       scale = 0.7;
+    }
+    ring.style.transform = `scale(${scale})`;
+    ring.className = phase;
+    label.textContent = phase;
+
+    // Notify stones
+    this.notifyStones(phase);
+  },
+
+  notifyStones(phase) {
+    // Each stone responds to a specific breath phase
+    const stonePhases = {
+      'stone-aleph': 'hold',
+      'stone-dalet': 'inhale',
+      'stone-zayin': 'exhale'
+    };
+
+    Object.entries(stonePhases).forEach(([stoneId, requiredPhase]) => {
+      const stone = document.getElementById(stoneId);
+      if (!stone || stone.classList.contains('collected')) return;
+      const circle = stone.querySelector('.stone-circle');
+      if (phase === requiredPhase) {
+        circle.classList.add('ready');
+      } else {
+        circle.classList.remove('ready');
+      }
+    });
+  },
+
+  getPhase() {
+    return this.phases[this.currentPhase];
+  },
+
+  isPhase(phase) {
+    return this.getPhase() === phase;
+  }
+};
+
+// ── GAME STATE ─────────────────────────────────────────────
+const Game = {
+  collected: [],
+  airComplete: false,
+
+  init() {
+    this.loadState();
+    this.renderInventory();
+
+    // If already completed, show completion
+    if (this.airComplete) {
+      this.showCompletion();
+      return;
+    }
+
+    Breath.init();
+    this.initWindParticles();
+    this.bindEvents();
+    this.checkAltarState();
+
+    // Re-collect stones that were already collected
+    this.collected.forEach(glyphId => {
+      const stoneId = this.getStoneId(glyphId);
+      const stone = document.getElementById(stoneId);
+      if (stone) stone.classList.add('collected');
+    });
+  },
+
+  loadState() {
+    try {
+      const raw = localStorage.getItem('adzmyst_air_save');
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      this.collected = data.collected || [];
+      this.airComplete = data.airComplete || false;
+    } catch(e) {
+      console.warn('[Air] Could not load save:', e);
+    }
+  },
+
+  saveState() {
+    const data = {
+      collected: this.collected,
+      airComplete: this.airComplete
+    };
+    localStorage.setItem('adzmyst_air_save', JSON.stringify(data));
+
+    // Also update atrium save
+    if (this.airComplete) {
+      try {
+        const atriumRaw = localStorage.getItem('adzmyst_atrium_save');
+        if (atriumRaw) {
+          const atriumData = JSON.parse(atriumRaw);
+          atriumData.unlocked = atriumData.unlocked || {};
+          atriumData.unlocked.air = true;
+          localStorage.setItem('adzmyst_atrium_save', JSON.stringify(atriumData));
+        }
+      } catch(e) {}
+    }
+  },
+
+  getStoneId(glyphId) {
+    const map = { 0: 'stone-aleph', 1: 'stone-dalet', 2: 'stone-zayin' };
+    return map[glyphId];
+  },
+
+  getGlyphId(stoneId) {
+    const map = { 'stone-aleph': 0, 'stone-dalet': 1, 'stone-zayin': 2 };
+    return map[stoneId];
+  },
+
+  collectGlyph(stoneId) {
+    const glyphId = this.getGlyphId(stoneId);
+    if (this.collected.includes(glyphId)) return false;
+
+    const phase = Breath.getPhase();
+    const requiredPhases = {
+      'stone-aleph': 'hold',
+      'stone-dalet': 'inhale',
+      'stone-zayin': 'exhale'
+    };
+
+    if (phase !== requiredPhases[stoneId]) {
+      this.showMessage(`Breathe ${requiredPhases[stoneId]} to collect this glyph`);
+      return false;
+    }
+
+    this.collected.push(glyphId);
+    document.getElementById(stoneId).classList.add('collected');
+    this.renderInventory();
+    this.saveState();
+    this.checkAltarState();
+
+    // Show collection message
+    const glyphSymbols = ['𐤀', '𐤃', '𐤆'];
+    this.showMessage(`${glyphSymbols[glyphId]} — collected`);
+
+    return true;
+  },
+
+  renderInventory() {
+    const glyphSymbols = ['𐤀', '𐤃', '𐤆'];
+    for (let i = 0; i < 3; i++) {
+      const slot = document.getElementById(`inv-slot-${i}`);
+      if (this.collected.includes(i)) {
+        slot.textContent = glyphSymbols[i];
+        slot.classList.add('filled');
+      } else {
+        slot.textContent = '·';
+        slot.classList.remove('filled');
+      }
+    }
+  },
+
+  checkAltarState() {
+    const altar = document.getElementById('altar');
+    const altarCircle = altar.querySelector('.altar-circle');
+
+    if (this.collected.length === 3) {
+      altar.classList.remove('inactive');
+      altar.classList.add('active');
+      altarCircle.textContent = '𐤀 𐤃 𐤆';
+    } else {
+      altar.classList.add('inactive');
+      altar.classList.remove('active');
+      const glyphSymbols = ['𐤀', '𐤃', '𐤆'];
+      const display = [0,1,2].map(i => this.collected.includes(i) ? glyphSymbols[i] : '·').join('  ');
+      altarCircle.textContent = display;
+    }
+  },
+
+  activateAltar() {
+    if (this.collected.length < 3) {
+      this.showMessage('Gather all three glyphs first');
+      return;
+    }
+
+    this.airComplete = true;
+    this.saveState();
+    this.showCompletion();
+  },
+
+  showMessage(text) {
+    const panel = document.getElementById('message-panel');
+    const textEl = document.getElementById('message-text');
+    textEl.textContent = text;
+
+    // Reset animation
+    panel.classList.remove('show');
+    void panel.offsetWidth;
+    panel.classList.add('show');
+
+    // Auto-hide after animation
+    setTimeout(() => {
+      panel.classList.remove('show');
+    }, 3000);
+  },
+
+  showCompletion() {
+    document.getElementById('completion-overlay').classList.add('show');
+  },
+
+  returnToAtrium() {
+    window.location.href = '../../index.html';
+  },
+
+  initWindParticles() {
+    const layer = document.getElementById('wind-layer');
+    const glyphs = ['𐤀', '𐤃', '𐤆', '𓂝', '·', '~'];
+
+    for (let i = 0; i < 20; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'wind-particle';
+      particle.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
+      particle.style.top = (10 + Math.random() * 80) + '%';
+      particle.style.animationDelay = Math.random() * 8 + 's';
+      particle.style.animationDuration = (6 + Math.random() * 10) + 's';
+      particle.style.fontSize = (12 + Math.random() * 24) + 'px';
+      layer.appendChild(particle);
+    }
+  },
+
+  bindEvents() {
+    // Stone clicks
+    document.getElementById('stone-aleph').addEventListener('click', () => this.collectGlyph('stone-aleph'));
+    document.getElementById('stone-dalet').addEventListener('click', () => this.collectGlyph('stone-dalet'));
+    document.getElementById('stone-zayin').addEventListener('click', () => this.collectGlyph('stone-zayin'));
+
+    // Altar click
+    document.getElementById('altar').addEventListener('click', () => {
+      if (this.collected.length === 3) {
+        this.activateAltar();
+      }
+    });
+
+    // Return portal
+    document.getElementById('return-portal').addEventListener('click', () => this.returnToAtrium());
+
+    // Completion return button
+    document.getElementById('completion-return').addEventListener('click', () => this.returnToAtrium());
+
+    // Keyboard
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') this.returnToAtrium();
+      if (e.key === '1') this.collectGlyph('stone-aleph');
+      if (e.key === '2') this.collectGlyph('stone-dalet');
+      if (e.key === '3') this.collectGlyph('stone-zayin');
+      if (e.key === 'Enter' && this.collected.length === 3) this.activateAltar();
+    });
+  }
+};
+
+// ── INIT ──────────────────────────────────────────────────
+Game.init();
+console.log('[Air Age] Chamber of Breath ready. Breathe with the stones.');
+</script>
+</body>
+</html>
