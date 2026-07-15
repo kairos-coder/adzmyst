@@ -3,30 +3,31 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Age of Air · Adzmyst</title>
+<title>The Aerie Vaults · Air Realm · Adzmyst</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Cinzel+Decorative:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
 <style>
   /* ═══════════════════════════════════════════════════════
-     AGE OF AIR — ADZMYST DUNGEON
-     Breath mechanic · Glyph collection · Triad altar
+     AIR REALM — THE AERIE VAULTS
+     Room explorer, hidden objects, storm shards
      ═══════════════════════════════════════════════════════ */
 
   :root {
     --void:       #07080f;
-    --sky-deep:   #0a1528;
-    --sky-mid:    #1a3050;
-    --sky-pale:   #2a4a70;
-    --cloud:      #6a8aaa;
-    --breath:     #c0d8f0;
+    --deep:       #0a1528;
+    --mid:        #1a3050;
+    --sky:        #4a7aaa;
+    --air:        #5ab8b0;
+    --air-dim:    #2a5854;
+    --cloud:      #8ab8c8;
     --silver:     #b8cce0;
+    --breath:     #e8f2ff;
     --gold:       #c8a84a;
     --gold-dim:   #6a5830;
-    --unlock:     #8ad8a0;
+    --shard:      #7ad8d0;
+    --decoy:      #8a7a6a;
     --danger:     #c85050;
-    --air-teal:   #5ab8b0;
-    --panel-bg:   rgba(10, 20, 40, 0.92);
-    --transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    --unlock:     #8ad8a0;
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -40,782 +41,548 @@
     font-size: 16px;
   }
 
-  /* ── AMBIENT SKY ── */
-  #ambient-sky {
-    position: fixed; inset: 0; z-index: 0;
-    background:
-      radial-gradient(ellipse 80% 40% at 50% 30%, rgba(90,184,176,0.08) 0%, transparent 60%),
-      linear-gradient(180deg, #03050e 0%, #0a1828 30%, #1a3050 60%, #2a4a70 100%);
-    animation: skyshift 20s ease-in-out infinite alternate;
+  /* ── LOADING VEIL ── */
+  #loadingVeil {
+    position: fixed; inset: 0; z-index: 100;
+    background: var(--void);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 20px;
+    transition: opacity 0.5s ease;
   }
-  @keyframes skyshift {
-    0%   { filter: brightness(1) hue-rotate(0deg); }
-    100% { filter: brightness(1.1) hue-rotate(5deg); }
+  #loadingVeil.hide { opacity: 0; pointer-events: none; }
+  #loadingGlyph {
+    font-size: 3rem;
+    color: var(--air);
+    animation: loadPulse 1.5s ease-in-out infinite;
   }
-
-  /* ── WIND PARTICLES ── */
-  #wind-layer {
-    position: fixed; inset: 0; z-index: 1;
-    pointer-events: none; overflow: hidden;
+  @keyframes loadPulse {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
   }
-  .wind-particle {
-    position: absolute;
-    font-size: 18px;
-    opacity: 0;
-    animation: windFloat 8s linear infinite;
-    color: var(--cloud);
-  }
-  @keyframes windFloat {
-    0%   { transform: translateX(-50px) translateY(0); opacity: 0; }
-    20%  { opacity: 0.4; }
-    80%  { opacity: 0.3; }
-    100% { transform: translateX(calc(100vw + 50px)) translateY(-40px); opacity: 0; }
-  }
-
-  /* ── BREATH INDICATOR ── */
-  #breath-indicator {
-    position: fixed; top: 20px; right: 20px; z-index: 40;
-    display: flex; flex-direction: column; align-items: center; gap: 6px;
-  }
-  #breath-ring {
-    width: 44px; height: 44px;
-    border: 2px solid var(--cloud);
-    border-radius: 50%;
-    transition: transform 0.2s ease, border-color 0.3s;
-    opacity: 0.6;
-  }
-  #breath-ring.inhale { border-color: var(--air-teal); }
-  #breath-ring.hold   { border-color: var(--gold); }
-  #breath-ring.exhale { border-color: var(--cloud); }
-  #breath-phase-label {
+  #loadingText {
     font-family: 'Cinzel', serif;
-    font-size: 7px; letter-spacing: 3px;
+    font-size: 0.6rem; letter-spacing: 0.3em;
     text-transform: uppercase;
-    color: var(--silver); opacity: 0.7;
+    color: var(--silver); opacity: 0.5;
   }
 
   /* ── HUD ── */
   #hud {
     position: fixed; top: 0; left: 0; right: 0; z-index: 30;
-    padding: 14px 20px;
+    padding: 12px 16px;
     display: flex; align-items: center; justify-content: space-between;
-    background: linear-gradient(180deg, rgba(7,8,15,0.8) 0%, transparent 100%);
+    background: linear-gradient(180deg, rgba(7,8,15,0.9) 0%, transparent 100%);
     pointer-events: none;
   }
-  #hud-location {
-    font-family: 'Cinzel', serif;
-    font-size: 11px; letter-spacing: 3px;
-    color: var(--silver); text-transform: uppercase;
+  #hud-left {
+    display: flex; align-items: center; gap: 12px;
   }
-  #hud-glyphs {
-    font-size: 20px; letter-spacing: 4px;
-    color: var(--gold); opacity: 0.6;
+  #hud-realm-name {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 0.8rem; letter-spacing: 3px;
+    color: var(--breath);
+  }
+  #hud-room-name {
+    font-family: 'Cinzel', serif;
+    font-size: 0.55rem; letter-spacing: 2px;
+    color: var(--cloud); text-transform: uppercase;
+    opacity: 0.7;
+  }
+  #hud-right {
+    display: flex; align-items: center; gap: 8px;
+    pointer-events: auto;
+  }
+
+  /* ── HUD BUTTONS ── */
+  .hud-btn {
+    font-family: 'Cinzel', serif;
+    font-size: 0.55rem; letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border: 1px solid rgba(90,184,176,0.25);
+    background: rgba(7,8,15,0.7);
+    color: var(--cloud);
+    cursor: pointer;
+    border-radius: 14px;
+    backdrop-filter: blur(4px);
+    transition: all 0.3s;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .hud-btn:hover {
+    border-color: var(--air);
+    color: var(--breath);
+    background: rgba(90,184,176,0.1);
+  }
+  .hud-btn .btn-icon { font-size: 0.8rem; }
+
+  /* ── SAVE DOT ── */
+  #saveDot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--air);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  #saveDot.pulse {
+    opacity: 1;
+    animation: saveFlash 0.5s ease;
+  }
+  @keyframes saveFlash {
+    0% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(2.5); }
+  }
+
+  /* ── MAIN CONTAINER ── */
+  #realmContainer {
+    position: fixed; inset: 0; z-index: 10;
+    overflow: hidden;
+    transition: opacity 0.4s ease;
+  }
+  #realmContainer.transitioning { opacity: 0; }
+
+  /* ── ROOM ── */
+  .room {
+    position: relative;
+    width: 100%; height: 100%;
+    overflow: hidden;
+  }
+
+  /* ── ROOM BACKGROUND ── */
+  .room-background {
+    position: absolute; inset: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: var(--deep);
+    transition: background-image 0.6s ease;
+  }
+  .room-vignette {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(7,8,15,0.6) 100%);
+    pointer-events: none;
+  }
+
+  /* ── HIDDEN OBJECTS ── */
+  .hidden-objects-layer {
+    position: absolute; inset: 0;
+    z-index: 12; pointer-events: none;
+  }
+  .hidden-object {
+    position: absolute;
+    width: 40px; height: 40px;
+    margin-left: -20px; margin-top: -20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    pointer-events: auto;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    animation: objectGlow 3s ease-in-out infinite;
+    z-index: 13;
+  }
+  .hidden-object:hover {
+    transform: scale(1.3);
+  }
+  .hidden-object.shard {
+    filter: drop-shadow(0 0 8px rgba(122,216,208,0.5));
+  }
+  .hidden-object.decoy {
+    filter: drop-shadow(0 0 6px rgba(138,122,106,0.4));
+  }
+  .hidden-object.collected {
+    animation: none;
+    pointer-events: none;
+    opacity: 0.7;
+    filter: none;
+  }
+
+  @keyframes objectGlow {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+
+  /* ── ROOM INFO OVERLAY ── */
+  .room-info {
+    position: absolute; bottom: 80px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 14;
+    text-align: center;
+    pointer-events: none;
+    max-width: 500px;
+    width: 90%;
+  }
+  .room-header {
+    margin-bottom: 6px;
+  }
+  .room-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(1rem, 2.5vw, 1.4rem);
+    font-weight: 400;
+    color: var(--breath);
+    letter-spacing: 4px;
+    text-shadow: 0 0 20px rgba(0,0,0,0.8);
+    margin-bottom: 2px;
+  }
+  .room-id {
+    font-family: 'Cinzel', serif;
+    font-size: 0.5rem; letter-spacing: 3px;
+    color: var(--air); text-transform: uppercase;
+    opacity: 0.6;
+  }
+  .room-description {
+    font-size: 0.9rem; line-height: 1.6;
+    color: var(--silver);
+    font-style: italic;
+    opacity: 0.8;
+    text-shadow: 0 0 10px rgba(0,0,0,0.8);
+    margin-bottom: 12px;
+  }
+
+  /* ── SHARD PROGRESS ── */
+  .shard-progress {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .shard-dot {
+    font-size: 1rem;
+    color: var(--gold-dim);
+    transition: all 0.3s;
+  }
+  .shard-dot.filled {
+    color: var(--shard);
+    animation: shardGlow 2s ease-in-out infinite;
+  }
+  @keyframes shardGlow {
+    0%, 100% { filter: drop-shadow(0 0 4px rgba(122,216,208,0.4)); }
+    50% { filter: drop-shadow(0 0 10px rgba(122,216,208,0.8)); }
+  }
+  .shard-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.5rem; letter-spacing: 2px;
+    color: var(--silver); text-transform: uppercase;
+    opacity: 0.5; margin-left: 6px;
+  }
+
+  /* ── PORTALS ── */
+  .portals {
+    position: absolute; bottom: 20px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 14;
+    display: flex; gap: 12px;
+    flex-wrap: wrap; justify-content: center;
+  }
+  .portal-btn {
+    font-family: 'Cinzel', serif;
+    font-size: 0.55rem; letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 8px 18px;
+    border: 1px solid rgba(90,184,176,0.3);
+    background: rgba(7,8,15,0.75);
+    color: var(--cloud);
+    cursor: pointer;
+    border-radius: 20px;
+    backdrop-filter: blur(4px);
+    transition: all 0.3s;
+    display: flex; align-items: center; gap: 6px;
+    pointer-events: auto;
+  }
+  .portal-btn:hover {
+    border-color: var(--air);
+    color: var(--breath);
+    background: rgba(90,184,176,0.15);
+    box-shadow: 0 0 16px rgba(90,184,176,0.15);
+  }
+  .portal-icon {
+    font-size: 0.9rem;
+  }
+  .portal-label {
+    white-space: nowrap;
+  }
+
+  /* Exit portal */
+  .exit-portal {
+    border-color: rgba(200,168,74,0.4);
+    color: var(--gold);
+  }
+  .exit-portal:hover {
+    border-color: var(--gold);
+    box-shadow: 0 0 20px rgba(200,168,74,0.2);
+  }
+  .exit-portal.locked {
+    border-color: rgba(74,58,42,0.4);
+    color: var(--gold-dim);
+    cursor: not-allowed;
+  }
+  .exit-portal.locked:hover {
+    box-shadow: none;
+    background: rgba(7,8,15,0.75);
+  }
+  .portal-requirement {
+    font-size: 0.45rem;
+    letter-spacing: 1px;
+    color: var(--gold-dim);
+    opacity: 0.7;
+    display: block;
   }
 
   /* ── INVENTORY ── */
   #inventory {
-    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-    z-index: 30; display: flex; align-items: center; gap: 10px;
-    background: rgba(10,20,40,0.8);
-    border: 1px solid rgba(200,168,74,0.25);
-    border-radius: 30px; padding: 8px 18px;
-    backdrop-filter: blur(6px);
-  }
-  #inventory-label {
-    font-family: 'Cinzel', serif;
-    font-size: 7px; letter-spacing: 2px;
-    color: var(--gold-dim); text-transform: uppercase;
-    opacity: 0.7;
-  }
-  .inventory-slot {
-    width: 32px; height: 32px;
-    border: 1px dashed rgba(200,168,74,0.3);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px; color: var(--gold-dim);
-    transition: all 0.3s;
-  }
-  .inventory-slot.filled {
-    border-color: var(--gold);
-    color: var(--gold);
-    border-style: solid;
-    animation: glyphGlow 2s ease-in-out infinite;
-  }
-  @keyframes glyphGlow {
-    0%, 100% { box-shadow: 0 0 6px rgba(200,168,74,0.3); }
-    50% { box-shadow: 0 0 16px rgba(200,168,74,0.6); }
-  }
-
-  /* ── MAIN SCENE ── */
-  #scene {
-    position: fixed; inset: 0; z-index: 10;
-    display: flex; align-items: center; justify-content: center;
+    position: fixed; bottom: 100px; right: 16px; z-index: 25;
     pointer-events: none;
-  }
-  #room-container {
-    position: relative;
-    width: 100%; height: 100%;
-    pointer-events: none;
-  }
-
-  /* ── ROOM TITLE ── */
-  .room-title {
-    position: absolute;
-    top: 18%; left: 50%;
-    transform: translateX(-50%);
-    text-align: center;
-    pointer-events: none;
-  }
-  .room-title h2 {
-    font-family: 'Cinzel Decorative', serif;
-    font-size: clamp(1.4rem, 3vw, 2rem);
-    font-weight: 400;
-    color: var(--breath);
-    letter-spacing: 4px;
-    text-shadow: 0 0 20px rgba(90,184,176,0.4);
-    margin-bottom: 4px;
-  }
-  .room-title .room-sub {
-    font-size: 11px;
-    letter-spacing: 3px;
-    color: var(--cloud);
-    text-transform: uppercase;
-    opacity: 0.6;
-  }
-
-  /* ── INTERACTIVE GLYPH STONES ── */
-  .glyph-stone {
-    position: absolute;
-    pointer-events: auto;
-    cursor: pointer;
-    display: flex; flex-direction: column;
-    align-items: center; gap: 10px;
-    transition: transform var(--transition);
-  }
-  .glyph-stone:hover { transform: scale(1.08); }
-  .glyph-stone.collected {
-    pointer-events: none;
-    opacity: 0.4;
-    transform: scale(0.9);
-  }
-
-  .stone-circle {
-    width: clamp(80px, 12vw, 130px);
-    height: clamp(80px, 12vw, 130px);
-    border-radius: 50%;
-    border: 2px solid var(--cloud);
-    background: radial-gradient(circle at 40% 40%, rgba(90,184,176,0.15) 0%, transparent 70%);
-    display: flex; align-items: center; justify-content: center;
-    font-size: clamp(2rem, 4vw, 3rem);
-    color: var(--gold);
-    transition: all var(--transition);
-    position: relative;
-  }
-  .stone-circle::after {
-    content: '';
-    position: absolute; inset: -6px;
-    border-radius: 50%;
+    display: flex; flex-direction: column; gap: 8px;
+    background: rgba(7,8,15,0.7);
     border: 1px solid rgba(90,184,176,0.2);
-    animation: stonePulse 3s ease-in-out infinite;
+    border-radius: 16px;
+    padding: 10px 14px;
+    backdrop-filter: blur(4px);
   }
-  @keyframes stonePulse {
-    0%, 100% { transform: scale(1); opacity: 0.3; }
-    50% { transform: scale(1.06); opacity: 0.7; }
-  }
-
-  .stone-circle.ready {
-    border-color: var(--air-teal);
-    box-shadow: 0 0 30px rgba(90,184,176,0.4);
-  }
-  .stone-circle.ready::after {
-    border-color: var(--air-teal);
-    animation: stonePulseReady 1s ease-in-out infinite;
-  }
-  @keyframes stonePulseReady {
-    0%, 100% { transform: scale(1); opacity: 0.5; }
-    50% { transform: scale(1.12); opacity: 1; }
-  }
-
-  .stone-label {
-    font-family: 'Cinzel', serif;
-    font-size: 9px; letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--cloud);
-    opacity: 0.7;
-  }
-
-  /* Stone positions */
-  #stone-aleph { top: 50%; left: 15%; transform: translateY(-50%); }
-  #stone-dalet { top: 55%; left: 50%; transform: translate(-50%, -50%); }
-  #stone-zayin { top: 50%; right: 15%; transform: translateY(-50%); }
-  #stone-aleph:hover, #stone-dalet:hover, #stone-zayin:hover { transform: translateY(calc(-50% - 4px)) scale(1.08); }
-
-  /* ── ALTAR ── */
-  #altar {
-    position: absolute;
-    bottom: 22%; left: 50%;
-    transform: translateX(-50%);
-    pointer-events: auto;
-    cursor: pointer;
-    display: flex; flex-direction: column;
-    align-items: center; gap: 8px;
-    transition: all var(--transition);
-  }
-  #altar:hover { transform: translateX(-50%) scale(1.05); }
-  #altar.inactive {
-    opacity: 0.4;
-    pointer-events: none;
-  }
-  #altar.active {
-    opacity: 1;
-    cursor: pointer;
-  }
-  #altar.active .altar-circle {
-    border-color: var(--gold);
-    box-shadow: 0 0 40px rgba(200,168,74,0.5);
-    animation: altarGlow 2s ease-in-out infinite;
-  }
-  @keyframes altarGlow {
-    0%, 100% { box-shadow: 0 0 20px rgba(200,168,74,0.3); }
-    50% { box-shadow: 0 0 50px rgba(200,168,74,0.7); }
-  }
-
-  .altar-circle {
-    width: clamp(100px, 14vw, 160px);
-    height: clamp(100px, 14vw, 160px);
-    border-radius: 50%;
-    border: 2px solid var(--gold-dim);
-    background: radial-gradient(circle at center, rgba(200,168,74,0.08) 0%, transparent 60%);
-    display: flex; align-items: center; justify-content: center;
-    font-size: clamp(1.5rem, 3vw, 2.2rem);
-    color: var(--gold-dim);
-    letter-spacing: 6px;
-    transition: all var(--transition);
-  }
-  .altar-label {
-    font-family: 'Cinzel', serif;
-    font-size: 9px; letter-spacing: 4px;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-    opacity: 0.7;
-  }
-
-  /* ── MESSAGE PANEL ── */
-  #message-panel {
-    position: fixed; top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 50;
-    pointer-events: none;
-    text-align: center;
-    transition: opacity 0.4s;
-    opacity: 0;
-  }
-  #message-panel.show {
-    opacity: 1;
-    animation: messageFade 3s ease forwards;
-  }
-  @keyframes messageFade {
-    0%   { opacity: 0; transform: translate(-50%, -50%) translateY(10px); }
-    15%  { opacity: 1; transform: translate(-50%, -50%) translateY(0); }
-    85%  { opacity: 1; }
-    100% { opacity: 0; transform: translate(-50%, -50%) translateY(-10px); }
-  }
-
-  .message-text {
-    font-family: 'Cinzel Decorative', serif;
-    font-size: clamp(1rem, 2.5vw, 1.6rem);
-    color: var(--breath);
-    letter-spacing: 4px;
-    text-shadow: 0 0 20px rgba(90,184,176,0.5);
-    background: rgba(10,20,40,0.85);
-    padding: 16px 32px;
-    border: 1px solid rgba(90,184,176,0.3);
-    border-radius: 8px;
-  }
-
-  /* ── RETURN PORTAL ── */
-  #return-portal {
-    position: fixed; bottom: 90px; left: 20px; z-index: 30;
-    pointer-events: auto;
-    cursor: pointer;
+  .inventory-section {
     display: flex; align-items: center; gap: 8px;
+  }
+  .inventory-label {
     font-family: 'Cinzel', serif;
-    font-size: 8px; letter-spacing: 3px;
+    font-size: 0.45rem; letter-spacing: 2px;
     text-transform: uppercase;
-    color: var(--cloud);
-    opacity: 0.5;
-    transition: opacity 0.3s;
-    background: transparent; border: none;
-    padding: 8px 12px;
-    border: 1px solid rgba(90,184,176,0.2);
-    border-radius: 20px;
+    color: var(--silver); opacity: 0.5;
+    min-width: 50px; text-align: right;
   }
-  #return-portal:hover {
-    opacity: 1;
-    border-color: var(--air-teal);
+  .inventory-items {
+    display: flex; gap: 4px;
   }
-  #return-portal .return-glyph {
-    font-size: 18px;
+  .inv-item {
+    font-size: 0.9rem;
+  }
+  .inv-item.shard {
+    filter: drop-shadow(0 0 4px rgba(122,216,208,0.5));
+  }
+  .inv-empty {
+    font-family: 'Cinzel', serif;
+    font-size: 0.45rem; letter-spacing: 1px;
+    color: var(--gold-dim); opacity: 0.4;
+    font-style: italic;
   }
 
-  /* ── COMPLETION OVERLAY ── */
-  #completion-overlay {
+  /* ── TOAST ── */
+  .realm-toast {
+    position: fixed; top: 80px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem; letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 10px 24px;
+    background: rgba(7,8,15,0.9);
+    border: 1px solid rgba(90,184,176,0.4);
+    color: var(--breath);
+    border-radius: 20px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .realm-toast.show { opacity: 1; }
+
+  /* ── MODALS ── */
+  .modal {
     position: fixed; inset: 0; z-index: 60;
     display: none;
     align-items: center; justify-content: center;
-    background: rgba(7,8,15,0.9);
-    flex-direction: column; gap: 24px;
+    background: rgba(7,8,15,0.85);
+    backdrop-filter: blur(6px);
   }
-  #completion-overlay.show { display: flex; }
-
-  #completion-glyph {
-    font-size: clamp(4rem, 8vw, 7rem);
-    color: var(--gold);
-    animation: glyphPulseComplete 2s ease-in-out infinite;
+  .modal-content {
+    background: rgba(13,18,37,0.95);
+    border: 1px solid rgba(90,184,176,0.25);
+    border-radius: 20px;
+    padding: 24px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 70vh;
+    overflow-y: auto;
+    position: relative;
   }
-  @keyframes glyphPulseComplete {
-    0%, 100% { transform: scale(1); text-shadow: 0 0 30px rgba(200,168,74,0.4); }
-    50% { transform: scale(1.08); text-shadow: 0 0 60px rgba(200,168,74,0.8); }
+  .modal-close {
+    position: absolute; top: 12px; right: 16px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    background: transparent;
+    border: none;
+    color: var(--silver);
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.2s;
   }
-  #completion-title {
+  .modal-close:hover { opacity: 1; }
+  .modal-title {
     font-family: 'Cinzel Decorative', serif;
-    font-size: clamp(1.2rem, 2.5vw, 1.8rem);
-    letter-spacing: 6px;
+    font-size: 1rem; letter-spacing: 4px;
     color: var(--breath);
     text-align: center;
+    margin-bottom: 16px;
   }
-  #completion-text {
-    font-style: italic;
-    color: var(--silver);
-    opacity: 0.7;
-    max-width: 400px;
+
+  /* ── MAP GRID ── */
+  #mapGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px;
+  }
+  .map-node {
+    background: rgba(20,35,65,0.5);
+    border: 1px solid rgba(90,184,176,0.15);
+    border-radius: 12px;
+    padding: 12px;
     text-align: center;
-    line-height: 1.8;
-  }
-  #completion-return {
-    font-family: 'Cinzel', serif;
-    font-size: 10px; letter-spacing: 4px;
-    text-transform: uppercase;
-    padding: 12px 32px;
-    border: 1px solid var(--gold);
-    background: transparent;
-    color: var(--gold);
     cursor: pointer;
     transition: all 0.3s;
+    position: relative;
   }
-  #completion-return:hover {
-    background: rgba(200,168,74,0.1);
-    box-shadow: 0 0 20px rgba(200,168,74,0.3);
+  .map-node:hover {
+    border-color: var(--air);
+    background: rgba(90,184,176,0.1);
+  }
+  .map-node.current {
+    border-color: var(--air);
+    background: rgba(90,184,176,0.15);
+  }
+  .map-node.visited {
+    opacity: 0.8;
+  }
+  .map-node-icon {
+    font-size: 1.2rem;
+    margin-bottom: 4px;
+  }
+  .map-node-name {
+    font-family: 'Cinzel', serif;
+    font-size: 0.5rem; letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--silver);
+    opacity: 0.7;
+  }
+  .map-node-marker {
+    position: absolute; bottom: -4px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.6rem;
+    color: var(--air);
   }
 
   /* ── RESPONSIVE ── */
   @media (max-width: 600px) {
-    #stone-aleph { top: 38%; left: 8%; }
-    #stone-dalet { top: 48%; left: 50%; }
-    #stone-zayin { top: 38%; right: 8%; }
-    #altar { bottom: 16%; }
-    #return-portal { bottom: 80px; left: 10px; font-size: 7px; }
-    .stone-circle { width: 70px; height: 70px; font-size: 1.6rem; }
-    .altar-circle { width: 90px; height: 90px; }
+    #hud { padding: 8px 10px; }
+    #hud-realm-name { font-size: 0.65rem; }
+    #hud-room-name { display: none; }
+    .hud-btn { font-size: 0.5rem; padding: 4px 8px; }
+    .room-title { font-size: 1rem; }
+    .room-description { font-size: 0.75rem; }
+    .portals { bottom: 10px; gap: 6px; }
+    .portal-btn { font-size: 0.5rem; padding: 6px 12px; }
+    #inventory { bottom: 80px; right: 6px; padding: 6px 10px; }
   }
 </style>
 </head>
 <body>
 
-<!-- Ambient sky -->
-<div id="ambient-sky"></div>
-<div id="wind-layer"></div>
-
-<!-- Breath indicator -->
-<div id="breath-indicator">
-  <div id="breath-ring"></div>
-  <div id="breath-phase-label">inhale</div>
+<!-- Loading veil -->
+<div id="loadingVeil">
+  <div id="loadingGlyph">𓂝</div>
+  <div id="loadingText">The Aerie Vaults await</div>
 </div>
 
 <!-- HUD -->
 <div id="hud">
-  <div id="hud-location">The Age of Air · Chamber of Breath</div>
-  <div id="hud-glyphs">𐤀 𐤃 𐤆</div>
-</div>
-
-<!-- Inventory -->
-<div id="inventory">
-  <div id="inventory-label">Breath Fragments</div>
-  <div class="inventory-slot" id="inv-slot-0">·</div>
-  <div class="inventory-slot" id="inv-slot-1">·</div>
-  <div class="inventory-slot" id="inv-slot-2">·</div>
-</div>
-
-<!-- Main scene -->
-<div id="scene">
-  <div id="room-container">
-    <!-- Room title -->
-    <div class="room-title">
-      <h2>The Chamber of Breath</h2>
-      <div class="room-sub">Collect the three glyphs · Breathe with them</div>
-    </div>
-
-    <!-- Glyph stones -->
-    <div class="glyph-stone" id="stone-aleph">
-      <div class="stone-circle">𐤀</div>
-      <div class="stone-label">Aleph</div>
-    </div>
-    <div class="glyph-stone" id="stone-dalet">
-      <div class="stone-circle">𐤃</div>
-      <div class="stone-label">Dalet</div>
-    </div>
-    <div class="glyph-stone" id="stone-zayin">
-      <div class="stone-circle">𐤆</div>
-      <div class="stone-label">Zayin</div>
-    </div>
-
-    <!-- Altar -->
-    <div id="altar" class="inactive">
-      <div class="altar-circle">·  ·  ·</div>
-      <div class="altar-label">Speak the Triad</div>
-    </div>
+  <div id="hud-left">
+    <div id="hud-realm-name">The Aerie Vaults</div>
+    <div id="hud-room-name"></div>
+  </div>
+  <div id="hud-right">
+    <div id="saveDot"></div>
+    <button class="hud-btn" id="mapBtn">
+      <span class="btn-icon">🗺</span> Map
+    </button>
+    <button class="hud-btn" id="inventoryBtn">
+      <span class="btn-icon">💎</span> Items
+    </button>
+    <button class="hud-btn" id="saveBtn">
+      <span class="btn-icon">↓</span> Save
+    </button>
+    <button class="hud-btn" id="returnBtn">
+      <span class="btn-icon">𐤃</span> Atrium
+    </button>
   </div>
 </div>
 
-<!-- Message panel -->
-<div id="message-panel">
-  <div class="message-text" id="message-text"></div>
-</div>
+<!-- Realm container (engine renders here) -->
+<div id="realmContainer"></div>
 
-<!-- Return portal -->
-<button id="return-portal" title="Return to Atrium">
-  <span class="return-glyph">𐤃</span>
-  <span>Return to Atrium</span>
-</button>
+<!-- Inventory sidebar -->
+<div id="inventory"></div>
 
-<!-- Completion overlay -->
-<div id="completion-overlay">
-  <div id="completion-glyph">𓂝</div>
-  <div id="completion-title">The Breath Is Complete</div>
-  <div id="completion-text">
-    You have gathered the first triad — Aleph, Dalet, Zayin.<br>
-    The Age of Air opens its wisdom.<br>
-    The language begins.
+<!-- Map Modal -->
+<div class="modal" id="mapModal">
+  <div class="modal-content">
+    <button class="modal-close">✕</button>
+    <div class="modal-title">The Aerie Vaults</div>
+    <div id="mapGrid"></div>
   </div>
-  <button id="completion-return">Return to the Atrium</button>
 </div>
+
+<!-- Inventory Modal -->
+<div class="modal" id="inventoryModal">
+  <div class="modal-content">
+    <button class="modal-close">✕</button>
+    <div class="modal-title">Collected Items</div>
+    <div id="inventoryModalContent"></div>
+  </div>
+</div>
+
+<!-- Engine -->
+<script src="../engine/core.js"></script>
 
 <script>
-// ═══════════════════════════════════════════════════════════
-// AGE OF AIR — DUNGEON ENGINE
-// Breath mechanic · Glyph collection · Altar activation
-// ═══════════════════════════════════════════════════════════
+  // ── BOOT ───────────────────────────────────────────────
+  // Detect realm from URL, default to air
+  const params = new URLSearchParams(window.location.search);
+  const realmId = params.get('realm') || 'air';
 
-// ── BREATH ENGINE ──────────────────────────────────────────
-const Breath = {
-  phases: ['inhale', 'hold', 'exhale', 'rest'],
-  durations: { inhale: 4000, hold: 4000, exhale: 6000, rest: 2000 },
-  currentPhase: 0,
-  startTime: Date.now(),
-  intervalId: null,
-
-  init() {
-    this.startTime = Date.now();
-    this.tick();
-    this.intervalId = setInterval(() => this.tick(), 100);
-  },
-
-  totalDuration() {
-    return Object.values(this.durations).reduce((a, b) => a + b, 0);
-  },
-
-  tick() {
-    const elapsed = (Date.now() - this.startTime) % this.totalDuration();
-    let accumulated = 0;
-
-    for (let i = 0; i < this.phases.length; i++) {
-      accumulated += this.durations[this.phases[i]];
-      if (elapsed < accumulated) {
-        this.currentPhase = i;
-        break;
-      }
-    }
-
-    const phase = this.phases[this.currentPhase];
-    const phaseStart = this.getPhaseStart();
-    const phaseElapsed = elapsed - phaseStart;
-    const progress = phaseElapsed / this.durations[phase];
-
-    this.updateUI(phase, progress);
-  },
-
-  getPhaseStart() {
-    let start = 0;
-    for (let i = 0; i < this.currentPhase; i++) {
-      start += this.durations[this.phases[i]];
-    }
-    return start;
-  },
-
-  updateUI(phase, progress) {
-    const ring = document.getElementById('breath-ring');
-    const label = document.getElementById('breath-phase-label');
-
-    // Update ring size
-    let scale;
-    switch (phase) {
-      case 'inhale': scale = 0.7 + progress * 0.6; break;
-      case 'hold':   scale = 1.3; break;
-      case 'exhale': scale = 1.3 - progress * 0.6; break;
-      default:       scale = 0.7;
-    }
-    ring.style.transform = `scale(${scale})`;
-    ring.className = phase;
-    label.textContent = phase;
-
-    // Notify stones
-    this.notifyStones(phase);
-  },
-
-  notifyStones(phase) {
-    // Each stone responds to a specific breath phase
-    const stonePhases = {
-      'stone-aleph': 'hold',
-      'stone-dalet': 'inhale',
-      'stone-zayin': 'exhale'
-    };
-
-    Object.entries(stonePhases).forEach(([stoneId, requiredPhase]) => {
-      const stone = document.getElementById(stoneId);
-      if (!stone || stone.classList.contains('collected')) return;
-      const circle = stone.querySelector('.stone-circle');
-      if (phase === requiredPhase) {
-        circle.classList.add('ready');
-      } else {
-        circle.classList.remove('ready');
-      }
-    });
-  },
-
-  getPhase() {
-    return this.phases[this.currentPhase];
-  },
-
-  isPhase(phase) {
-    return this.getPhase() === phase;
-  }
-};
-
-// ── GAME STATE ─────────────────────────────────────────────
-const Game = {
-  collected: [],
-  airComplete: false,
-
-  init() {
-    this.loadState();
-    this.renderInventory();
-
-    // If already completed, show completion
-    if (this.airComplete) {
-      this.showCompletion();
-      return;
-    }
-
-    Breath.init();
-    this.initWindParticles();
-    this.bindEvents();
-    this.checkAltarState();
-
-    // Re-collect stones that were already collected
-    this.collected.forEach(glyphId => {
-      const stoneId = this.getStoneId(glyphId);
-      const stone = document.getElementById(stoneId);
-      if (stone) stone.classList.add('collected');
-    });
-  },
-
-  loadState() {
-    try {
-      const raw = localStorage.getItem('adzmyst_air_save');
-      if (!raw) return;
-      const data = JSON.parse(raw);
-      this.collected = data.collected || [];
-      this.airComplete = data.airComplete || false;
-    } catch(e) {
-      console.warn('[Air] Could not load save:', e);
-    }
-  },
-
-  saveState() {
-    const data = {
-      collected: this.collected,
-      airComplete: this.airComplete
-    };
-    localStorage.setItem('adzmyst_air_save', JSON.stringify(data));
-
-    // Also update atrium save
-    if (this.airComplete) {
-      try {
-        const atriumRaw = localStorage.getItem('adzmyst_atrium_save');
-        if (atriumRaw) {
-          const atriumData = JSON.parse(atriumRaw);
-          atriumData.unlocked = atriumData.unlocked || {};
-          atriumData.unlocked.air = true;
-          localStorage.setItem('adzmyst_atrium_save', JSON.stringify(atriumData));
-        }
-      } catch(e) {}
-    }
-  },
-
-  getStoneId(glyphId) {
-    const map = { 0: 'stone-aleph', 1: 'stone-dalet', 2: 'stone-zayin' };
-    return map[glyphId];
-  },
-
-  getGlyphId(stoneId) {
-    const map = { 'stone-aleph': 0, 'stone-dalet': 1, 'stone-zayin': 2 };
-    return map[stoneId];
-  },
-
-  collectGlyph(stoneId) {
-    const glyphId = this.getGlyphId(stoneId);
-    if (this.collected.includes(glyphId)) return false;
-
-    const phase = Breath.getPhase();
-    const requiredPhases = {
-      'stone-aleph': 'hold',
-      'stone-dalet': 'inhale',
-      'stone-zayin': 'exhale'
-    };
-
-    if (phase !== requiredPhases[stoneId]) {
-      this.showMessage(`Breathe ${requiredPhases[stoneId]} to collect this glyph`);
-      return false;
-    }
-
-    this.collected.push(glyphId);
-    document.getElementById(stoneId).classList.add('collected');
-    this.renderInventory();
-    this.saveState();
-    this.checkAltarState();
-
-    // Show collection message
-    const glyphSymbols = ['𐤀', '𐤃', '𐤆'];
-    this.showMessage(`${glyphSymbols[glyphId]} — collected`);
-
-    return true;
-  },
-
-  renderInventory() {
-    const glyphSymbols = ['𐤀', '𐤃', '𐤆'];
-    for (let i = 0; i < 3; i++) {
-      const slot = document.getElementById(`inv-slot-${i}`);
-      if (this.collected.includes(i)) {
-        slot.textContent = glyphSymbols[i];
-        slot.classList.add('filled');
-      } else {
-        slot.textContent = '·';
-        slot.classList.remove('filled');
-      }
-    }
-  },
-
-  checkAltarState() {
-    const altar = document.getElementById('altar');
-    const altarCircle = altar.querySelector('.altar-circle');
-
-    if (this.collected.length === 3) {
-      altar.classList.remove('inactive');
-      altar.classList.add('active');
-      altarCircle.textContent = '𐤀 𐤃 𐤆';
-    } else {
-      altar.classList.add('inactive');
-      altar.classList.remove('active');
-      const glyphSymbols = ['𐤀', '𐤃', '𐤆'];
-      const display = [0,1,2].map(i => this.collected.includes(i) ? glyphSymbols[i] : '·').join('  ');
-      altarCircle.textContent = display;
-    }
-  },
-
-  activateAltar() {
-    if (this.collected.length < 3) {
-      this.showMessage('Gather all three glyphs first');
-      return;
-    }
-
-    this.airComplete = true;
-    this.saveState();
-    this.showCompletion();
-  },
-
-  showMessage(text) {
-    const panel = document.getElementById('message-panel');
-    const textEl = document.getElementById('message-text');
-    textEl.textContent = text;
-
-    // Reset animation
-    panel.classList.remove('show');
-    void panel.offsetWidth;
-    panel.classList.add('show');
-
-    // Auto-hide after animation
+  // Hide loading veil after engine initializes
+  window.addEventListener('load', () => {
     setTimeout(() => {
-      panel.classList.remove('show');
-    }, 3000);
-  },
+      document.getElementById('loadingVeil').classList.add('hide');
+      setTimeout(() => {
+        const veil = document.getElementById('loadingVeil');
+        if (veil) veil.style.display = 'none';
+      }, 500);
+    }, 800);
+  });
 
-  showCompletion() {
-    document.getElementById('completion-overlay').classList.add('show');
-  },
-
-  returnToAtrium() {
-    window.location.href = '../../index.html';
-  },
-
-  initWindParticles() {
-    const layer = document.getElementById('wind-layer');
-    const glyphs = ['𐤀', '𐤃', '𐤆', '𓂝', '·', '~'];
-
-    for (let i = 0; i < 20; i++) {
-      const particle = document.createElement('div');
-      particle.className = 'wind-particle';
-      particle.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
-      particle.style.top = (10 + Math.random() * 80) + '%';
-      particle.style.animationDelay = Math.random() * 8 + 's';
-      particle.style.animationDuration = (6 + Math.random() * 10) + 's';
-      particle.style.fontSize = (12 + Math.random() * 24) + 'px';
-      layer.appendChild(particle);
+  // Update HUD room name when room changes
+  const observer = new MutationObserver(() => {
+    const roomTitle = document.querySelector('.room-title');
+    const roomId = document.querySelector('.room-id');
+    if (roomTitle) {
+      document.getElementById('hud-room-name').textContent = roomTitle.textContent;
     }
-  },
+    if (roomId) {
+      document.getElementById('hud-realm-name').textContent = 'The Aerie Vaults';
+    }
+  });
 
-  bindEvents() {
-    // Stone clicks
-    document.getElementById('stone-aleph').addEventListener('click', () => this.collectGlyph('stone-aleph'));
-    document.getElementById('stone-dalet').addEventListener('click', () => this.collectGlyph('stone-dalet'));
-    document.getElementById('stone-zayin').addEventListener('click', () => this.collectGlyph('stone-zayin'));
+  observer.observe(document.getElementById('realmContainer'), {
+    childList: true, subtree: true
+  });
 
-    // Altar click
-    document.getElementById('altar').addEventListener('click', () => {
-      if (this.collected.length === 3) {
-        this.activateAltar();
+  // Populate inventory modal content
+  const invModal = document.getElementById('inventoryModal');
+  if (invModal) {
+    invModal.addEventListener('click', () => {
+      const invSidebar = document.getElementById('inventory');
+      const modalContent = document.getElementById('inventoryModalContent');
+      if (invSidebar && modalContent) {
+        modalContent.innerHTML = invSidebar.innerHTML;
       }
     });
-
-    // Return portal
-    document.getElementById('return-portal').addEventListener('click', () => this.returnToAtrium());
-
-    // Completion return button
-    document.getElementById('completion-return').addEventListener('click', () => this.returnToAtrium());
-
-    // Keyboard
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') this.returnToAtrium();
-      if (e.key === '1') this.collectGlyph('stone-aleph');
-      if (e.key === '2') this.collectGlyph('stone-dalet');
-      if (e.key === '3') this.collectGlyph('stone-zayin');
-      if (e.key === 'Enter' && this.collected.length === 3) this.activateAltar();
-    });
   }
-};
 
-// ── INIT ──────────────────────────────────────────────────
-Game.init();
-console.log('[Air Age] Chamber of Breath ready. Breathe with the stones.');
+  console.log(`[Air Realm] Booting... realm=${realmId}`);
 </script>
 </body>
 </html>
