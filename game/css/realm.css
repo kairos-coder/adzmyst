@@ -1,0 +1,234 @@
+/* ═══════════════════════════════════════════════════════
+   ADZMYST — SHARED REALM STYLES
+   Fog, particles, glyph ambient, room transitions
+   ═══════════════════════════════════════════════════════ */
+
+:root {
+  --void:       #07080f;
+  --deep:       #0a1528;
+  --mid:        #1a3050;
+  --sky:        #4a7aaa;
+  --air:        #5ab8b0;
+  --air-dim:    #2a5854;
+  --fire:       #d4784a;
+  --fire-dim:   #6a3c25;
+  --earth:      #6a9464;
+  --earth-dim:  #354a32;
+  --water:      #4a7ab8;
+  --water-dim:  #253d5c;
+  --cloud:      #8ab8c8;
+  --silver:     #b8cce0;
+  --breath:     #e8f2ff;
+  --gold:       #c8a84a;
+  --gold-dim:   #6a5830;
+  --shard:      #7ad8d0;
+  --decoy:      #8a7a6a;
+  --danger:     #c85050;
+  --unlock:     #8ad8a0;
+}
+
+/* ── AMBIENT SKY ── */
+.realm-ambient {
+  position: fixed; inset: 0; z-index: 0;
+  pointer-events: none;
+}
+
+/* ── STARFIELD ── */
+#starfield {
+  position: fixed; inset: 0; z-index: 0;
+  pointer-events: none;
+}
+
+/* ── FOG LAYER ── */
+.fog-layer {
+  position: fixed; inset: 0; z-index: 2;
+  pointer-events: none;
+  opacity: 0.3;
+  background:
+    radial-gradient(ellipse 60% 30% at 20% 80%, rgba(90,184,176,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 25% at 70% 20%, rgba(184,204,224,0.05) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 35% at 50% 50%, rgba(200,168,74,0.03) 0%, transparent 50%);
+  animation: fogDrift 30s ease-in-out infinite;
+}
+@keyframes fogDrift {
+  0%   { transform: translateX(0) translateY(0); opacity: 0.3; }
+  25%  { transform: translateX(2%) translateY(-1%); opacity: 0.35; }
+  50%  { transform: translateX(-1%) translateY(1%); opacity: 0.28; }
+  75%  { transform: translateX(1%) translateY(-0.5%); opacity: 0.32; }
+  100% { transform: translateX(0) translateY(0); opacity: 0.3; }
+}
+
+/* ── FLOATING GLYPHS ── */
+#glyphParticles {
+  position: fixed; inset: 0; z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+.glyph-particle {
+  position: absolute;
+  font-size: 20px;
+  opacity: 0;
+  animation: glyphFloat linear infinite;
+  color: var(--cloud);
+}
+@keyframes glyphFloat {
+  0%   { transform: translateY(105vh) rotate(0deg); opacity: 0; }
+  5%   { opacity: 0.06; }
+  15%  { opacity: 0.1; }
+  85%  { opacity: 0.08; }
+  95%  { opacity: 0.02; }
+  100% { transform: translateY(-10vh) rotate(180deg); opacity: 0; }
+}
+
+/* ── VIGNETTE ── */
+.realm-vignette {
+  position: fixed; inset: 0; z-index: 3;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(7,8,15,0.5) 100%);
+}
+
+/* ── ROOM TRANSITIONS ── */
+#realmContainer {
+  position: fixed; inset: 0; z-index: 10;
+  overflow: hidden;
+  transition: opacity 0.5s ease, filter 0.5s ease;
+}
+#realmContainer.transitioning {
+  opacity: 0;
+  filter: blur(8px);
+}
+
+/* ── ROOM BACKGROUND ── */
+.room-background {
+  position: absolute; inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: var(--deep);
+  transition: background-image 0.8s ease;
+  z-index: 5;
+}
+
+/* ── HIDDEN OBJECTS ── */
+.hidden-objects-layer {
+  position: absolute; inset: 0;
+  z-index: 12; pointer-events: none;
+}
+.hidden-object {
+  position: absolute;
+  width: 44px; height: 44px;
+  margin-left: -22px; margin-top: -22px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem;
+  cursor: pointer;
+  pointer-events: auto;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  z-index: 13;
+}
+.hidden-object:not(.collected) {
+  animation: shardPulse 3s ease-in-out infinite;
+}
+.hidden-object:hover:not(.collected) {
+  transform: scale(1.4);
+}
+.hidden-object.shard:not(.collected) {
+  filter: drop-shadow(0 0 10px rgba(122,216,208,0.6));
+}
+.hidden-object.decoy:not(.collected) {
+  filter: drop-shadow(0 0 8px rgba(138,122,106,0.5));
+}
+.hidden-object.collected {
+  animation: none;
+  pointer-events: none;
+  opacity: 0.6;
+  filter: none;
+}
+@keyframes shardPulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+/* ── PORTALS ── */
+.portals {
+  position: absolute; bottom: 24px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 14;
+  display: flex; gap: 12px;
+  flex-wrap: wrap; justify-content: center;
+}
+.portal-btn {
+  font-family: 'Cinzel', serif;
+  font-size: 0.55rem; letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  border: 1px solid rgba(90,184,176,0.3);
+  background: rgba(7,8,15,0.75);
+  color: var(--cloud);
+  cursor: pointer;
+  border-radius: 24px;
+  backdrop-filter: blur(8px);
+  transition: all 0.3s;
+  display: flex; align-items: center; gap: 8px;
+  pointer-events: auto;
+}
+.portal-btn:hover {
+  border-color: var(--air);
+  color: var(--breath);
+  background: rgba(90,184,176,0.15);
+  box-shadow: 0 0 20px rgba(90,184,176,0.2);
+  transform: translateY(-2px);
+}
+
+/* ── ROOM INFO ── */
+.room-info {
+  position: absolute; bottom: 90px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 14;
+  text-align: center;
+  pointer-events: none;
+  max-width: 520px;
+  width: 90%;
+}
+.room-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(1rem, 2.5vw, 1.5rem);
+  font-weight: 400;
+  color: var(--breath);
+  letter-spacing: 4px;
+  text-shadow: 0 0 20px rgba(0,0,0,0.8);
+  margin-bottom: 4px;
+}
+.room-description {
+  font-size: 0.9rem; line-height: 1.7;
+  color: var(--silver);
+  font-style: italic;
+  opacity: 0.85;
+  text-shadow: 0 0 10px rgba(0,0,0,0.8);
+}
+
+/* ── TOAST ── */
+.realm-toast {
+  position: fixed; top: 80px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  font-family: 'Cinzel', serif;
+  font-size: 0.6rem; letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 10px 24px;
+  background: rgba(7,8,15,0.92);
+  border: 1px solid rgba(90,184,176,0.4);
+  color: var(--breath);
+  border-radius: 24px;
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.realm-toast.show { opacity: 1; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  .portal-btn { font-size: 0.5rem; padding: 6px 14px; }
+  .portals { bottom: 12px; gap: 6px; }
+}
