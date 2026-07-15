@@ -1,0 +1,138 @@
+{
+  "realm": "air",
+  "displayName": "The Aerie Vaults",
+  "entryRoom": "air_01",
+  "requiredForExit": ["storm_shard_1", "storm_shard_2", "storm_shard_3"],
+  "exitTarget": "../fire/index.html",
+  "witnessKey": "adzmyst_witness",
+
+  "rooms": [
+    {
+      "id": "air_01",
+      "title": "The Threshold Gale",
+      "description": "Wind funnels through a stone archway. The runes here are old and worn smooth.",
+      "background": "img/air/threshold.png",
+      "visiblePortals": [
+        { "to": "air_02", "label": "Follow the draft inward" }
+      ],
+      "hiddenObjects": []
+    },
+    {
+      "id": "air_02",
+      "title": "The Feather Stair",
+      "description": "A spiral of steps, each landing scattered with molted feathers.",
+      "background": "img/air/feather_stair.png",
+      "visiblePortals": [
+        { "to": "air_01", "label": "Back to the threshold" },
+        { "to": "air_03", "label": "Climb higher" }
+      ],
+      "hiddenObjects": [
+        { "id": "decoy_feather_1", "x": "18%", "y": "62%", "glowRadius": 110, "isDecoy": true }
+      ]
+    },
+    {
+      "id": "air_03",
+      "title": "The Whistling Hall",
+      "description": "Wind moves through cracks in the ceiling, singing an unsteady note.",
+      "background": "img/air/whistling_hall.png",
+      "visiblePortals": [
+        { "to": "air_02", "label": "Back down the stair" },
+        { "to": "air_04", "label": "Toward the singing" }
+      ],
+      "hiddenObjects": [
+        { "id": "storm_shard_1", "x": "64%", "y": "38%", "glowRadius": 130 }
+      ]
+    },
+    {
+      "id": "air_04",
+      "title": "The Loft of Old Wings",
+      "description": "Dust and down hang suspended in shafts of light. Something once nested here.",
+      "background": "img/air/loft.png",
+      "visiblePortals": [
+        { "to": "air_03", "label": "Return to the hall" },
+        { "to": "air_05", "label": "Push through the dust" }
+      ],
+      "hiddenObjects": [
+        { "id": "decoy_feather_2", "x": "40%", "y": "80%", "glowRadius": 100, "isDecoy": true },
+        { "id": "decoy_feather_3", "x": "70%", "y": "22%", "glowRadius": 100, "isDecoy": true }
+      ]
+    },
+    {
+      "id": "air_05",
+      "title": "The Rafters",
+      "description": "Bare beams cross overhead. The wind is thinner up here, and colder.",
+      "background": "img/air/rafters.png",
+      "visiblePortals": [
+        { "to": "air_04", "label": "Climb down" },
+        { "to": "air_06", "label": "Edge along the beam" }
+      ],
+      "hiddenObjects": []
+    },
+    {
+      "id": "air_06",
+      "title": "The Bellows Chamber",
+      "description": "A cracked stone bellows still stirs faintly, moved by nothing you can see.",
+      "background": "img/air/bellows.png",
+      "visiblePortals": [
+        { "to": "air_05", "label": "Back to the rafters" },
+        { "to": "air_07", "label": "Deeper in" }
+      ],
+      "hiddenObjects": [
+        { "id": "storm_shard_2", "x": "30%", "y": "60%", "glowRadius": 120 },
+        { "id": "decoy_feather_4", "x": "82%", "y": "68%", "glowRadius": 90, "isDecoy": true }
+      ]
+    },
+    {
+      "id": "air_07",
+      "title": "The Glass Wind",
+      "description": "Shards of some pale crystalline mineral chime softly against each other in the draft.",
+      "background": "img/air/glass_wind.png",
+      "visiblePortals": [
+        { "to": "air_06", "label": "Back to the bellows" },
+        { "to": "air_08", "label": "Through the chiming" }
+      ],
+      "hiddenObjects": []
+    },
+    {
+      "id": "air_08",
+      "title": "The Hollow Roost",
+      "description": "An empty nest as wide as a wagon wheel rests in the room's center.",
+      "background": "img/air/hollow_roost.png",
+      "visiblePortals": [
+        { "to": "air_07", "label": "Back to the glass wind" },
+        { "to": "air_09", "label": "Circle the roost" }
+      ],
+      "hiddenObjects": [
+        { "id": "decoy_feather_5", "x": "50%", "y": "50%", "glowRadius": 130, "isDecoy": true }
+      ]
+    },
+    {
+      "id": "air_09",
+      "title": "The Updraft Well",
+      "description": "A shaft of wind rises straight up through the floor, strong enough to lean into.",
+      "background": "img/air/updraft_well.png",
+      "visiblePortals": [
+        { "to": "air_08", "label": "Step back from the well" },
+        { "to": "air_10", "label": "Lean into the updraft" }
+      ],
+      "hiddenObjects": [
+        { "id": "storm_shard_3", "x": "55%", "y": "45%", "glowRadius": 120 }
+      ]
+    },
+    {
+      "id": "air_10",
+      "title": "The Sky Door",
+      "description": "A last chamber, open to a sky that doesn't match the weather outside. The way onward waits, if you've carried enough with you.",
+      "background": "img/air/sky_door.png",
+      "visiblePortals": [
+        { "to": "air_09", "label": "Return to the updraft" }
+      ],
+      "hiddenObjects": [],
+      "realmExit": {
+        "to": "../fire/index.html",
+        "requires": ["storm_shard_1", "storm_shard_2", "storm_shard_3"],
+        "label": "Step through the sky door"
+      }
+    }
+  ]
+}
