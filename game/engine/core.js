@@ -1,394 +1,529 @@
 /**
- * Adzmyst Game Engine — Core
- * Manages state, scene loading, navigation
+ * Adzmyst Realm Engine — Core
+ * Reads realm JSON (air.json, fire.json, etc.)
+ * Renders rooms, portals, hidden objects, inventory
+ * Manages save state and realm progression
  */
 
 const AdzmystEngine = (function() {
-  // State
-  let state = {
-    schism: null,
-    collectedGlyphs: [],
-    completedRooms: [],
-    currentSceneId: null,
-    puzzles: {}
-  };
+  // ── STATE ──────────────────────────────────────────────
+  let realmData = null;           // Current realm JSON
+  let currentRoom = null;        // Current room object
+  let collectedItems = [];       // IDs of collected hidden objects
+  let visitedRooms = [];         // Room IDs the player has entered
+  let realmComplete = false;     // Has the realm exit been used?
   
-  let currentSceneData = null;
-  let chantEngine = null;
-  
-  // Scene order for map
-  const sceneOrder = [
-    'threshold', 'door-chamber', 'blade-room', 'deep-well',
-    'hand-chamber', 'pillar-hall', 'seal'
-  ];
-  
-  // Initialize
-  async function init() {
-    chantEngine = new GlyphChant();
-    await chantEngine.init();
-    loadSavedGame();
-    attachEventListeners();
-    updateUI();
-  }
-  
-  // Load saved game from localStorage
-  function loadSavedGame() {
-    const saved = localStorage.getItem('adzmyst_game_v2');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        state = { ...state, ...parsed };
-        return true;
-      } catch(e) { return false; }
+  // ── DOM REFERENCES ─────────────────────────────────────
+  let container = null;
+  let inventoryEl = null;
+  let mapModal = null;
+  let toastEl = null;
+
+  // ── INITIALIZATION ─────────────────────────────────────
+  async function init(realmId = 'air') {
+    container = document.getElementById('realmContainer');
+    inventoryEl = document.getElementById('inventory');
+    mapModal = document.getElementById('mapModal');
+    
+    // Load realm JSON
+    realmData = await loadRealmJSON(realmId);
+    if (!realmData) {
+      container.innerHTML = `<div class="error">Failed to load realm: ${realmId}</div>`;
+      return;
     }
-    return false;
+    
+    // Load saved state
+    loadState(realmId);
+    
+    // Determine starting room
+    const startRoomId = getStartRoom();
+    const room = realmData.rooms.find(r => r.id === startRoomId);
+    if (!room) {
+      container.innerHTML = `<div class="error">Room not found: ${startRoomId}</div>`;
+      return;
+    }
+    
+    // Enter the room
+    enterRoom(room);
+    updateInventory();
+    attachGlobalListeners();
+    
+    console.log(`[Realm Engine] ${realmData.displayName} loaded. ${realmData.rooms.length} rooms.`);
   }
-  
-  // Save current game
-  function saveGame() {
-    localStorage.setItem('adzmyst_game_v2', JSON.stringify(state));
+
+  // ── JSON LOADING ───────────────────────────────────────
+  async function loadRealmJSON(realmId) {
+    // Check cache
+    if (realmData && realmData.realm === realmId) return realmData;
+    
+    try {
+      const response = await fetch(`../json/${realmId}.json`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error(`[Realm Engine] Failed to load ${realmId}.json:`, error);
+      return null;
+    }
   }
-  
-  // New game
-  function newGame() {
-    state = {
-      schism: null,
-      collectedGlyphs: [],
-      completedRooms: [],
-      currentSceneId: null,
-      puzzles: {}
+
+  // ── SAVE SYSTEM ─────────────────────────────────────────
+  function loadState(realmId) {
+    try {
+      const saved = localStorage.getItem(`adzmyst_${realmId}_save`);
+      if (saved) {
+        const data = JSON.parse(saved);
+        collectedItems = data.collectedItems || [];
+        visitedRooms = data.visitedRooms || [];
+        realmComplete = data.realmComplete || false;
+      }
+    } catch(e) {
+      console.warn('[Realm Engine] Could not load save:', e);
+    }
+  }
+
+  function saveState() {
+    if (!realmData) return;
+    const data = {
+      realm: realmData.realm,
+      collectedItems,
+      visitedRooms,
+      realmComplete,
+      savedAt: Date.now()
     };
-    saveGame();
-    updateUI();
-  }
-  
-  // Load a scene by ID
-  async function loadScene(sceneId) {
-    if (!sceneId) return;
+    localStorage.setItem(`adzmyst_${realmData.realm}_save`, JSON.stringify(data));
     
-    // Check if scene is accessible
-    if (!isSceneAccessible(sceneId)) {
-      showMessage("The path is not yet open. Complete the previous chamber first.");
+    // Pulse save indicator
+    const dot = document.getElementById('saveDot');
+    if (dot) {
+      dot.classList.add('pulse');
+      setTimeout(() => dot.classList.remove('pulse'), 600);
+    }
+  }
+
+  function getStartRoom() {
+    if (realmComplete) {
+      // If completed, start at the exit room
+      const exitRoom = realmData.rooms.find(r => r.realmExit);
+      if (exitRoom) return exitRoom.id;
+    }
+    
+    // Check URL parameter
+    const params = new URLSearchParams(window.location.search);
+    const roomParam = params.get('room');
+    if (roomParam && realmData.rooms.find(r => r.id === roomParam)) {
+      return roomParam;
+    }
+    
+    // Default to entry room
+    return realmData.entryRoom || realmData.rooms[0].id;
+  }
+
+  // ── ROOM NAVIGATION ────────────────────────────────────
+  function enterRoom(room) {
+    currentRoom = room;
+    
+    // Track visit
+    if (!visitedRooms.includes(room.id)) {
+      visitedRooms.push(room.id);
+    }
+    
+    // Update URL
+    const url = new URL(window.location);
+    url.searchParams.set('room', room.id);
+    window.history.replaceState({}, '', url);
+    
+    // Render
+    renderRoom(room);
+    saveState();
+    
+    // Scroll to top of room
+    if (container) container.scrollTop = 0;
+  }
+
+  function navigateTo(roomId) {
+    const room = realmData.rooms.find(r => r.id === roomId);
+    if (!room) {
+      showToast('That path is lost to the wind.');
       return;
     }
     
-    currentSceneData = await SceneLoader.load(sceneId);
-    if (!currentSceneData) {
-      console.error(`Failed to load scene: ${sceneId}`);
+    // Fade transition
+    container.classList.add('transitioning');
+    setTimeout(() => {
+      enterRoom(room);
+      container.classList.remove('transitioning');
+    }, 400);
+  }
+
+  function navigateToRealmExit() {
+    if (!canExitRealm()) {
+      showToast(`You need all ${realmData.requiredForExit.length} storm shards to pass.`);
       return;
     }
     
-    state.currentSceneId = sceneId;
-    saveGame();
-    renderScene();
-    updateUI();
+    realmComplete = true;
+    saveState();
+    
+    // Update atrium save
+    syncAtriumSave();
+    
+    // Navigate to next realm
+    showToast('The sky door opens...');
+    setTimeout(() => {
+      window.location.href = realmData.exitTarget;
+    }, 1500);
   }
-  
-  // Check if a scene is accessible based on completed rooms
-  function isSceneAccessible(sceneId) {
-    if (sceneId === 'threshold') return true;
-    
-    const currentIndex = sceneOrder.indexOf(state.currentSceneId);
-    const targetIndex = sceneOrder.indexOf(sceneId);
-    
-    // If we have a saved current scene, allow navigation to adjacent rooms
-    if (state.currentSceneId && Math.abs(targetIndex - currentIndex) <= 1) {
-      return true;
-    }
-    
-    // Otherwise check if previous scene is completed
-    const prevIndex = targetIndex - 1;
-    if (prevIndex >= 0) {
-      const prevSceneId = sceneOrder[prevIndex];
-      return state.completedRooms.includes(prevSceneId);
-    }
-    
-    return false;
+
+  function canExitRealm() {
+    if (!realmData.requiredForExit) return true;
+    return realmData.requiredForExit.every(id => collectedItems.includes(id));
   }
-  
-  // Render the current scene
-  function renderScene() {
-    const container = document.getElementById('sceneContainer');
-    if (!container || !currentSceneData) return;
+
+  function syncAtriumSave() {
+    try {
+      const key = realmData.witnessKey || 'adzmyst_witness';
+      localStorage.setItem(key, JSON.stringify({
+        realm: realmData.realm,
+        completed: true,
+        timestamp: Date.now()
+      }));
+      
+      // Also update atrium
+      const atriumRaw = localStorage.getItem('adzmyst_atrium_save');
+      if (atriumRaw) {
+        const atriumData = JSON.parse(atriumRaw);
+        atriumData.unlocked = atriumData.unlocked || {};
+        atriumData.unlocked[realmData.realm] = true;
+        
+        // Unlock next realm based on exit target
+        if (realmData.exitTarget) {
+          const nextRealm = realmData.exitTarget.match(/\.\.\/(\w+)\//)?.[1];
+          if (nextRealm) {
+            atriumData.unlocked[nextRealm] = true;
+          }
+        }
+        
+        localStorage.setItem('adzmyst_atrium_save', JSON.stringify(atriumData));
+      }
+    } catch(e) {
+      console.warn('[Realm Engine] Could not sync atrium:', e);
+    }
+  }
+
+  // ── RENDERING ───────────────────────────────────────────
+  function renderRoom(room) {
+    if (!container) return;
     
-    const isCompleted = state.puzzles[currentSceneData.id] || state.completedRooms.includes(currentSceneData.id);
+    const shardsCollected = collectedItems.filter(id => id.startsWith('storm_shard'));
+    const shardsNeeded = realmData.requiredForExit?.length || 0;
+    const isExitRoom = !!room.realmExit;
+    const canExit = canExitRealm();
     
     container.innerHTML = `
-      <div class="scene-card">
-        <div class="scene-glyph" data-glyph="${currentSceneData.glyph}">${currentSceneData.glyph}</div>
-        <h2 class="scene-title">${currentSceneData.name} · ${currentSceneData.glyphName}</h2>
-        <div class="scene-description">${currentSceneData.description}</div>
+      <div class="room" id="room-${room.id}">
+        <!-- Room background -->
+        <div class="room-background" style="background-image: url('${room.background || ''}');">
+          <div class="room-vignette"></div>
+        </div>
         
-        ${!isCompleted ? `
-          <div class="scene-puzzle">
-            <div class="puzzle-prompt">${currentSceneData.puzzle?.prompt || 'Solve the riddle to proceed.'}</div>
-            <div id="puzzleInterface" class="puzzle-interface"></div>
-            <div id="puzzleFeedback" class="puzzle-feedback"></div>
-          </div>
-        ` : `
-          <div class="scene-completed">
-            <div class="completion-mark">✓ Chamber Complete</div>
-            <div class="completion-message">The glyph ${currentSceneData.glyph} resonates in your memory.</div>
-          </div>
-        `}
+        <!-- Hidden objects layer -->
+        <div class="hidden-objects-layer">
+          ${room.hiddenObjects?.map(obj => {
+            const collected = collectedItems.includes(obj.id);
+            return `
+              <div class="hidden-object ${collected ? 'collected' : ''} ${obj.isDecoy ? 'decoy' : 'shard'}"
+                   id="obj-${obj.id}"
+                   style="left: ${obj.x}; top: ${obj.y}; --glow: ${obj.glowRadius || 100}px;"
+                   data-item-id="${obj.id}"
+                   data-decoy="${obj.isDecoy || false}"
+                   title="${collected ? (obj.isDecoy ? 'A molted feather. Nothing more.' : 'Storm shard collected.') : 'Something glimmers...'}">
+                ${collected ? (obj.isDecoy ? '🪶' : '💎') : '✨'}
+              </div>
+            `;
+          }).join('') || ''}
+        </div>
         
-        <div class="scene-exits">
-          ${currentSceneData.exits?.previous ? `<button class="exit-btn" data-scene="${currentSceneData.exits.previous}">← Previous Chamber</button>` : ''}
-          ${currentSceneData.exits?.next && !isCompleted ? `<button class="exit-btn disabled" disabled>→ Next Chamber (Complete puzzle first)</button>` : ''}
-          ${currentSceneData.exits?.next && isCompleted ? `<button class="exit-btn" data-scene="${currentSceneData.exits.next}">→ Next Chamber</button>` : ''}
+        <!-- Room info overlay -->
+        <div class="room-info">
+          <div class="room-header">
+            <h1 class="room-title">${room.title}</h1>
+            <div class="room-id">${room.id.replace('_', ' ').toUpperCase()}</div>
+          </div>
+          <p class="room-description">${room.description}</p>
+          
+          <!-- Shard progress -->
+          <div class="shard-progress">
+            ${Array.from({ length: shardsNeeded }, (_, i) => `
+              <div class="shard-dot ${collectedItems.includes(`storm_shard_${i + 1}`) ? 'filled' : ''}">
+                ${collectedItems.includes(`storm_shard_${i + 1}`) ? '💎' : '○'}
+              </div>
+            `).join('')}
+            <span class="shard-label">Storm Shards: ${shardsCollected.length}/${shardsNeeded}</span>
+          </div>
+        </div>
+        
+        <!-- Portals -->
+        <div class="portals">
+          ${room.visiblePortals?.map(portal => `
+            <button class="portal-btn" data-target="${portal.to}">
+              <span class="portal-icon">𐤃</span>
+              <span class="portal-label">${portal.label}</span>
+            </button>
+          `).join('') || ''}
+          
+          ${isExitRoom ? `
+            <button class="portal-btn exit-portal ${canExit ? 'unlocked' : 'locked'}" 
+                    data-action="exit">
+              <span class="portal-icon">${canExit ? '𐤕' : '𐤎'}</span>
+              <span class="portal-label">${room.realmExit.label}</span>
+              ${!canExit ? `<span class="portal-requirement">Requires ${shardsNeeded} storm shards</span>` : ''}
+            </button>
+          ` : ''}
         </div>
       </div>
     `;
     
-    // Attach glyph click for chant
-    const glyphEl = container.querySelector('.scene-glyph');
-    if (glyphEl) {
-      glyphEl.addEventListener('click', async () => {
-        await chantEngine.resume();
-        chantEngine.performGlyph(currentSceneData.glyph);
+    // Attach event listeners
+    attachRoomListeners(room);
+  }
+
+  function attachRoomListeners(room) {
+    // Portal clicks
+    container.querySelectorAll('.portal-btn[data-target]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.target;
+        navigateTo(target);
+      });
+    });
+    
+    // Exit portal
+    const exitBtn = container.querySelector('.portal-btn[data-action="exit"]');
+    if (exitBtn) {
+      exitBtn.addEventListener('click', () => {
+        if (canExitRealm()) {
+          navigateToRealmExit();
+        } else {
+          showToast(`Collect all ${realmData.requiredForExit.length} storm shards first.`);
+        }
       });
     }
     
-    // Attach exit buttons
-    container.querySelectorAll('.exit-btn[data-scene]').forEach(btn => {
-      btn.addEventListener('click', () => loadScene(btn.dataset.scene));
+    // Hidden objects
+    container.querySelectorAll('.hidden-object:not(.collected)').forEach(obj => {
+      obj.addEventListener('click', () => {
+        collectItem(obj.dataset.itemId, obj.dataset.decoy === 'true');
+      });
     });
-    
-    // Render puzzle interface if not completed
-    if (!isCompleted && currentSceneData.puzzle) {
-      renderPuzzle();
-    }
   }
-  
-  // Render puzzle interface based on puzzle type
-  async function renderPuzzle() {
-    const container = document.getElementById('puzzleInterface');
-    if (!container) return;
+
+  function collectItem(itemId, isDecoy) {
+    if (collectedItems.includes(itemId)) return;
     
-    const puzzle = currentSceneData.puzzle;
+    collectedItems.push(itemId);
     
-    switch (puzzle.type) {
-      case 'chant':
-        container.innerHTML = `
-          <div class="chant-puzzle">
-            <p>Speak the glyph's sound: <strong>${puzzle.targetSound}</strong></p>
-            <button id="listenBtn" class="puzzle-action">🎤 Speak Now</button>
-            <button id="hearBtn" class="puzzle-action">🔊 Hear the Chant</button>
-          </div>
-        `;
-        
-        document.getElementById('hearBtn')?.addEventListener('click', async () => {
-          await chantEngine.resume();
-          chantEngine.performGlyph(currentSceneData.glyph);
-        });
-        
-        document.getElementById('listenBtn')?.addEventListener('click', async () => {
-          const result = await AdzmystAudio.listenForGlyph(currentSceneData.glyph);
-          const feedback = document.getElementById('puzzleFeedback');
-          if (result.matched) {
-            feedback.innerHTML = `<span class="success">✓ ${puzzle.successMessage}</span>`;
-            completePuzzle();
-          } else {
-            feedback.innerHTML = `<span class="failure">✗ ${puzzle.failureMessage || `Heard: "${result.heard}"`}</span>`;
-          }
-        });
-        break;
-        
-      case 'choice':
-        container.innerHTML = `
-          <div class="choice-puzzle">
-            <p>${puzzle.prompt}</p>
-            <div class="choice-options">
-              ${puzzle.options.map(opt => `
-                <button class="choice-btn" data-choice="${opt.id}">${opt.label}</button>
-              `).join('')}
-            </div>
-          </div>
-        `;
-        
-        container.querySelectorAll('.choice-btn').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const choiceId = btn.dataset.choice;
-            const choice = puzzle.options.find(o => o.id === choiceId);
-            if (choice) {
-              if (choice.setsSchism) {
-                state.schism = choice.setsSchism;
-                saveGame();
-              }
-              document.getElementById('puzzleFeedback').innerHTML = `<span class="success">✓ ${choice.successMessage}</span>`;
-              completePuzzle();
-            }
-          });
-        });
-        break;
-        
-      case 'triad':
-        // Triad puzzle — select matching glyphs
-        container.innerHTML = `
-          <div class="triad-puzzle">
-            <p>${puzzle.prompt}</p>
-            <div class="triad-options" id="triadOptions"></div>
-            <button id="submitTriad" class="puzzle-action">Submit Triad</button>
-          </div>
-        `;
-        // Triad rendering logic would go here
-        break;
-        
-      default:
-        container.innerHTML = `<p>Puzzle type "${puzzle.type}" not implemented.</p>`;
-    }
-  }
-  
-  // Complete current puzzle
-  function completePuzzle() {
-    const sceneId = currentSceneData.id;
-    state.puzzles[sceneId] = true;
-    if (!state.completedRooms.includes(sceneId)) {
-      state.completedRooms.push(sceneId);
-    }
-    if (currentSceneData.completion?.collectsGlyph) {
-      const glyph = currentSceneData.completion.collectsGlyph;
-      if (!state.collectedGlyphs.includes(glyph)) {
-        state.collectedGlyphs.push(glyph);
+    const itemEl = document.getElementById(`obj-${itemId}`);
+    if (itemEl) {
+      itemEl.classList.add('collected');
+      if (isDecoy) {
+        itemEl.innerHTML = '🪶';
+        showToast('A molted feather. Beautiful, but not what you seek.');
+      } else {
+        itemEl.innerHTML = '💎';
+        const shardNum = itemId.match(/\d+/)?.[0] || '';
+        showToast(`Storm shard ${shardNum} collected! The wind hums with power.`);
       }
     }
-    saveGame();
-    updateUI();
-    renderScene(); // Re-render to show completion state
-  }
-  
-  // Update UI elements (inventory, progress, map)
-  function updateUI() {
-    const glyphCount = state.collectedGlyphs.length;
-    const countEl = document.getElementById('glyphCount');
-    if (countEl) countEl.textContent = glyphCount;
     
-    const progress = (state.completedRooms.length / sceneOrder.length) * 100;
-    const fillEl = document.getElementById('progressFill');
-    if (fillEl) fillEl.style.width = `${progress}%`;
+    updateInventory();
+    saveState();
     
-    // Update map if open
-    const mapModal = document.getElementById('mapModal');
-    if (mapModal && mapModal.style.display !== 'none') {
-      renderMap();
+    // Refresh room to update exit portal if needed
+    if (!isDecoy && canExitRealm()) {
+      const exitRoom = realmData.rooms.find(r => r.realmExit);
+      if (exitRoom && currentRoom.id === exitRoom.id) {
+        // Re-render to unlock exit portal
+        renderRoom(currentRoom);
+        attachRoomListeners(currentRoom);
+      }
     }
   }
-  
-  // Render the map modal
+
+  function updateInventory() {
+    if (!inventoryEl) return;
+    
+    const shards = collectedItems.filter(id => id.startsWith('storm_shard'));
+    const decoys = collectedItems.filter(id => id.startsWith('decoy'));
+    
+    inventoryEl.innerHTML = `
+      <div class="inventory-section">
+        <div class="inventory-label">Storm Shards</div>
+        <div class="inventory-items">
+          ${shards.length > 0 
+            ? shards.map(s => `<span class="inv-item shard">💎</span>`).join('') 
+            : '<span class="inv-empty">Empty</span>'}
+        </div>
+      </div>
+      <div class="inventory-section">
+        <div class="inventory-label">Feathers Found</div>
+        <div class="inventory-items">
+          ${decoys.length > 0 
+            ? decoys.map(d => `<span class="inv-item decoy">🪶</span>`).join('') 
+            : '<span class="inv-empty">None</span>'}
+        </div>
+      </div>
+    `;
+  }
+
+  // ── MAP ──────────────────────────────────────────────────
   function renderMap() {
     const mapGrid = document.getElementById('mapGrid');
-    if (!mapGrid) return;
+    if (!mapGrid || !realmData) return;
     
-    mapGrid.innerHTML = sceneOrder.map(sceneId => {
-      const isCompleted = state.completedRooms.includes(sceneId);
-      const isCurrent = state.currentSceneId === sceneId;
-      const sceneData = SceneLoader.getCached(sceneId);
-      const name = sceneData?.name || sceneId;
+    mapGrid.innerHTML = realmData.rooms.map(room => {
+      const isCurrent = currentRoom && room.id === currentRoom.id;
+      const isVisited = visitedRooms.includes(room.id);
+      const hasShard = room.hiddenObjects?.some(obj => 
+        obj.id.startsWith('storm_shard') && collectedItems.includes(obj.id)
+      );
+      const isExit = !!room.realmExit;
       
       return `
-        <div class="map-node ${isCompleted ? 'completed' : ''} ${isCurrent ? 'current' : ''}" 
-             data-scene="${sceneId}">
-          <div class="map-glyph">${sceneData?.glyph || '?'}</div>
-          <div class="map-name">${name}</div>
-          ${isCompleted ? '<div class="map-check">✓</div>' : ''}
+        <div class="map-node ${isCurrent ? 'current' : ''} ${isVisited ? 'visited' : ''} ${hasShard ? 'has-shard' : ''} ${isExit ? 'exit' : ''}"
+             data-room="${room.id}">
+          <div class="map-node-icon">${isExit ? '𐤕' : hasShard ? '💎' : isVisited ? '○' : '·'}</div>
+          <div class="map-node-name">${room.title}</div>
+          ${isCurrent ? '<div class="map-node-marker">▼</div>' : ''}
         </div>
       `;
     }).join('');
     
+    // Clickable nodes
     mapGrid.querySelectorAll('.map-node').forEach(node => {
       node.addEventListener('click', () => {
-        const sceneId = node.dataset.scene;
-        if (sceneId && isSceneAccessible(sceneId)) {
-          loadScene(sceneId);
-          document.getElementById('mapModal').style.display = 'none';
-        } else {
-          showMessage("That chamber is not yet accessible.");
+        const roomId = node.dataset.room;
+        if (roomId) {
+          navigateTo(roomId);
+          if (mapModal) mapModal.style.display = 'none';
         }
       });
     });
   }
-  
-  // Show a temporary message
-  function showMessage(msg) {
-    let toast = document.getElementById('gameToast');
-    if (!toast) {
-      toast = document.createElement('div');
-      toast.id = 'gameToast';
-      toast.className = 'game-toast';
-      document.body.appendChild(toast);
+
+  // ── TOAST ────────────────────────────────────────────────
+  function showToast(message) {
+    if (!toastEl) {
+      toastEl = document.createElement('div');
+      toastEl.id = 'realmToast';
+      toastEl.className = 'realm-toast';
+      document.body.appendChild(toastEl);
     }
-    toast.textContent = msg;
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 3000);
+    toastEl.textContent = message;
+    toastEl.classList.add('show');
+    clearTimeout(toastEl._timeout);
+    toastEl._timeout = setTimeout(() => toastEl.classList.remove('show'), 3000);
   }
-  
-  // Attach global event listeners
-  function attachEventListeners() {
+
+  // ── GLOBAL LISTENERS ────────────────────────────────────
+  function attachGlobalListeners() {
+    // Map button
     const mapBtn = document.getElementById('mapBtn');
-    const inventoryBtn = document.getElementById('inventoryBtn');
-    const saveBtn = document.getElementById('saveBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    
     if (mapBtn) {
       mapBtn.addEventListener('click', () => {
         renderMap();
-        document.getElementById('mapModal').style.display = 'flex';
+        if (mapModal) mapModal.style.display = 'flex';
       });
     }
     
-    if (inventoryBtn) {
-      inventoryBtn.addEventListener('click', () => {
-        const inventoryList = document.getElementById('inventoryList');
-        if (inventoryList) {
-          inventoryList.innerHTML = state.collectedGlyphs.map(g => 
-            `<div class="inv-glyph" data-glyph="${g}">${g}</div>`
-          ).join('');
-          document.getElementById('inventoryModal').style.display = 'flex';
-        }
+    // Inventory button
+    const invBtn = document.getElementById('inventoryBtn');
+    if (invBtn) {
+      invBtn.addEventListener('click', () => {
+        const invModal = document.getElementById('inventoryModal');
+        if (invModal) invModal.style.display = 'flex';
       });
     }
     
+    // Save button
+    const saveBtn = document.getElementById('saveBtn');
     if (saveBtn) {
       saveBtn.addEventListener('click', () => {
-        saveGame();
-        showMessage('Game saved.');
+        saveState();
+        showToast('Progress saved.');
       });
     }
     
+    // Reset button
+    const resetBtn = document.getElementById('resetBtn');
     if (resetBtn) {
       resetBtn.addEventListener('click', () => {
-        if (currentSceneData && confirm('Reset this room? Progress will be lost.')) {
-          delete state.puzzles[currentSceneData.id];
-          state.completedRooms = state.completedRooms.filter(id => id !== currentSceneData.id);
-          saveGame();
-          renderScene();
-          updateUI();
+        if (confirm('Reset this realm? All collected shards will be lost.')) {
+          collectedItems = [];
+          visitedRooms = [];
+          realmComplete = false;
+          saveState();
+          init(realmData.realm);
+          showToast('Realm reset.');
         }
+      });
+    }
+    
+    // Return to atrium
+    const returnBtn = document.getElementById('returnBtn');
+    if (returnBtn) {
+      returnBtn.addEventListener('click', () => {
+        window.location.href = '../../index.html';
       });
     }
     
     // Modal close buttons
     document.querySelectorAll('.modal-close').forEach(btn => {
       btn.addEventListener('click', () => {
-        document.getElementById('mapModal').style.display = 'none';
-        document.getElementById('inventoryModal').style.display = 'none';
+        document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
       });
     });
+    
+    // Close modals on background click
+    document.querySelectorAll('.modal').forEach(modal => {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.style.display = 'none';
+      });
+    });
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+      }
+      if (e.key === 'm' && !e.ctrlKey && !e.metaKey) {
+        renderMap();
+        if (mapModal) mapModal.style.display = 'flex';
+      }
+    });
   }
-  
-  // Public API
+
+  // ── PUBLIC API ───────────────────────────────────────────
   return {
     init,
-    newGame,
-    loadGame: loadSavedGame,
-    loadScene,
-    saveGame,
-    getState: () => ({ ...state }),
-    completePuzzle
+    navigateTo,
+    getState: () => ({
+      realm: realmData?.realm,
+      currentRoom: currentRoom?.id,
+      collectedItems: [...collectedItems],
+      visitedRooms: [...visitedRooms],
+      realmComplete
+    }),
+    saveState,
+    canExitRealm
   };
 })();
 
-// Auto-init
-document.addEventListener('DOMContentLoaded', () => AdzmystEngine.init());
+// Auto-init when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  // Detect realm from URL or default to air
+  const params = new URLSearchParams(window.location.search);
+  const realm = params.get('realm') || 'air';
+  AdzmystEngine.init(realm);
+});
 
 window.AdzmystEngine = AdzmystEngine;
