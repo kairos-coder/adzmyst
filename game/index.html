@@ -6,524 +6,331 @@
 <title>The Labyrinth · Adzmyst</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Cinzel+Decorative:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/realm.css">
 <style>
-  /* ═══════════════════════════════════════════════════════
-     ADZMYST GAME HUB — THE LABYRINTH ENTRY
-     Realm detection · Save state · Transitions
-     ═══════════════════════════════════════════════════════ */
-
-  :root {
-    --void:       #07080f;
-    --deep:       #0a1528;
-    --mid:        #1a3050;
-    --silver:     #b8cce0;
-    --breath:     #e8f2ff;
-    --gold:       #c8a84a;
-    --gold-dim:   #6a5830;
-
-    --realm-air:   #5ab8b0;
-    --realm-fire:  #d4784a;
-    --realm-earth: #6a9464;
-    --realm-water: #4a7ab8;
-
-    --transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  html, body {
-    width: 100%; height: 100%;
-    overflow: hidden;
-    background: var(--void);
-    color: var(--breath);
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 16px;
-  }
-
-  /* ── AMBIENT BACKGROUND ── */
-  #ambient {
-    position: fixed; inset: 0; z-index: 0;
-    background:
-      radial-gradient(ellipse 60% 40% at 50% 40%, rgba(200,168,74,0.04) 0%, transparent 60%),
-      linear-gradient(180deg, #03050e 0%, var(--deep) 40%, var(--mid) 100%);
-    transition: background var(--transition);
-  }
-  #ambient.realm-air   { background: radial-gradient(ellipse 60% 40% at 50% 40%, rgba(90,184,176,0.06) 0%, transparent 60%), linear-gradient(180deg, #03050e 0%, #0a1828 40%, #1a3050 100%); }
-  #ambient.realm-fire  { background: radial-gradient(ellipse 60% 40% at 50% 40%, rgba(212,120,74,0.06) 0%, transparent 60%), linear-gradient(180deg, #03050e 0%, #1a1020 40%, #2a1a30 100%); }
-  #ambient.realm-earth { background: radial-gradient(ellipse 60% 40% at 50% 40%, rgba(106,148,100,0.06) 0%, transparent 60%), linear-gradient(180deg, #03050e 0%, #101a10 40%, #1a2a18 100%); }
-  #ambient.realm-water { background: radial-gradient(ellipse 60% 40% at 50% 40%, rgba(74,122,184,0.06) 0%, transparent 60%), linear-gradient(180deg, #03050e 0%, #0a1428 40%, #102040 100%); }
-
-  /* ── LOADING VEIL ── */
-  #loading-veil {
-    position: fixed; inset: 0; z-index: 100;
-    background: var(--void);
+  /* ── GAME HUB SPECIFIC ── */
+  #hub-container {
+    position: fixed; inset: 0; z-index: 20;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    gap: 20px;
-    transition: opacity 0.5s ease;
+    pointer-events: none;
   }
-  #loading-veil.hide { opacity: 0; pointer-events: none; }
-
-  #loading-glyph {
-    font-size: 3rem;
-    color: var(--gold);
-    animation: loadPulse 1.5s ease-in-out infinite;
-  }
-  @keyframes loadPulse {
-    0%, 100% { opacity: 0.3; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.08); }
-  }
-  #loading-text {
-    font-family: 'Cinzel', serif;
-    font-size: 0.6rem;
+  
+  #hub-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 400;
+    color: var(--breath);
     letter-spacing: 0.3em;
+    text-shadow: 0 0 40px rgba(74,122,170,0.5), 0 0 80px rgba(74,122,170,0.2);
+    margin-bottom: 0.5rem;
+    text-align: center;
+  }
+  #hub-subtitle {
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem; letter-spacing: 0.4em;
     text-transform: uppercase;
     color: var(--silver);
     opacity: 0.5;
+    margin-bottom: 3rem;
+    text-align: center;
   }
-
-  /* ── FADE TRANSITION ── */
-  #fade {
-    position: fixed; inset: 0; z-index: 90;
-    background: var(--void);
-    opacity: 0; pointer-events: none;
-    transition: opacity 0.5s ease;
+  
+  /* Realm selector cards */
+  #realm-selector {
+    display: flex; gap: 20px;
+    flex-wrap: wrap; justify-content: center;
+    pointer-events: auto;
   }
-  #fade.active { opacity: 1; pointer-events: all; }
-
-  /* ── HUD ── */
-  #hud {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 30;
-    padding: 14px 20px;
-    display: flex; align-items: center; justify-content: space-between;
-    background: linear-gradient(180deg, rgba(7,8,15,0.85) 0%, transparent 100%);
+  .realm-card {
+    width: 140px;
+    padding: 20px 16px;
+    background: rgba(10,20,40,0.6);
+    border: 1px solid rgba(184,204,224,0.1);
+    border-radius: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.4s;
+    backdrop-filter: blur(8px);
+    text-decoration: none;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 10px;
+  }
+  .realm-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(184,204,224,0.3);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+  }
+  .realm-card.locked {
+    opacity: 0.35;
+    cursor: not-allowed;
     pointer-events: none;
   }
-  #hud-location {
-    font-family: 'Cinzel', serif;
-    font-size: 10px; letter-spacing: 3px;
-    color: var(--silver); text-transform: uppercase;
+  .realm-card .card-icon {
+    font-size: 2rem;
+    width: 50px; height: 50px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    border: 1px solid rgba(184,204,224,0.15);
   }
-  #hud-realm-indicator {
+  .realm-card.air .card-icon   { color: var(--air); border-color: rgba(90,184,176,0.3); }
+  .realm-card.fire .card-icon  { color: var(--fire); border-color: rgba(212,120,74,0.3); }
+  .realm-card.earth .card-icon { color: var(--earth); border-color: rgba(106,148,100,0.3); }
+  .realm-card.water .card-icon { color: var(--water); border-color: rgba(74,122,184,0.3); }
+  
+  .realm-card .card-name {
     font-family: 'Cinzel', serif;
-    font-size: 8px; letter-spacing: 2px;
+    font-size: 0.65rem; letter-spacing: 2px;
+    color: var(--breath);
+    text-transform: uppercase;
+  }
+  .realm-card .card-glyphs {
+    font-size: 0.8rem;
+    letter-spacing: 3px;
+    opacity: 0.5;
+  }
+  .realm-card.air .card-glyphs   { color: var(--air); }
+  .realm-card.fire .card-glyphs  { color: var(--fire); }
+  .realm-card.earth .card-glyphs { color: var(--earth); }
+  .realm-card.water .card-glyphs { color: var(--water); }
+  
+  .realm-card .card-badge {
+    font-family: 'Cinzel', serif;
+    font-size: 0.45rem; letter-spacing: 2px;
     text-transform: uppercase;
     padding: 3px 10px;
-    border: 1px solid rgba(184,204,224,0.2);
-    border-radius: 12px;
-    color: var(--silver);
-    opacity: 0.6;
+    border-radius: 10px;
   }
+  .card-badge.open  { color: var(--unlock); border: 1px solid rgba(138,216,160,0.3); }
+  .card-badge.locked { color: var(--gold-dim); border: 1px solid rgba(74,58,42,0.4); }
 
-  /* ── REALM IFRAME ── */
-  #realm-frame {
-    position: fixed; inset: 0; z-index: 10;
-    width: 100%; height: 100%;
-    border: none;
-    background: transparent;
+  /* Bottom nav */
+  #hub-nav {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 30;
+    padding: 1rem 1.5rem 1.5rem;
+    display: flex; align-items: center; justify-content: center; gap: 1.5rem;
+    background: linear-gradient(0deg, rgba(7,8,15,0.9) 0%, transparent 100%);
+    pointer-events: auto;
   }
-
-  /* ── RETURN BUTTON ── */
-  #return-btn {
-    position: fixed; top: 16px; left: 16px; z-index: 45;
+  .hub-nav-btn {
     font-family: 'Cinzel', serif;
-    font-size: 0.6rem; letter-spacing: 0.2em;
+    font-size: 0.6rem; letter-spacing: 2px;
     text-transform: uppercase;
-    color: var(--silver);
-    opacity: 0.4;
-    background: rgba(7,8,15,0.7);
+    padding: 6px 16px;
     border: 1px solid rgba(184,204,224,0.15);
-    border-radius: 16px;
-    padding: 6px 14px;
+    background: transparent;
+    color: var(--silver);
     cursor: pointer;
-    backdrop-filter: blur(4px);
+    border-radius: 20px;
     transition: all 0.3s;
+    text-decoration: none;
     display: flex; align-items: center; gap: 6px;
   }
-  #return-btn:hover {
-    opacity: 1;
+  .hub-nav-btn:hover {
     border-color: var(--gold);
     color: var(--breath);
   }
-  #return-btn .ret-glyph {
-    font-size: 1rem;
-  }
+  .hub-nav-btn .nav-icon { font-size: 0.9rem; }
 
-  /* ── REALM NAV (bottom) ── */
-  #realm-nav {
-    position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
-    padding: 1rem 1.5rem 1.5rem;
-    display: flex; align-items: center; justify-content: center; gap: 1.5rem;
-    background: linear-gradient(0deg, rgba(7,8,15,0.92) 0%, transparent 100%);
+  /* Loading */
+  #hub-loading {
+    position: fixed; inset: 0; z-index: 100;
+    background: var(--void);
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity 0.5s ease;
   }
-  .realm-nav-btn {
-    font-family: 'Cinzel', serif;
-    font-size: 0.6rem; letter-spacing: 0.2em;
-    text-transform: uppercase;
-    padding: 0.5rem 1rem;
-    border: 1px solid rgba(184,204,224,0.15);
-    background: transparent;
-    color: var(--silver);
-    cursor: pointer;
-    transition: all 0.3s;
-    border-radius: 20px;
-    display: flex; align-items: center; gap: 0.4rem;
-    opacity: 0.5;
-  }
-  .realm-nav-btn:hover {
-    border-color: var(--silver);
-    opacity: 0.8;
-  }
-  .realm-nav-btn.active {
-    opacity: 1;
-    color: var(--breath);
-  }
-  .realm-nav-btn.active.air   { border-color: var(--realm-air);   color: var(--realm-air); }
-  .realm-nav-btn.active.fire  { border-color: var(--realm-fire);  color: var(--realm-fire); }
-  .realm-nav-btn.active.earth { border-color: var(--realm-earth); color: var(--realm-earth); }
-  .realm-nav-btn.active.water { border-color: var(--realm-water); color: var(--realm-water); }
-  .realm-nav-btn .nav-dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: currentColor;
-    opacity: 0.5;
-  }
-  .realm-nav-btn .nav-glyph {
-    font-size: 1rem;
-  }
+  #hub-loading.hide { opacity: 0; pointer-events: none; }
 
-  /* ── SAVE INDICATOR ── */
-  #save-dot {
-    position: fixed; top: 20px; right: 20px; z-index: 45;
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--gold);
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-  #save-dot.pulse {
-    opacity: 1;
-    animation: saveFlash 0.5s ease;
-  }
-  @keyframes saveFlash {
-    0% { opacity: 1; transform: scale(1); }
-    100% { opacity: 0; transform: scale(2); }
-  }
-
-  /* ── RESPONSIVE ── */
   @media (max-width: 600px) {
-    #realm-nav { gap: 0.6rem; padding: 0.8rem 0.6rem 1.2rem; }
-    .realm-nav-btn { font-size: 0.5rem; padding: 0.4rem 0.6rem; letter-spacing: 0.1em; }
-    .realm-nav-btn .nav-glyph { font-size: 0.8rem; }
-    #return-btn { top: 10px; left: 8px; font-size: 0.5rem; padding: 4px 10px; }
+    .realm-card { width: 110px; padding: 14px 10px; }
+    .realm-card .card-name { font-size: 0.55rem; }
+    #hub-nav { gap: 0.8rem; }
+    .hub-nav-btn { font-size: 0.5rem; padding: 4px 10px; }
   }
 </style>
 </head>
 <body>
 
-<!-- Ambient background -->
-<div id="ambient"></div>
+<!-- Ambient layers -->
+<div class="realm-ambient" style="background: radial-gradient(ellipse 60% 40% at 50% 40%, rgba(200,168,74,0.04) 0%, transparent 60%), linear-gradient(180deg, #03050e 0%, #0a1528 40%, #1a3050 100%);"></div>
+<canvas id="starfield"></canvas>
+<div class="fog-layer"></div>
+<div id="glyphParticles"></div>
+<div class="realm-vignette"></div>
 
-<!-- Loading veil -->
-<div id="loading-veil">
-  <div id="loading-glyph">𐤀</div>
-  <div id="loading-text">The breath opens the way</div>
+<!-- Loading -->
+<div id="hub-loading">
+  <div style="font-size:2rem;color:var(--air);animation:loadPulse 1.5s ease-in-out infinite;">𐤀</div>
 </div>
 
-<!-- Fade overlay -->
-<div id="fade"></div>
-
-<!-- HUD -->
-<div id="hud">
-  <div id="hud-location">The Labyrinth</div>
-  <div id="hud-realm-indicator">Loading...</div>
+<!-- Hub content -->
+<div id="hub-container">
+  <div id="hub-title">ADZMYST</div>
+  <div id="hub-subtitle">The Labyrinth · Four Realms</div>
+  
+  <div id="realm-selector">
+    <!-- Populated by JS -->
+  </div>
 </div>
 
-<!-- Return button -->
-<button id="return-btn">
-  <span class="ret-glyph">𐤃</span>
-  Return to Atrium
-</button>
-
-<!-- Save indicator -->
-<div id="save-dot"></div>
-
-<!-- Realm iframe -->
-<iframe id="realm-frame" src="" allow="autoplay"></iframe>
-
-<!-- Realm navigation -->
-<nav id="realm-nav">
-  <button class="realm-nav-btn air" data-realm="air">
-    <span class="nav-dot"></span>
-    <span class="nav-glyph">𓂝</span>
-    Air
-  </button>
-  <button class="realm-nav-btn fire" data-realm="fire">
-    <span class="nav-dot"></span>
-    <span class="nav-glyph">𓇋</span>
-    Fire
-  </button>
-  <button class="realm-nav-btn earth" data-realm="earth">
-    <span class="nav-dot"></span>
-    <span class="nav-glyph">𓌹</span>
-    Earth
-  </button>
-  <button class="realm-nav-btn water" data-realm="water">
-    <span class="nav-dot"></span>
-    <span class="nav-glyph">𓏏</span>
-    Water
+<!-- Bottom nav -->
+<nav id="hub-nav">
+  <a href="../index.html" class="hub-nav-btn">
+    <span class="nav-icon">𐤃</span> Atrium
+  </a>
+  <a href="map.html" class="hub-nav-btn">
+    <span class="nav-icon">🗺</span> Map
+  </a>
+  <button class="hub-nav-btn" id="resetBtn">
+    <span class="nav-icon">↺</span> Reset
   </button>
 </nav>
 
 <script>
-// ═══════════════════════════════════════════════════════════
-// ADZMYST GAME HUB — REALM MANAGER
-// Detects realm from URL param, loads iframe, manages state
-// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// GAME HUB — REALM SELECTOR
+// Reads unlock state, renders realm cards, navigates
+// ═══════════════════════════════════════════════════════
 
 const REALMS = {
-  air:   { id: 'air',   name: 'Air Realm',   path: 'air/index.html',   icon: '𓂝', glyph: '𐤀', color: '#5ab8b0' },
-  fire:  { id: 'fire',  name: 'Fire Realm',  path: 'fire/index.html',  icon: '𓇋', glyph: '𐤕', color: '#d4784a' },
-  earth: { id: 'earth', name: 'Earth Realm', path: 'earth/index.html', icon: '𓌹', glyph: '𐤎', color: '#6a9464' },
-  water: { id: 'water', name: 'Water Realm', path: 'water/index.html', icon: '𓏏', glyph: '𐤌', color: '#4a7ab8' },
+  air:   { id:'air',   name:'Air Realm',   subtitle:'The Aerie Vaults',     icon:'𓂝', glyphs:'𐤀 𐤃 𐤆', color:'#5ab8b0', page:'air/index.html' },
+  fire:  { id:'fire',  name:'Fire Realm',  subtitle:'The Forge of Prophecy',icon:'𓇋', glyphs:'𐤕 𐤉 𐤀', color:'#d4784a', page:'fire/index.html' },
+  earth: { id:'earth', name:'Earth Realm', subtitle:'The Root Cathedral',   icon:'𓌹', glyphs:'𐤎 𐤌 𐤃', color:'#6a9464', page:'earth/index.html' },
+  water: { id:'water', name:'Water Realm', subtitle:'The Deep Draw',        icon:'𓏏', glyphs:'𐤌 𐤉 𐤕', color:'#4a7ab8', page:'water/index.html' },
 };
 
-const GameHub = {
-  currentRealm: null,
-  unlockedRealms: ['air'],
+// ── STATE ──────────────────────────────────────────────
+let unlockedRealms = ['air'];
 
-  init() {
-    this.loadState();
-    this.detectRealm();
-    this.bindEvents();
-    this.updateNavButtons();
-
-    // Hide loading veil after realm loads
-    setTimeout(() => {
-      document.getElementById('loading-veil').classList.add('hide');
-      setTimeout(() => {
-        const veil = document.getElementById('loading-veil');
-        if (veil) veil.style.display = 'none';
-      }, 500);
-    }, 1200);
-
-    console.log('[Game Hub] Initialized. Realm:', this.currentRealm);
-  },
-
-  loadState() {
-    try {
-      // Load from atrium save
-      const atriumRaw = localStorage.getItem('adzmyst_atrium_save');
-      if (atriumRaw) {
-        const data = JSON.parse(atriumRaw);
-        if (data.unlocked) {
-          // Map atrium unlock keys to realms
-          Object.keys(data.unlocked).forEach(key => {
-            if (REALMS[key] && data.unlocked[key]) {
-              if (!this.unlockedRealms.includes(key)) {
-                this.unlockedRealms.push(key);
-              }
-            }
-          });
-        }
-      }
-    } catch(e) {
-      console.warn('[Game Hub] Could not load state:', e);
-    }
-  },
-
-  saveState() {
-    const data = {
-      unlockedRealms: this.unlockedRealms,
-      currentRealm: this.currentRealm,
-      savedAt: Date.now()
-    };
-    localStorage.setItem('adzmyst_game_hub', JSON.stringify(data));
-
-    // Sync back to atrium
-    try {
-      const atriumRaw = localStorage.getItem('adzmyst_atrium_save');
-      if (atriumRaw) {
-        const atriumData = JSON.parse(atriumRaw);
-        atriumData.unlocked = atriumData.unlocked || {};
-        this.unlockedRealms.forEach(realm => {
-          atriumData.unlocked[realm] = true;
+function loadState() {
+  try {
+    const saved = localStorage.getItem('adzmyst_atrium_save');
+    if (saved) {
+      const data = JSON.parse(saved);
+      if (data.unlocked) {
+        Object.keys(data.unlocked).forEach(key => {
+          if (REALMS[key] && data.unlocked[key] && !unlockedRealms.includes(key)) {
+            unlockedRealms.push(key);
+          }
         });
-        localStorage.setItem('adzmyst_atrium_save', JSON.stringify(atriumData));
       }
-    } catch(e) {}
-
-    // Pulse save indicator
-    const dot = document.getElementById('save-dot');
-    dot.classList.remove('pulse');
-    void dot.offsetWidth;
-    dot.classList.add('pulse');
-  },
-
-  detectRealm() {
-    // Check URL parameter: ?realm=air
-    const params = new URLSearchParams(window.location.search);
-    const realmParam = params.get('realm');
-
-    if (realmParam && REALMS[realmParam]) {
-      this.currentRealm = realmParam;
-    } else {
-      // Default to first unlocked realm
-      this.currentRealm = this.unlockedRealms[0] || 'air';
     }
+  } catch(e) {}
+}
 
-    this.loadRealm(this.currentRealm);
-  },
+// ── RENDER ─────────────────────────────────────────────
+function renderCards() {
+  const selector = document.getElementById('realm-selector');
+  selector.innerHTML = Object.values(REALMS).map(realm => {
+    const unlocked = unlockedRealms.includes(realm.id);
+    return `
+      <div class="realm-card ${realm.id} ${unlocked ? '' : 'locked'}" 
+           data-realm="${realm.id}"
+           ${unlocked ? `onclick="enterRealm('${realm.id}')"` : ''}>
+        <div class="card-icon">${realm.icon}</div>
+        <div class="card-name">${realm.name}</div>
+        <div class="card-glyphs">${realm.glyphs}</div>
+        <div class="card-badge ${unlocked ? 'open' : 'locked'}">${unlocked ? 'OPEN' : 'LOCKED'}</div>
+      </div>
+    `;
+  }).join('');
+}
 
-  loadRealm(realmId) {
-    const realm = REALMS[realmId];
-    if (!realm) return;
+function enterRealm(realmId) {
+  const realm = REALMS[realmId];
+  if (!realm || !unlockedRealms.includes(realmId)) return;
+  
+  // Fade and navigate
+  document.getElementById('hub-loading').classList.remove('hide');
+  document.getElementById('hub-loading').style.display = 'flex';
+  
+  setTimeout(() => {
+    window.location.href = realm.page;
+  }, 400);
+}
 
-    // Only load if unlocked
-    if (!this.unlockedRealms.includes(realmId)) {
-      console.warn(`[Game Hub] Realm locked: ${realmId}`);
-      // Redirect to first unlocked realm
-      this.loadRealm(this.unlockedRealms[0]);
-      return;
-    }
-
-    this.currentRealm = realmId;
-
-    // Update ambient
-    const ambient = document.getElementById('ambient');
-    ambient.className = `realm-${realmId}`;
-
-    // Update HUD
-    document.getElementById('hud-location').textContent = `The Labyrinth · ${realm.name}`;
-    document.getElementById('hud-realm-indicator').textContent = `${realm.icon} ${realm.name}`;
-
-    // Load realm in iframe
-    const frame = document.getElementById('realm-frame');
-    frame.src = realm.path;
-
-    // Update nav
-    this.updateNavButtons();
-
-    // Update URL without reload
-    const url = new URL(window.location);
-    url.searchParams.set('realm', realmId);
-    window.history.replaceState({}, '', url);
-
-    this.saveState();
-
-    console.log(`[Game Hub] Loaded realm: ${realmId} → ${realm.path}`);
-  },
-
-  navigateToRealm(realmId) {
-    if (!this.unlockedRealms.includes(realmId)) {
-      console.log(`[Game Hub] Realm ${realmId} is locked.`);
-      return;
-    }
-
-    // Fade transition
-    const fade = document.getElementById('fade');
-    fade.classList.add('active');
-
-    setTimeout(() => {
-      this.loadRealm(realmId);
-      setTimeout(() => fade.classList.remove('active'), 300);
-    }, 400);
-  },
-
-  unlockRealm(realmId) {
-    if (!this.unlockedRealms.includes(realmId)) {
-      this.unlockedRealms.push(realmId);
-      this.updateNavButtons();
-      this.saveState();
-      console.log(`[Game Hub] Realm unlocked: ${realmId}`);
-    }
-  },
-
-  updateNavButtons() {
-    document.querySelectorAll('.realm-nav-btn').forEach(btn => {
-      const realm = btn.dataset.realm;
-      btn.classList.toggle('active', realm === this.currentRealm);
-
-      if (this.unlockedRealms.includes(realm)) {
-        btn.disabled = false;
-        btn.style.opacity = '';
-      } else {
-        btn.disabled = true;
-        btn.style.opacity = '0.25';
-      }
+// ── STARFIELD ──────────────────────────────────────────
+function initStarfield() {
+  const canvas = document.getElementById('starfield');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  
+  const stars = Array.from({ length: 120 }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height * 0.7,
+    r: Math.random() * 1 + 0.3,
+    a: Math.random(),
+    s: Math.random() * 0.003 + 0.001,
+    p: Math.random() * Math.PI * 2,
+  }));
+  
+  function draw(t) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    stars.forEach(s => {
+      const alpha = s.a * (0.4 + 0.6 * Math.sin(t * s.s + s.p));
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(232,242,255,${alpha})`;
+      ctx.fill();
     });
-  },
-
-  returnToAtrium() {
-    const fade = document.getElementById('fade');
-    fade.classList.add('active');
-    setTimeout(() => {
-      window.location.href = '../index.html';
-    }, 400);
-  },
-
-  bindEvents() {
-    // Realm nav buttons
-    document.querySelectorAll('.realm-nav-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const realm = btn.dataset.realm;
-        this.navigateToRealm(realm);
-      });
-    });
-
-    // Return button
-    document.getElementById('return-btn').addEventListener('click', () => {
-      this.returnToAtrium();
-    });
-
-    // Listen for messages from realm iframes
-    window.addEventListener('message', (event) => {
-      if (event.origin !== window.location.origin) return;
-
-      const { type, realm, data } = event.data || {};
-
-      switch(type) {
-        case 'REALM_COMPLETE':
-          console.log(`[Game Hub] Realm complete: ${realm}`);
-          // Unlock next realm in sequence
-          const order = ['air', 'fire', 'earth', 'water'];
-          const idx = order.indexOf(realm);
-          if (idx >= 0 && idx < order.length - 1) {
-            this.unlockRealm(order[idx + 1]);
-          }
-          this.saveState();
-          break;
-
-        case 'REQUEST_HUB_STATE':
-          const frame = document.getElementById('realm-frame');
-          if (frame && frame.contentWindow) {
-            frame.contentWindow.postMessage({
-              type: 'HUB_STATE',
-              currentRealm: this.currentRealm,
-              unlockedRealms: this.unlockedRealms,
-            }, '*');
-          }
-          break;
-
-        case 'NAVIGATE_TO':
-          if (data && data.realm) {
-            this.navigateToRealm(data.realm);
-          }
-          break;
-      }
-    });
-
-    // Keyboard shortcuts
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') this.returnToAtrium();
-      if (e.key === '1' && this.unlockedRealms.includes('air'))   this.navigateToRealm('air');
-      if (e.key === '2' && this.unlockedRealms.includes('fire'))  this.navigateToRealm('fire');
-      if (e.key === '3' && this.unlockedRealms.includes('earth')) this.navigateToRealm('earth');
-      if (e.key === '4' && this.unlockedRealms.includes('water')) this.navigateToRealm('water');
-    });
+    requestAnimationFrame(draw);
   }
-};
+  requestAnimationFrame(draw);
+}
 
-// ── INIT ──
-GameHub.init();
+// ── GLYPH PARTICLES ────────────────────────────────────
+function initParticles() {
+  const container = document.getElementById('glyphParticles');
+  const glyphs = ['𐤀','𐤃','𐤆','𐤌','𐤉','𐤎','𐤕','𓂝','𓇋','𓌹','𓏏'];
+  
+  for (let i = 0; i < 25; i++) {
+    const p = document.createElement('div');
+    p.className = 'glyph-particle';
+    p.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
+    p.style.left = Math.random() * 100 + '%';
+    p.style.animationDuration = 15 + Math.random() * 25 + 's';
+    p.style.animationDelay = Math.random() * 20 + 's';
+    p.style.fontSize = 14 + Math.random() * 28 + 'px';
+    container.appendChild(p);
+  }
+}
+
+// ── INIT ───────────────────────────────────────────────
+function init() {
+  loadState();
+  renderCards();
+  initStarfield();
+  initParticles();
+  
+  // Hide loading
+  setTimeout(() => {
+    document.getElementById('hub-loading').classList.add('hide');
+    setTimeout(() => {
+      const el = document.getElementById('hub-loading');
+      if (el) el.style.display = 'none';
+    }, 500);
+  }, 600);
+  
+  // Reset button
+  document.getElementById('resetBtn')?.addEventListener('click', () => {
+    if (confirm('Reset all progress? This cannot be undone.')) {
+      localStorage.clear();
+      unlockedRealms = ['air'];
+      renderCards();
+    }
+  });
+  
+  // Keyboard
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '1') enterRealm('air');
+    if (e.key === '2' && unlockedRealms.includes('fire'))  enterRealm('fire');
+    if (e.key === '3' && unlockedRealms.includes('earth')) enterRealm('earth');
+    if (e.key === '4' && unlockedRealms.includes('water')) enterRealm('water');
+  });
+}
+
+init();
 </script>
 </body>
 </html>
